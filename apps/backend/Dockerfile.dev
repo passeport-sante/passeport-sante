@@ -1,9 +1,8 @@
 FROM node:18-alpine
 WORKDIR /app
 COPY package*.json ./
+COPY packages ./packages
 COPY apps/backend ./apps/backend
-COPY apps/backend/prisma ./prisma
 RUN npm install
-RUN npm run prisma:generate --workspace=backend
 EXPOSE 5000
 CMD ["npm", "run", "dev", "--workspace=backend"]

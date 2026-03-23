@@ -57,6 +57,17 @@ services:
     networks:
       - prevention-network
 
+  adminer:
+    image: adminer:latest
+    container_name: prevention_adminer
+    ports:
+      - "8080:8080"
+    depends_on:
+      postgres:
+        condition: service_healthy
+    networks:
+      - prevention-network
+
 volumes:
   postgres_data:
     driver: local
