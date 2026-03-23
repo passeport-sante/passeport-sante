@@ -2,7 +2,8 @@
 // learn more about it in the docs: https://pris.ly/d/prisma-schema
 
 generator client {
-  provider = "prisma-client-js"
+  provider      = "prisma-client-js"
+  binaryTargets = ["native", "linux-musl-openssl-3.0.x"]
 }
 
 datasource db {
@@ -10,4 +11,271 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-// Define your models here
+// ─── Enums ────────────────────────────────────────────────────────────────────
+
+enum UserRole {
+  ADMIN
+  TRAINER
+}
+
+enum GameType {
+  KANBAN
+  QUIZ
+  PUZZLE
+}
+
+enum QuestionType {
+  MCQ
+  TRUE_FALSE
+  OPEN
+}
+
+// ─── Organisation & Utilisateurs ─────────────────────────────────────────────
+
+model Organization {
+  id          String  @id @default(cuid())
+  name        String
+  description String?
+  logo        String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  users              User[]
+  modules            Module[]
+  moduleSessions     ModuleSession[]
+  diagnosticSessions DiagnosticSession[]
+}
+
+model User {
+  id       String   @id @default(cuid())
+  email    String   @unique
+  name     String
+  password String
+  role     UserRole @default(TRAINER)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  organizationId String
+  organization   Organization @relation(fields: [organizationId], references: [id])
+
+  moduleSessions     ModuleSession[]
+  diagnosticSessions DiagnosticSession[]
+}
+
+// ─── Modules ──────────────────────────────────────────────────────────────────
+
+model Module {
+  id        String   @id @default(cuid())
+  duration  Int?
+  isActive  Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  organizationId String
+  organization   Organization @relation(fields: [organizationId], references: [id])
+
+  steps            Step[]
+  moduleSessions   ModuleSession[]
+  moduleProgresses ModuleProgress[]
+  statisticsData   StatisticsData[]
+  kanbanResponses  KanbanResponse[]
+  quizResponses    QuizResponse[]
+  puzzleResponses  PuzzleResponse[]
+}
+
+model ModuleSession {
+  id         String   @id @default(cuid())
+  className  String
+  accessCode String   @unique
+  accessUrl  String   @unique
+  isActive   Boolean  @default(true)
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  moduleId String
+  module   Module @relation(fields: [moduleId], references: [id])
+
+  createdByUserId String
+  createdByUser   User   @relation(fields: [createdByUserId], references: [id])
+
+  organizationId String
+  organization   Organization @relation(fields: [organizationId], references: [id])
+
+  guestStudents GuestStudent[]
+}
+
+model Step {
+  id            String   @id @default(cuid())
+  gameType      GameType
+  order         Int      @default(0)
+  mascotteImage String?
+  content       Json?
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  moduleId String
+  module   Module @relation(fields: [moduleId], references: [id])
+
+  gameData        GameData[]
+  kanbanResponses KanbanResponse[]
+  quizResponses   QuizResponse[]
+  puzzleResponses PuzzleResponse[]
+}
+
+// ─── Diagnostic ───────────────────────────────────────────────────────────────
+
+model DiagnosticSession {
+  id         String   @id @default(cuid())
+  className  String
+  accessCode String   @unique
+  accessUrl  String   @unique
+  isActive   Boolean  @default(true)
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  createdByUserId String
+  createdByUser   User   @relation(fields: [createdByUserId], references: [id])
+
+  organizationId String
+  organization   Organization @relation(fields: [organizationId], references: [id])
+
+  diagnosticResponses DiagnosticResponse[]
+}
+
+model DiagnosticQuestion {
+  id            String       @id @default(cuid())
+  questionText  String
+  questionType  QuestionType @default(MCQ)
+  options       Json?
+  correctAnswer Json?
+  order         Int          @default(0)
+
+  diagnosticResponses DiagnosticResponse[]
+}
+
+model DiagnosticResponse {
+  id         String   @id @default(cuid())
+  userAnswer Json
+  isCorrect  Boolean?
+  timing     Int?
+  createdAt  DateTime @default(now())
+
+  guestStudentId String
+  guestStudent   GuestStudent @relation(fields: [guestStudentId], references: [id])
+
+  sessionId String
+  session   DiagnosticSession @relation(fields: [sessionId], references: [id])
+
+  questionId String
+  question   DiagnosticQuestion @relation(fields: [questionId], references: [id])
+}
+
+// ─── Élèves ───────────────────────────────────────────────────────────────────
+
+model GuestStudent {
+  id     String  @id @default(cuid())
+  gender String?
+  age    Int?
+
+  sessionId String
+  session   ModuleSession @relation(fields: [sessionId], references: [id])
+
+  diagnosticResponses DiagnosticResponse[]
+  kanbanResponses     KanbanResponse[]
+  quizResponses       QuizResponse[]
+  puzzleResponses     PuzzleResponse[]
+  moduleProgresses    ModuleProgress[]
+}
+
+// ─── Réponses aux activités ───────────────────────────────────────────────────
+
+model KanbanResponse {
+  id         String   @id @default(cuid())
+  userAnswer Json
+  isCorrect  Boolean?
+  timing     Int?
+  createdAt  DateTime @default(now())
+
+  guestStudentId String
+  guestStudent   GuestStudent @relation(fields: [guestStudentId], references: [id])
+
+  stepId String
+  step   Step   @relation(fields: [stepId], references: [id])
+
+  moduleId String
+  module   Module @relation(fields: [moduleId], references: [id])
+}
+
+model QuizResponse {
+  id         String   @id @default(cuid())
+  userAnswer Json
+  isCorrect  Boolean?
+  timing     Int?
+  createdAt  DateTime @default(now())
+
+  guestStudentId String
+  guestStudent   GuestStudent @relation(fields: [guestStudentId], references: [id])
+
+  stepId String
+  step   Step   @relation(fields: [stepId], references: [id])
+
+  moduleId String
+  module   Module @relation(fields: [moduleId], references: [id])
+}
+
+model PuzzleResponse {
+  id         String   @id @default(cuid())
+  userAnswer Json
+  isCorrect  Boolean?
+  timing     Int?
+  createdAt  DateTime @default(now())
+
+  guestStudentId String
+  guestStudent   GuestStudent @relation(fields: [guestStudentId], references: [id])
+
+  stepId String
+  step   Step   @relation(fields: [stepId], references: [id])
+
+  moduleId String
+  module   Module @relation(fields: [moduleId], references: [id])
+}
+
+// ─── Progression & Stats ──────────────────────────────────────────────────────
+
+model GameData {
+  id            String @id @default(cuid())
+  questionData  Json
+  correctAnswer Json?
+  hints         Json?
+
+  stepId String
+  step   Step   @relation(fields: [stepId], references: [id])
+}
+
+model ModuleProgress {
+  id          String  @id @default(cuid())
+  score       Float?
+  completion  Float   @default(0)
+  isCompleted Boolean @default(false)
+
+  guestStudentId String
+  guestStudent   GuestStudent @relation(fields: [guestStudentId], references: [id])
+
+  moduleId String
+  module   Module @relation(fields: [moduleId], references: [id])
+
+  @@unique([guestStudentId, moduleId])
+}
+
+model StatisticsData {
+  id            String  @id @default(cuid())
+  className     String
+  totalAttempts Int     @default(0)
+  avgScore      Float?
+  gender        String?
+  ageRange      String?
+
+  moduleId String
+  module   Module @relation(fields: [moduleId], references: [id])
+}

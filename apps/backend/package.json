@@ -20,7 +20,10 @@
     "test:e2e": "jest --config ./test/jest-e2e.json",
     "prisma:generate": "prisma generate",
     "prisma:migrate": "prisma migrate dev",
-    "prisma:seed": "ts-node prisma/seed.ts"
+    "prisma:seed": "ts-node prisma/seed.ts",
+    "docker:migrate": "docker exec -w /app/apps/backend prevention_backend npx prisma migrate dev",
+    "docker:generate": "docker exec -w /app/apps/backend prevention_backend npx prisma generate",
+    "docker:studio": "docker exec -w /app/apps/backend prevention_backend npx prisma studio"
   },
   "dependencies": {
     "@nestjs/common": "^10.2.10",
@@ -35,6 +38,7 @@
     "class-transformer": "^0.5.1",
     "class-validator": "^0.15.1",
     "dotenv": "^16.3.1",
+    "nest": "^0.1.6",
     "passport": "^0.6.0",
     "passport-jwt": "^4.0.0",
     "reflect-metadata": "^0.1.13",
