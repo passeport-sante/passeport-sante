@@ -19,16 +19,16 @@ export class ModulesController {
 
   @Get(':id')
   findOne(@Param('id') id: string) {
-    return this.modulesService.findOne(+id);
+    return this.modulesService.findOne(id);
   }
 
   @Patch(':id')
   update(@Param('id') id: string, @Body() updateModuleDto: UpdateModuleDto) {
-    return this.modulesService.update(+id, updateModuleDto);
+    return this.modulesService.update(id, updateModuleDto);
   }
 
   @Delete(':id')
   remove(@Param('id') id: string) {
-    return this.modulesService.remove(+id);
+    return this.modulesService.remove(id);
   }
 }

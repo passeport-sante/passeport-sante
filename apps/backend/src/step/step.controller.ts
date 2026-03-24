@@ -1,9 +1,17 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete } from '@nestjs/common';
-import { StepService } from './step.service';
-import { CreateStepDto } from './dto/create-step.dto';
-import { UpdateStepDto } from './dto/update-step.dto';
+import {
+  Controller,
+  Get,
+  Post,
+  Body,
+  Patch,
+  Param,
+  Delete,
+} from "@nestjs/common";
+import { StepService } from "./step.service";
+import { CreateStepDto } from "./dto/create-step.dto";
+import { UpdateStepDto } from "./dto/update-step.dto";
 
-@Controller('step')
+@Controller("step")
 export class StepController {
   constructor(private readonly stepService: StepService) {}
 
@@ -17,18 +25,18 @@ export class StepController {
     return this.stepService.findAll();
   }
 
-  @Get(':id')
-  findOne(@Param('id') id: string) {
-    return this.stepService.findOne(+id);
+  @Get(":id")
+  findOne(@Param("id") id: string) {
+    return this.stepService.findOne(id);
   }
 
-  @Patch(':id')
-  update(@Param('id') id: string, @Body() updateStepDto: UpdateStepDto) {
-    return this.stepService.update(+id, updateStepDto);
+  @Patch(":id")
+  update(@Param("id") id: string, @Body() updateStepDto: UpdateStepDto) {
+    return this.stepService.update(id, updateStepDto);
   }
 
-  @Delete(':id')
-  remove(@Param('id') id: string) {
-    return this.stepService.remove(+id);
+  @Delete(":id")
+  remove(@Param("id") id: string) {
+    return this.stepService.remove(id);
   }
 }

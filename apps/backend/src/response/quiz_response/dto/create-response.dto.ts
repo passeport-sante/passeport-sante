@@ -1,7 +1,7 @@
 import { ApiProperty, ApiPropertyOptional } from "@nestjs/swagger";
 import { IsBoolean, IsInt, IsNotEmpty, IsObject, IsOptional, IsString } from "class-validator";
 
-export class CreatePuzzleResponseDto {
+export class CreateQuizResponseDto {
   @ApiProperty()
   @IsObject()
   @IsNotEmpty()

@@ -1,26 +1,34 @@
-import { Injectable } from '@nestjs/common';
-import { CreateOrganizationDto } from './dto/create-organization.dto';
-import { UpdateOrganizationDto } from './dto/update-organization.dto';
+import { Injectable } from "@nestjs/common";
+import { CreateOrganizationDto } from "./dto/create-organization.dto";
+import { UpdateOrganizationDto } from "./dto/update-organization.dto";
+import { PrismaService } from "@/prisma/prisma.service";
 
 @Injectable()
 export class OrganizationService {
+  constructor(private prisma: PrismaService) {}
+
   create(createOrganizationDto: CreateOrganizationDto) {
-    return 'This action adds a new organization';
+    return this.prisma.organization.create({
+      data: createOrganizationDto,
+    });
   }
 
   findAll() {
-    return `This action returns all organization`;
+    return this.prisma.organization.findMany();
   }
 
-  findOne(id: number) {
-    return `This action returns a #${id} organization`;
+  findOne(id: string) {
+    return this.prisma.organization.findUnique({ where: { id } });
   }
 
-  update(id: number, updateOrganizationDto: UpdateOrganizationDto) {
-    return `This action updates a #${id} organization`;
+  update(id: string, updateOrganizationDto: UpdateOrganizationDto) {
+    return this.prisma.organization.update({
+      where: { id },
+      data: updateOrganizationDto,
+    });
   }
 
-  remove(id: number) {
-    return `This action removes a #${id} organization`;
+  remove(id: string) {
+    return this.prisma.organization.delete({ where: { id } });
   }
 }

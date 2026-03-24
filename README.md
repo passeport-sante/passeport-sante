@@ -147,6 +147,25 @@ yarn exec turbo link
 pnpm exec turbo link
 ```
 
+## Services locaux
+
+| Service  | URL                   | Détails                        |
+|----------|-----------------------|--------------------------------|
+| Frontend | http://localhost:3000 |                                |
+| Backend  | http://localhost:5000 |                                |
+| Adminer  | http://localhost:8080 | Interface BDD                  |
+| Postgres | localhost:5432        |                                |
+
+### Adminer — connexion
+
+| Champ      | Valeur          |
+|------------|-----------------|
+| Système    | PostgreSQL      |
+| Serveur    | `postgres`      |
+| Utilisateur| `dev`           |
+| Mot de passe | `dev123`      |
+| Base de données | `prevention_db` |
+
 ## Useful Links
 
 Learn more about the power of Turborepo:

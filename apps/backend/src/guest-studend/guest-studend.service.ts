@@ -1,26 +1,34 @@
-import { Injectable } from '@nestjs/common';
-import { CreateGuestStudendDto } from './dto/create-guest-studend.dto';
-import { UpdateGuestStudendDto } from './dto/update-guest-studend.dto';
+import { Injectable } from "@nestjs/common";
+import { CreateGuestStudendDto } from "./dto/create-guest-studend.dto";
+import { UpdateGuestStudendDto } from "./dto/update-guest-studend.dto";
+import { PrismaService } from "@/prisma/prisma.service";
 
 @Injectable()
 export class GuestStudendService {
-  create(createGuestStudendDto: CreateGuestStudendDto) {
-    return 'This action adds a new guestStudend';
+  constructor(private prisma: PrismaService) {}
+
+  create(CreateGuestStudendDto: CreateGuestStudendDto) {
+    return this.prisma.guestStudent.create({
+      data: CreateGuestStudendDto,
+    });
   }
 
   findAll() {
-    return `This action returns all guestStudend`;
+    return this.prisma.guestStudent.findMany();
   }
 
-  findOne(id: number) {
-    return `This action returns a #${id} guestStudend`;
+  findOne(id: string) {
+    return this.prisma.guestStudent.findUnique({ where: { id } });
   }
 
-  update(id: number, updateGuestStudendDto: UpdateGuestStudendDto) {
-    return `This action updates a #${id} guestStudend`;
+  update(id: string, updateGuestStudendDto: UpdateGuestStudendDto) {
+    return this.prisma.guestStudent.update({
+      where: { id },
+      data: updateGuestStudendDto,
+    });
   }
 
-  remove(id: number) {
-    return `This action removes a #${id} guestStudend`;
+  remove(id: string) {
+    return this.prisma.guestStudent.delete({ where: { id } });
   }
 }
