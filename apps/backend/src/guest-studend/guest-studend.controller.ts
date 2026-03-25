@@ -10,7 +10,9 @@ import {
 import { GuestStudendService } from "./guest-studend.service";
 import { CreateGuestStudendDto } from "./dto/create-guest-studend.dto";
 import { UpdateGuestStudendDto } from "./dto/update-guest-studend.dto";
+import { ApiBearerAuth } from "@nestjs/swagger";
 
+@ApiBearerAuth()
 @Controller("guest-studend")
 export class GuestStudendController {
   constructor(private readonly guestStudendService: GuestStudendService) {}

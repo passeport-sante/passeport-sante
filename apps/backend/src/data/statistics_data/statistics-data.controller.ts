@@ -1,8 +1,18 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete } from "@nestjs/common";
+import {
+  Controller,
+  Get,
+  Post,
+  Body,
+  Patch,
+  Param,
+  Delete,
+} from "@nestjs/common";
 import { StatisticsDataService } from "./statistics-data.services";
 import { CreateStatisticsDataDto } from "./dto/create-datum.dto";
 import { UpdateStatisticsDataDto } from "./dto/update-datum.dto";
+import { ApiBearerAuth } from "@nestjs/swagger";
 
+@ApiBearerAuth()
 @Controller("data/statistics")
 export class StatisticsDataController {
   constructor(private readonly statisticsDataService: StatisticsDataService) {}

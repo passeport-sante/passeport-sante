@@ -9,6 +9,7 @@ import { ResponseModule } from "./response/response.module";
 import { GuestStudendModule } from "./guest-studend/guest-studend.module";
 import { DataModule } from "./data/data.module";
 import { PrismaModule } from "./prisma/prisma.module";
+import { AuthModule } from "./auth/auth.module";
 
 @Module({
   imports: [
@@ -16,6 +17,7 @@ import { PrismaModule } from "./prisma/prisma.module";
       isGlobal: true,
       envFilePath: [".env.local", ".env"],
     }),
+    AuthModule,
     OrganizationModule,
     UserModule,
     ModulesModule,

@@ -1,8 +1,18 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete } from "@nestjs/common";
+import {
+  Controller,
+  Get,
+  Post,
+  Body,
+  Patch,
+  Param,
+  Delete,
+} from "@nestjs/common";
 import { QuizResponseService } from "./quiz-response.services";
 import { CreateQuizResponseDto } from "./dto/create-response.dto";
 import { UpdateQuizResponseDto } from "./dto/update-response.dto";
+import { ApiBearerAuth } from "@nestjs/swagger";
 
+@ApiBearerAuth()
 @Controller("response/quiz")
 export class QuizResponseController {
   constructor(private readonly quizResponseService: QuizResponseService) {}

@@ -1,8 +1,18 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete } from "@nestjs/common";
+import {
+  Controller,
+  Get,
+  Post,
+  Body,
+  Patch,
+  Param,
+  Delete,
+} from "@nestjs/common";
 import { GameDataService } from "./game-data.services";
 import { CreateGameDataDto } from "./dto/create-datum.dto";
 import { UpdateGameDataDto } from "./dto/update-datum.dto";
+import { ApiBearerAuth } from "@nestjs/swagger";
 
+@ApiBearerAuth()
 @Controller("data/game")
 export class GameDataController {
   constructor(private readonly gameDataService: GameDataService) {}

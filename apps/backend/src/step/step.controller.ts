@@ -10,7 +10,9 @@ import {
 import { StepService } from "./step.service";
 import { CreateStepDto } from "./dto/create-step.dto";
 import { UpdateStepDto } from "./dto/update-step.dto";
+import { ApiBearerAuth } from "@nestjs/swagger";
 
+@ApiBearerAuth()
 @Controller("step")
 export class StepController {
   constructor(private readonly stepService: StepService) {}

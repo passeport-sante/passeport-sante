@@ -1,8 +1,18 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete } from "@nestjs/common";
+import {
+  Controller,
+  Get,
+  Post,
+  Body,
+  Patch,
+  Param,
+  Delete,
+} from "@nestjs/common";
 import { PuzzleResponseService } from "./puzzle-response.services";
 import { CreatePuzzleResponseDto } from "./dto/create-response.dto";
 import { UpdatePuzzleResponseDto } from "./dto/update-response.dto";
+import { ApiBearerAuth } from "@nestjs/swagger";
 
+@ApiBearerAuth()
 @Controller("response/puzzle")
 export class PuzzleResponseController {
   constructor(private readonly puzzleResponseService: PuzzleResponseService) {}

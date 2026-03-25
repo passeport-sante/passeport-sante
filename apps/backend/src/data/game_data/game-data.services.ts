@@ -2,7 +2,9 @@ import { Injectable } from "@nestjs/common";
 import { PrismaService } from "@/prisma/prisma.service";
 import { CreateGameDataDto } from "./dto/create-datum.dto";
 import { UpdateGameDataDto } from "./dto/update-datum.dto";
+import { ApiBearerAuth } from "@nestjs/swagger";
 
+@ApiBearerAuth()
 @Injectable()
 export class GameDataService {
   constructor(private prisma: PrismaService) {}

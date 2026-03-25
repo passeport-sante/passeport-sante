@@ -1,11 +1,23 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete } from "@nestjs/common";
+import {
+  Controller,
+  Get,
+  Post,
+  Body,
+  Patch,
+  Param,
+  Delete,
+} from "@nestjs/common";
 import { DiagnosticQuestionService } from "./diagnostic-question.services";
 import { CreateDiagnosticQuestionDto } from "./dto/create-diagnostic.dto";
 import { UpdateDiagnosticQuestionDto } from "./dto/update-diagnostic.dto";
+import { ApiBearerAuth } from "@nestjs/swagger";
 
+@ApiBearerAuth()
 @Controller("diagnostic/question")
 export class DiagnosticQuestionController {
-  constructor(private readonly diagnosticQuestionService: DiagnosticQuestionService) {}
+  constructor(
+    private readonly diagnosticQuestionService: DiagnosticQuestionService,
+  ) {}
 
   @Post()
   create(@Body() dto: CreateDiagnosticQuestionDto) {

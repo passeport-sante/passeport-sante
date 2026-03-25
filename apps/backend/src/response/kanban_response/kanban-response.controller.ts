@@ -1,8 +1,18 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete } from "@nestjs/common";
+import {
+  Controller,
+  Get,
+  Post,
+  Body,
+  Patch,
+  Param,
+  Delete,
+} from "@nestjs/common";
 import { KanbanResponseService } from "./kanban-response.services";
 import { CreateKanbanResponseDto } from "./dto/create-response.dto";
 import { UpdateKanbanResponseDto } from "./dto/update-response.dto";
+import { ApiBearerAuth } from "@nestjs/swagger";
 
+@ApiBearerAuth()
 @Controller("response/kanban")
 export class KanbanResponseController {
   constructor(private readonly kanbanResponseService: KanbanResponseService) {}
