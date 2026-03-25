@@ -6,4 +6,4 @@ COPY packages ./packages
 COPY apps/backend ./apps/backend
 RUN npm install
 EXPOSE 5000
-CMD ["npm", "run", "dev", "--workspace=backend"]
+CMD ["sh", "-lc", "cd /app/apps/backend && npm run dev"]
