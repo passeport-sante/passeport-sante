@@ -16,7 +16,8 @@ export function Navbar() {
   return (
     <header className="bg-white shadow-sm sticky top-0 z-50">
       <div className="brand-container py-5 flex items-center justify-between">
-        <Link href="/" className="shrink-0">
+
+        <Link href="/" className="shrink-0 flex items-center gap-3">
           <Image
             src="/assets/logo/logo-passeport.png"
             alt="Logo"
@@ -24,6 +25,10 @@ export function Navbar() {
             height={44}
             className="h-11 w-auto object-contain"
           />
+          <span className="text-xl font-black tracking-wide">
+            <span className="text-blue-600">PASSEPORT</span>{" "}
+            <span className="text-brand-green">SANTÉ</span>
+          </span>
         </Link>
 
         <nav className="flex items-center gap-12 flex-1 justify-center">
@@ -51,6 +56,7 @@ export function Navbar() {
         >
           Faire le quiz
         </Link>
+
       </div>
     </header>
   );

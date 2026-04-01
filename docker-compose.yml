@@ -48,6 +48,7 @@ services:
     container_name: prevention_frontend
     environment:
       NEXT_PUBLIC_API_URL: http://localhost:5000
+      API_INTERNAL_URL: http://backend:5000
       WATCHPACK_POLLING: "true"
       WATCHPACK_POLLING_INTERVAL: "1000"
       CHOKIDAR_USEPOLLING: "true"

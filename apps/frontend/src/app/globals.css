@@ -176,6 +176,164 @@ a {
   }
 }
 
+/* ── Module Card ─────────────────────────────── */
+
+/*
+  Wrapper : espace vertical pour le débordement haut (tête mascotte)
+  et bas (bouton). Le padding-left laisse la place au débordement gauche.
+*/
+.module-card-wrapper {
+  padding-left: 80px;
+  padding-top: 260px;
+  padding-bottom: 50px;
+}
+
+/*
+  Inner : containing block précis de la mascotte.
+  Sa hauteur = celle de la carte (360px via le contenu).
+  La mascotte s'ancre sur ce bloc avec bottom:0 et left:-80px.
+*/
+.module-card-inner {
+  position: relative;
+}
+
+/* Carte blanche */
+.module-card {
+  position: relative;
+  z-index: 10;
+  height: 360px;
+  background: white;
+  border-radius: 60px;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.12);
+  padding: 36px 40px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  overflow: visible;
+}
+
+/*
+  Mascotte — absolute dans .module-card-inner.
+  - left: -80px   → dépasse 80px à gauche de la carte
+  - bottom: 0     → pieds calés sur le bas de la carte
+  Changer width/height : seul padding-top du wrapper à ajuster.
+*/
+.module-card-mascotte {
+  position: absolute;
+  left: -80px;
+  bottom: 0;
+  width: 380px;
+  height: 600px;
+  z-index: 20;
+  pointer-events: none;
+}
+
+/* Header : titre (gris) + icône durée */
+.module-card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  padding-left: 100px;
+}
+
+.module-card-title {
+  font-size: 34px;
+  font-weight: 800;
+  color: #94a3b8;
+  line-height: 1;
+}
+
+.module-card-timer {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  font-size: 11px;
+  font-weight: 900;
+  color: #111;
+  text-transform: uppercase;
+  letter-spacing: -0.03em;
+  flex-shrink: 0;
+}
+
+/* Ligne de la bulle — alignée à droite */
+.module-card-bubble-row {
+  display: flex;
+  justify-content: flex-end;
+  padding-right: 16px;
+  padding-bottom: 16px;
+}
+
+/* Bulle ovale style BD avec queue éclair */
+.speech-bubble {
+  background-color: #0d548b;
+  border: 5px dotted #a3d4ae;
+  border-radius: 50%;
+  position: relative;
+  padding: 28px 36px;
+  box-shadow: inset 0 0 15px rgba(0, 0, 0, 0.2);
+  color: white;
+  text-align: center;
+  font-size: 15px;
+  font-weight: 600;
+  line-height: 1.5;
+  max-width: 210px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Queue de la bulle — forme éclair pointant vers la mascotte */
+.speech-bubble::after {
+  content: '';
+  position: absolute;
+  bottom: -28px;
+  left: 52%;
+  width: 40px;
+  height: 40px;
+  background-color: #0d548b;
+  clip-path: polygon(0% 0%, 100% 0%, 40% 100%, 20% 40%);
+}
+
+/* Bouton débordant bas-droite */
+.module-card-btn {
+  position: absolute;
+  bottom: -16px;
+  right: -16px;
+  z-index: 20;
+  background: #cfd4d9;
+  color: white;
+  font-weight: 700;
+  font-size: 18px;
+  padding: 16px 34px;
+  border-radius: 20px;
+  white-space: nowrap;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.15);
+  transition: background 0.2s;
+  text-decoration: none;
+  display: block;
+}
+
+.module-card-btn:hover {
+  background: #bdc3c8;
+}
+
+/* ── Animations ─────────────────────────────── */
+
+/*
+  Float continu pour une mascotte (optionnel — activé via class "animate-float").
+  Sur les BubbleCard, le float est déclenché au hover via group-hover:-translate-y-3.
+  Utilise animate-float uniquement pour les éléments qui doivent flotter en permanence.
+*/
+@keyframes float {
+  0%, 100% { transform: translateY(0); }
+  50%       { transform: translateY(-10px); }
+}
+
+.animate-float {
+  animation: float 3.2s ease-in-out infinite;
+}
+
 /* Cercles décoratifs */
 .circle-hero-green {
   position: absolute;

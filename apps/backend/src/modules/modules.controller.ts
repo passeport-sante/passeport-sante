@@ -6,11 +6,12 @@ import {
   Patch,
   Param,
   Delete,
+  Query,
 } from "@nestjs/common";
 import { ModulesService } from "./modules.service";
 import { CreateModuleDto } from "./dto/create-module.dto";
 import { UpdateModuleDto } from "./dto/update-module.dto";
-import { ApiBearerAuth } from "@nestjs/swagger";
+import { ApiBearerAuth, ApiQuery } from "@nestjs/swagger";
 
 @ApiBearerAuth()
 @Controller("modules")
@@ -23,7 +24,11 @@ export class ModulesController {
   }
 
   @Get()
-  findAll() {
+  @ApiQuery({ name: "grouped", required: false, type: Boolean, description: "Retourne les modules groupés par catégorie" })
+  findAll(@Query("grouped") grouped?: string) {
+    if (grouped === "true") {
+      return this.modulesService.findAllGrouped();
+    }
     return this.modulesService.findAll();
   }
 

@@ -37,12 +37,15 @@ export function SignInForm() {
   return (
     <div className="flex min-h-screen w-full">
       {/* Côté gauche — formulaire */}
-      <div className="relative flex flex-1 flex-col justify-center items-center px-12 py-16 overflow-hidden">
-        {/* Cercles décoratifs */}
-        <div className="absolute -top-24 -left-24 w-96 h-96 rounded-full bg-primary/10" />
-        <div className="absolute -bottom-32 -left-16 w-72 h-72 rounded-full bg-primary/10" />
-        <div className="absolute top-1/2 -right-20 w-56 h-56 rounded-full bg-primary/5" />
-        <div className="mx-auto w-full max-w-sm">
+      <div className="relative flex flex-1 flex-col justify-center items-center px-12 py-16 overflow-hidden bg-white">
+        {/* Cercles décoratifs bleu site */}
+        <div className="absolute -top-24 -left-24 w-96 h-96 rounded-full" style={{ background: "rgba(27,107,138,0.08)" }} />
+        <div className="absolute -bottom-32 -left-16 w-72 h-72 rounded-full" style={{ background: "rgba(27,107,138,0.06)" }} />
+        <div className="absolute top-1/2 -right-20 w-56 h-56 rounded-full" style={{ background: "rgba(42,137,112,0.07)" }} />
+
+        <div className="mx-auto w-full max-w-sm relative z-10">
+          {/* Barre accent bleue */}
+          <div className="w-10 h-1 rounded-full mb-4" style={{ background: "#1B6B8A" }} />
           <h1 className="text-3xl font-bold text-foreground mb-1">Bienvenue !</h1>
           <p className="text-muted-foreground mb-8">Connectez-vous à votre espace formateur.</p>
 
@@ -73,7 +76,12 @@ export function SignInForm() {
               )}
             </div>
 
-            <Button type="submit" className="w-full mt-2" disabled={isSubmitting}>
+            <Button
+              type="submit"
+              className="w-full mt-2 text-white font-semibold"
+              style={{ background: "linear-gradient(135deg, #1B6B8A 0%, #2A8970 100%)" }}
+              disabled={isSubmitting}
+            >
               {isSubmitting ? "Connexion..." : "Se connecter →"}
             </Button>
           </form>
@@ -81,7 +89,10 @@ export function SignInForm() {
       </div>
 
       {/* Côté droit — branding */}
-      <div className="hidden lg:flex lg:w-2/5 flex-col items-center justify-center bg-primary gap-8 px-12">
+      <div
+        className="hidden lg:flex lg:w-2/5 flex-col items-center justify-center gap-8 px-12"
+        style={{ background: "linear-gradient(160deg, #1B6B8A 0%, #2A8970 55%, #4CAF5A 100%)" }}
+      >
         <Image
           src="/assets/mascotte/mascotte-bouclier.png"
           alt="Mascotte prévention"
@@ -89,9 +100,9 @@ export function SignInForm() {
           height={340}
           className="drop-shadow-xl"
         />
-        <div className="text-center text-primary-foreground">
+        <div className="text-center text-white">
           <h2 className="text-3xl font-bold mb-3">Plateforme de Prévention</h2>
-          <p className="text-primary-foreground/80 max-w-xs">
+          <p className="text-white/75 max-w-xs">
             Créez des sessions interactives et sensibilisez vos élèves aux risques du quotidien.
           </p>
         </div>

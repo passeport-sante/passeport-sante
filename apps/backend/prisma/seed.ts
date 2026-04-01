@@ -45,20 +45,134 @@ async function main() {
   });
   console.log('✅ Utilisateurs créés:', admin.email, trainer.email);
 
-  // ─── Module ──────────────────────────────────────────────────────────────────
-  const module = await prisma.module.upsert({
-    where: { id: 'seed-module-1' },
+  // ─── Catégories ───────────────────────────────────────────────────────────────
+  const catSante = await prisma.category.upsert({
+    where: { slug: 'sante-bien-etre' },
+    update: {},
+    create: {
+      id: 'seed-cat-1',
+      name: 'Santé & Bien-être',
+      slug: 'sante-bien-etre',
+      order: 1,
+    },
+  });
+
+  const catNumerique = await prisma.category.upsert({
+    where: { slug: 'securite-numerique' },
+    update: {},
+    create: {
+      id: 'seed-cat-2',
+      name: 'Sécurité numérique',
+      slug: 'securite-numerique',
+      order: 2,
+    },
+  });
+
+  const catNutrition = await prisma.category.upsert({
+    where: { slug: 'alimentation-nutrition' },
+    update: {},
+    create: {
+      id: 'seed-cat-3',
+      name: 'Alimentation & Nutrition',
+      slug: 'alimentation-nutrition',
+      order: 3,
+    },
+  });
+  console.log('✅ Catégories créées:', catSante.name, catNumerique.name, catNutrition.name);
+
+  // ─── Modules ──────────────────────────────────────────────────────────────────
+  const moduleVaccination = await prisma.module.upsert({
+    where: { slug: 'vaccination' },
     update: {},
     create: {
       id: 'seed-module-1',
-      duration: 45,
+      title: 'Vaccination',
+      description: 'Comment ça marche ? Pour qui ? Quand ? Où ?',
+      slug: 'vaccination',
+      duration: 20,
       isActive: true,
+      mascotte: 'mascotte1.png',
+      colorPrimary: '#F0FDF4',
+      colorSecondary: '#BBF7D0',
       organizationId: org.id,
+      categoryId: catSante.id,
     },
   });
-  console.log('✅ Module créé:', module.id);
 
-  // ─── Steps ───────────────────────────────────────────────────────────────────
+  const moduleSommeil = await prisma.module.upsert({
+    where: { slug: 'sommeil' },
+    update: {},
+    create: {
+      id: 'seed-module-2',
+      title: 'Sommeil',
+      description: 'Pourquoi bien dormir est essentiel à ta santé physique et mentale.',
+      slug: 'sommeil',
+      duration: 15,
+      isActive: true,
+      mascotte: 'Mme-etoile.png',
+      colorPrimary: '#FFFBEB',
+      colorSecondary: '#FDE68A',
+      organizationId: org.id,
+      categoryId: catSante.id,
+    },
+  });
+
+  const moduleHygiene = await prisma.module.upsert({
+    where: { slug: 'hygiene-bucco' },
+    update: {},
+    create: {
+      id: 'seed-module-3',
+      title: 'Hygiène buco-dentaire',
+      description: 'Les bons gestes pour prendre soin de tes dents au quotidien.',
+      slug: 'hygiene-bucco',
+      duration: 15,
+      isActive: true,
+      mascotte: 'Petit-savon.png',
+      colorPrimary: '#ECFDF5',
+      colorSecondary: '#A7F3D0',
+      organizationId: org.id,
+      categoryId: catSante.id,
+    },
+  });
+
+  const moduleCyber = await prisma.module.upsert({
+    where: { slug: 'cyberharcelement' },
+    update: {},
+    create: {
+      id: 'seed-module-4',
+      title: 'Cyberharcèlement',
+      description: 'Identifier, réagir et se protéger face au harcèlement en ligne.',
+      slug: 'cyberharcelement',
+      duration: 25,
+      isActive: true,
+      mascotte: 'empathie-mascotte.png',
+      colorPrimary: '#FDF2F8',
+      colorSecondary: '#FBCFE8',
+      organizationId: org.id,
+      categoryId: catNumerique.id,
+    },
+  });
+
+  const moduleManger = await prisma.module.upsert({
+    where: { slug: 'bien-manger' },
+    update: {},
+    create: {
+      id: 'seed-module-5',
+      title: 'Bien manger',
+      description: "Les bases d'une alimentation équilibrée adaptée à ton âge.",
+      slug: 'bien-manger',
+      duration: 20,
+      isActive: true,
+      mascotte: 'Butternut-mascotte.png',
+      colorPrimary: '#FFF7ED',
+      colorSecondary: '#FED7AA',
+      organizationId: org.id,
+      categoryId: catNutrition.id,
+    },
+  });
+  console.log('✅ Modules créés:', moduleVaccination.title, moduleSommeil.title, moduleHygiene.title, moduleCyber.title, moduleManger.title);
+
+  // ─── Steps (module vaccination) ───────────────────────────────────────────────
   const stepKanban = await prisma.step.upsert({
     where: { id: 'seed-step-1' },
     update: {},
@@ -68,7 +182,7 @@ async function main() {
       order: 1,
       mascotteImage: 'mascotte_happy.png',
       content: { title: 'Trie les dangers', instructions: 'Place chaque danger dans la bonne catégorie' },
-      moduleId: module.id,
+      moduleId: moduleVaccination.id,
     },
   });
 
@@ -81,11 +195,11 @@ async function main() {
       order: 2,
       mascotteImage: 'mascotte_question.png',
       content: { title: 'Quiz de prévention', instructions: 'Réponds aux questions' },
-      moduleId: module.id,
+      moduleId: moduleVaccination.id,
     },
   });
 
-  const stepPuzzle = await prisma.step.upsert({
+  await prisma.step.upsert({
     where: { id: 'seed-step-3' },
     update: {},
     create: {
@@ -94,7 +208,7 @@ async function main() {
       order: 3,
       mascotteImage: 'mascotte_puzzle.png',
       content: { title: 'Reconstitue la scène', instructions: 'Replace les éléments dans le bon ordre' },
-      moduleId: module.id,
+      moduleId: moduleVaccination.id,
     },
   });
   console.log('✅ Steps créés: KANBAN, QUIZ, PUZZLE');
@@ -145,7 +259,7 @@ async function main() {
       accessCode: 'TEST2024',
       accessUrl: 'http://localhost:3000/session/TEST2024',
       isActive: true,
-      moduleId: module.id,
+      moduleId: moduleVaccination.id,
       createdByUserId: trainer.id,
       organizationId: org.id,
     },
