@@ -12,8 +12,13 @@ export class CreateGuestStudendDto {
   @IsOptional()
   age?: number;
 
-  @ApiProperty()
+  @ApiPropertyOptional()
   @IsString()
-  @IsNotEmpty()
-  sessionId!: string;
+  @IsOptional()
+  sessionId?: string;
+
+  @ApiPropertyOptional()
+  @IsString()
+  @IsOptional()
+  diagnosticSessionId?: string;
 }

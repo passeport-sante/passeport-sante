@@ -7,16 +7,6 @@ export class CreateDiagnosticSessionDto {
   @IsNotEmpty()
   className!: string;
 
-  @ApiProperty()
-  @IsString()
-  @IsNotEmpty()
-  accessCode!: string;
-
-  @ApiProperty()
-  @IsString()
-  @IsNotEmpty()
-  accessUrl!: string;
-
   @ApiPropertyOptional()
   @IsBoolean()
   @IsOptional()

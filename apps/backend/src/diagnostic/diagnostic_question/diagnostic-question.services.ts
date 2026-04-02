@@ -12,7 +12,17 @@ export class DiagnosticQuestionService {
   }
 
   findAll() {
-    return this.prisma.diagnosticQuestion.findMany();
+    return this.prisma.diagnosticQuestion.findMany({
+      orderBy: { order: 'asc' },
+      select: {
+        id: true,
+        questionText: true,
+        questionType: true,
+        options: true,
+        order: true,
+        // correctAnswer volontairement exclu
+      },
+    });
   }
 
   findOne(id: string) {

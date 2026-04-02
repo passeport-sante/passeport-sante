@@ -1,26 +1,33 @@
+"use client";
 import Image from "next/image";
 import Link from "next/link";
 import { ArrowRight } from "lucide-react";
 
 export function Hero() {
+  const isLoggedIn =
+    typeof window !== "undefined" && !!localStorage.getItem("access_token");
+
   return (
     <section className="relative min-h-[calc(100vh-72px)] overflow-hidden">
-
       <div className="circle-hero-green" />
       <div className="circle-hero-mauve" />
 
       <div className="relative z-10 h-full brand-container">
         <div className="grid grid-cols-2 gap-16 items-center min-h-[calc(100vh-72px)]">
-
           <div className="space-y-8">
             <div className="leading-none">
               <h1 className="text-8xl font-black text-[#1A1A1A]">Mieux</h1>
-              <h1 className="text-8xl font-black text-[#1A1A1A]">Comprendre pour</h1>
-              <h1 className="text-8xl font-black text-brand-green">Mieux grandir.</h1>
+              <h1 className="text-8xl font-black text-[#1A1A1A]">
+                Comprendre pour
+              </h1>
+              <h1 className="text-8xl font-black text-brand-green">
+                Mieux grandir.
+              </h1>
             </div>
             <p className="text-gray-600 text-xl max-w-lg leading-relaxed">
               Une plateforme interactive dédiée à la prévention pour les jeunes.
-              Découvre nos modules sur la santé, le numérique et la gestion des risques.
+              Découvre nos modules sur la santé, le numérique et la gestion des
+              risques.
             </p>
             <div className="flex flex-wrap gap-4 items-center">
               <Link
@@ -42,12 +49,12 @@ export function Hero() {
             <Image
               src="/assets/mascotte/mascotte-bouclier.png"
               alt="Mascotte prévention"
-              width={540} height={540}
+              width={540}
+              height={540}
               className="drop-shadow-2xl"
               priority
             />
           </div>
-
         </div>
       </div>
     </section>

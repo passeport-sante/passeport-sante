@@ -31,7 +31,7 @@ export function SignInForm() {
     if (!response.ok) return;
 
     localStorage.setItem("access_token", result.access_token);
-    router.push("/dashboard");
+    router.push("/");
   };
 
   return (
@@ -39,17 +39,36 @@ export function SignInForm() {
       {/* Côté gauche — formulaire */}
       <div className="relative flex flex-1 flex-col justify-center items-center px-12 py-16 overflow-hidden bg-white">
         {/* Cercles décoratifs bleu site */}
-        <div className="absolute -top-24 -left-24 w-96 h-96 rounded-full" style={{ background: "rgba(27,107,138,0.08)" }} />
-        <div className="absolute -bottom-32 -left-16 w-72 h-72 rounded-full" style={{ background: "rgba(27,107,138,0.06)" }} />
-        <div className="absolute top-1/2 -right-20 w-56 h-56 rounded-full" style={{ background: "rgba(42,137,112,0.07)" }} />
+        <div
+          className="absolute -top-24 -left-24 w-96 h-96 rounded-full"
+          style={{ background: "rgba(27,107,138,0.08)" }}
+        />
+        <div
+          className="absolute -bottom-32 -left-16 w-72 h-72 rounded-full"
+          style={{ background: "rgba(27,107,138,0.06)" }}
+        />
+        <div
+          className="absolute top-1/2 -right-20 w-56 h-56 rounded-full"
+          style={{ background: "rgba(42,137,112,0.07)" }}
+        />
 
         <div className="mx-auto w-full max-w-sm relative z-10">
           {/* Barre accent bleue */}
-          <div className="w-10 h-1 rounded-full mb-4" style={{ background: "#1B6B8A" }} />
-          <h1 className="text-3xl font-bold text-foreground mb-1">Bienvenue !</h1>
-          <p className="text-muted-foreground mb-8">Connectez-vous à votre espace formateur.</p>
+          <div
+            className="w-10 h-1 rounded-full mb-4"
+            style={{ background: "#1B6B8A" }}
+          />
+          <h1 className="text-3xl font-bold text-foreground mb-1">
+            Bienvenue !
+          </h1>
+          <p className="text-muted-foreground mb-8">
+            Connectez-vous à votre espace formateur.
+          </p>
 
-          <form onSubmit={handleSubmit(onSubmit)} className="flex flex-col gap-5">
+          <form
+            onSubmit={handleSubmit(onSubmit)}
+            className="flex flex-col gap-5"
+          >
             <div className="flex flex-col gap-1.5">
               <Label htmlFor="email">Email</Label>
               <Input
@@ -72,14 +91,18 @@ export function SignInForm() {
                 {...register("password", { required: true })}
               />
               {errors.password && (
-                <span className="text-destructive text-sm">Mot de passe requis</span>
+                <span className="text-destructive text-sm">
+                  Mot de passe requis
+                </span>
               )}
             </div>
 
             <Button
               type="submit"
               className="w-full mt-2 text-white font-semibold"
-              style={{ background: "linear-gradient(135deg, #1B6B8A 0%, #2A8970 100%)" }}
+              style={{
+                background: "linear-gradient(135deg, #1B6B8A 0%, #2A8970 100%)",
+              }}
               disabled={isSubmitting}
             >
               {isSubmitting ? "Connexion..." : "Se connecter →"}
@@ -91,7 +114,10 @@ export function SignInForm() {
       {/* Côté droit — branding */}
       <div
         className="hidden lg:flex lg:w-2/5 flex-col items-center justify-center gap-8 px-12"
-        style={{ background: "linear-gradient(160deg, #1B6B8A 0%, #2A8970 55%, #4CAF5A 100%)" }}
+        style={{
+          background:
+            "linear-gradient(160deg, #1B6B8A 0%, #2A8970 55%, #4CAF5A 100%)",
+        }}
       >
         <Image
           src="/assets/mascotte/mascotte-bouclier.png"
@@ -103,7 +129,8 @@ export function SignInForm() {
         <div className="text-center text-white">
           <h2 className="text-3xl font-bold mb-3">Plateforme de Prévention</h2>
           <p className="text-white/75 max-w-xs">
-            Créez des sessions interactives et sensibilisez vos élèves aux risques du quotidien.
+            Créez des sessions interactives et sensibilisez vos élèves aux
+            risques du quotidien.
           </p>
         </div>
       </div>

@@ -29,6 +29,11 @@ export class DiagnosticSessionController {
     return this.diagnosticSessionService.findAll();
   }
 
+  @Get("by-code/:code")
+  findByCode(@Param("code") code: string) {
+    return this.diagnosticSessionService.findByAccessCode(code);
+  }
+
   @Get(":id")
   findOne(@Param("id") id: string) {
     return this.diagnosticSessionService.findOne(id);

@@ -28,6 +28,8 @@ enum QuestionType {
   MCQ
   TRUE_FALSE
   OPEN
+  MCQ_MULTI
+  CLASSIFY
 }
 
 // ─── Organisation & Utilisateurs ─────────────────────────────────────────────
@@ -163,6 +165,7 @@ model DiagnosticSession {
   organization   Organization @relation(fields: [organizationId], references: [id])
 
   diagnosticResponses DiagnosticResponse[]
+  guestStudents       GuestStudent[]
 }
 
 model DiagnosticQuestion {
@@ -200,8 +203,11 @@ model GuestStudent {
   gender String?
   age    Int?
 
-  sessionId String
-  session   ModuleSession @relation(fields: [sessionId], references: [id])
+  sessionId String?
+  session   ModuleSession? @relation(fields: [sessionId], references: [id])
+
+  diagnosticSessionId String?
+  diagnosticSession   DiagnosticSession? @relation(fields: [diagnosticSessionId], references: [id])
 
   diagnosticResponses DiagnosticResponse[]
   kanbanResponses     KanbanResponse[]

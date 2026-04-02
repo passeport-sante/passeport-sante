@@ -13,10 +13,12 @@ export function Navbar() {
     { href: "/contact", label: "Contact" },
   ];
 
+  const isLoggedIn =
+    typeof window !== "undefined" && !!localStorage.getItem("access_token");
+
   return (
     <header className="bg-white shadow-sm sticky top-0 z-50">
       <div className="brand-container py-5 flex items-center justify-between">
-
         <Link href="/" className="shrink-0 flex items-center gap-3">
           <Image
             src="/assets/logo/logo-passeport.png"
@@ -30,7 +32,6 @@ export function Navbar() {
             <span className="text-brand-green">SANTÉ</span>
           </span>
         </Link>
-
         <nav className="flex items-center gap-12 flex-1 justify-center">
           {links.map(({ href, label }) => {
             const isActive = pathname === href;
@@ -49,14 +50,29 @@ export function Navbar() {
             );
           })}
         </nav>
-
-        <Link
-          href="/sign-in"
-          className="shrink-0 px-8 py-3 bg-brand-green text-white font-semibold rounded-full hover:opacity-90 transition-opacity shadow-md text-sm"
-        >
-          Faire le quiz
-        </Link>
-
+        {isLoggedIn ? (
+          <Link
+            href="/dashboard"
+            className="shrink-0 px-8 py-3 bg-brand-green text-white font-semibold rounded-full hover:opacity-90 transition-opacity shadow-md text-sm"
+          >
+            Tableau de bord
+          </Link>
+        ) : (
+          <>
+            <Link
+              href="/diagnostic"
+              className="shrink-0 px-8 py-3 bg-brand-green text-white font-semibold rounded-full hover:opacity-90 transition-opacity shadow-md text-sm"
+            >
+              Rejoindre
+            </Link>
+            <Link
+              href="/sign-in"
+              className="shrink-0 px-8 py-3 bg-brand-green text-white font-semibold rounded-full hover:opacity-90 transition-opacity shadow-md text-sm"
+            >
+              Se connecter
+            </Link>
+          </>
+        )}
       </div>
     </header>
   );
