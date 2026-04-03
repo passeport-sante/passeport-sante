@@ -22,11 +22,42 @@ export class DiagnosticSessionService {
   }
 
   findAll() {
-    return this.prisma.diagnosticSession.findMany();
+    return this.prisma.diagnosticSession.findMany({
+      include: {
+        _count: { select: { guestStudents: true, diagnosticResponses: true } },
+        createdByUser: { select: { id: true, name: true } },
+      },
+      orderBy: { createdAt: 'desc' },
+    });
   }
 
   findOne(id: string) {
-    return this.prisma.diagnosticSession.findUnique({ where: { id } });
+    return this.prisma.diagnosticSession.findUnique({
+      where: { id },
+      include: {
+        createdByUser: { select: { id: true, name: true, email: true } },
+        _count: { select: { guestStudents: true, diagnosticResponses: true } },
+        diagnosticResponses: {
+          select: {
+            id: true,
+            isCorrect: true,
+            userAnswer: true,
+            questionId: true,
+            guestStudentId: true,
+            question: {
+              select: {
+                id: true,
+                questionText: true,
+                questionType: true,
+                order: true,
+                options: true,
+                correctAnswer: true,
+              },
+            },
+          },
+        },
+      },
+    });
   }
 
   findByAccessCode(accessCode: string) {

@@ -1,18 +1,34 @@
 import { Injectable } from "@nestjs/common";
+import { ConfigService } from "@nestjs/config";
 import { PrismaService } from "@/prisma/prisma.service";
 import { CreateModuleSessionDto } from "./dto/create-module.dto";
 import { UpdateModuleSessionDto } from "./dto/update-module.dto";
 
 @Injectable()
 export class ModuleSessionService {
-  constructor(private prisma: PrismaService) {}
+  constructor(
+    private prisma: PrismaService,
+    private config: ConfigService,
+  ) {}
 
   create(dto: CreateModuleSessionDto) {
-    return this.prisma.moduleSession.create({ data: dto });
+    const accessCode = this.generateCode();
+    const baseUrl = this.config.get<string>("FRONTEND_URL") ?? "http://localhost:3000";
+    const accessUrl = `${baseUrl}/modules/${accessCode}`;
+
+    return this.prisma.moduleSession.create({
+      data: { ...dto, accessCode, accessUrl },
+    });
   }
 
   findAll() {
-    return this.prisma.moduleSession.findMany();
+    return this.prisma.moduleSession.findMany({
+      include: {
+        _count: { select: { guestStudents: true } },
+        module: { select: { id: true, title: true, colorPrimary: true } },
+      },
+      orderBy: { createdAt: "desc" },
+    });
   }
 
   findOne(id: string) {
@@ -25,5 +41,10 @@ export class ModuleSessionService {
 
   remove(id: string) {
     return this.prisma.moduleSession.delete({ where: { id } });
+  }
+
+  private generateCode(): string {
+    const chars = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
+    return Array.from({ length: 8 }, () => chars[Math.floor(Math.random() * chars.length)]).join("");
   }
 }

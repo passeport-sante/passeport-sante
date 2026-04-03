@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { ProgressCard }       from "@/components/diagnostic/progress-card";
 import { NextButton }         from "@/components/diagnostic/next-button";
@@ -29,10 +29,14 @@ export default function DiagnosticClient({ session }: Props) {
   const [done, setDone]           = useState(false);
   const [countdown, setCountdown] = useState(3);
   const [startTime, setStartTime] = useState<number>(Date.now());
+  const initDone = useRef(false);
 
   // ── Init ───────────────────────────────────────────────────────────────────
 
   useEffect(() => {
+    if (initDone.current) return;
+    initDone.current = true;
+
     const init = async () => {
       try {
         const [qs, gId] = await Promise.all([
@@ -85,7 +89,7 @@ export default function DiagnosticClient({ session }: Props) {
     const userAnswer: Record<string, any> =
       question.questionType === "MCQ_MULTI" ? { answers: answer as string[] } :
       question.questionType === "CLASSIFY"  ? answer as Record<string, any> :
-      { answer };
+      answer as Record<string, any>;
 
     await submitResponse({
       questionId:     question.id,

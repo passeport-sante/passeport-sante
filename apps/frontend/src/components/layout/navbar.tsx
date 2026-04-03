@@ -51,12 +51,25 @@ export function Navbar() {
           })}
         </nav>
         {isLoggedIn ? (
-          <Link
-            href="/dashboard"
-            className="shrink-0 px-8 py-3 bg-brand-green text-white font-semibold rounded-full hover:opacity-90 transition-opacity shadow-md text-sm"
-          >
-            Tableau de bord
-          </Link>
+          <>
+            <Link
+              href="/dashboard"
+              className="shrink-0 px-8 py-3 bg-brand-green text-white font-semibold rounded-full hover:opacity-90 transition-opacity shadow-md text-sm"
+            >
+              Tableau de bord
+            </Link>
+            <button
+              type="button"
+              onClick={() => {
+                localStorage.removeItem("access_token");
+                sessionStorage.clear();
+                window.location.href = "/";
+              }}
+              className="shrink-0 px-8 py-3 bg-brand-green text-white font-semibold rounded-full hover:opacity-90 transition-opacity shadow-md text-sm"
+            >
+              Déconnexion
+            </button>
+          </>
         ) : (
           <>
             <Link

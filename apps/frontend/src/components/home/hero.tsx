@@ -1,12 +1,8 @@
-"use client";
 import Image from "next/image";
 import Link from "next/link";
 import { ArrowRight } from "lucide-react";
 
 export function Hero() {
-  const isLoggedIn =
-    typeof window !== "undefined" && !!localStorage.getItem("access_token");
-
   return (
     <section className="relative min-h-[calc(100vh-72px)] overflow-hidden">
       <div className="circle-hero-green" />
