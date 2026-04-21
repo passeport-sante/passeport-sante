@@ -88,7 +88,7 @@ async function main() {
   // ─── Modules ──────────────────────────────────────────────────────────────────
   const moduleVaccination = await prisma.module.upsert({
     where: { slug: "vaccination" },
-    update: {},
+    update: { colorPrimary: "#16A34A", colorSecondary: "#052e16" },
     create: {
       id: "seed-module-1",
       title: "Vaccination",
@@ -97,8 +97,8 @@ async function main() {
       duration: 20,
       isActive: true,
       mascotte: "mascotte1.png",
-      colorPrimary: "#F0FDF4",
-      colorSecondary: "#BBF7D0",
+      colorPrimary: "#16A34A",
+      colorSecondary: "#052e16",
       organizationId: org.id,
       categoryId: catSante.id,
     },
@@ -106,7 +106,7 @@ async function main() {
 
   const moduleSommeil = await prisma.module.upsert({
     where: { slug: "sommeil" },
-    update: {},
+    update: { colorPrimary: "#7C3AED", colorSecondary: "#1e1b4b" },
     create: {
       id: "seed-module-2",
       title: "Sommeil",
@@ -116,8 +116,8 @@ async function main() {
       duration: 15,
       isActive: true,
       mascotte: "Mme-etoile.png",
-      colorPrimary: "#FFFBEB",
-      colorSecondary: "#FDE68A",
+      colorPrimary: "#7C3AED",
+      colorSecondary: "#1e1b4b",
       organizationId: org.id,
       categoryId: catSante.id,
     },
@@ -125,7 +125,7 @@ async function main() {
 
   const moduleHygiene = await prisma.module.upsert({
     where: { slug: "hygiene-bucco" },
-    update: {},
+    update: { colorPrimary: "#0891B2", colorSecondary: "#0C2340" },
     create: {
       id: "seed-module-3",
       title: "Hygiène buco-dentaire",
@@ -135,8 +135,8 @@ async function main() {
       duration: 15,
       isActive: true,
       mascotte: "Petit-savon.png",
-      colorPrimary: "#ECFDF5",
-      colorSecondary: "#A7F3D0",
+      colorPrimary: "#0891B2",
+      colorSecondary: "#0C2340",
       organizationId: org.id,
       categoryId: catSante.id,
     },
@@ -144,7 +144,7 @@ async function main() {
 
   const moduleCyber = await prisma.module.upsert({
     where: { slug: "cyberharcelement" },
-    update: {},
+    update: { colorPrimary: "#DB2777", colorSecondary: "#4a044e" },
     create: {
       id: "seed-module-4",
       title: "Cyberharcèlement",
@@ -154,8 +154,8 @@ async function main() {
       duration: 25,
       isActive: true,
       mascotte: "empathie-mascotte.png",
-      colorPrimary: "#FDF2F8",
-      colorSecondary: "#FBCFE8",
+      colorPrimary: "#DB2777",
+      colorSecondary: "#4a044e",
       organizationId: org.id,
       categoryId: catNumerique.id,
     },
@@ -163,7 +163,7 @@ async function main() {
 
   const moduleManger = await prisma.module.upsert({
     where: { slug: "bien-manger" },
-    update: {},
+    update: { colorPrimary: "#D97706", colorSecondary: "#14290A" },
     create: {
       id: "seed-module-5",
       title: "Bien manger",
@@ -172,8 +172,8 @@ async function main() {
       duration: 20,
       isActive: true,
       mascotte: "Butternut-mascotte.png",
-      colorPrimary: "#FFF7ED",
-      colorSecondary: "#FED7AA",
+      colorPrimary: "#D97706",
+      colorSecondary: "#14290A",
       organizationId: org.id,
       categoryId: catNutrition.id,
     },

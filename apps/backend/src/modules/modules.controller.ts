@@ -32,6 +32,11 @@ export class ModulesController {
     return this.modulesService.findAll();
   }
 
+  @Get("slug/:slug")
+  findBySlug(@Param("slug") slug: string) {
+    return this.modulesService.findBySlug(slug);
+  }
+
   @Get(":id")
   findOne(@Param("id") id: string) {
     return this.modulesService.findOne(id);

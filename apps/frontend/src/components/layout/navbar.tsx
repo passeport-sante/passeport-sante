@@ -3,18 +3,21 @@
 import Link from "next/link";
 import Image from "next/image";
 import { usePathname } from "next/navigation";
+import { useEffect, useState } from "react";
 
 export function Navbar() {
   const pathname = usePathname();
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
+
+  useEffect(() => {
+    setIsLoggedIn(!!localStorage.getItem("access_token"));
+  }, []);
 
   const links = [
     { href: "/", label: "Accueil" },
     { href: "/modules", label: "Modules" },
     { href: "/contact", label: "Contact" },
   ];
-
-  const isLoggedIn =
-    typeof window !== "undefined" && !!localStorage.getItem("access_token");
 
   return (
     <header className="bg-white shadow-sm sticky top-0 z-50">

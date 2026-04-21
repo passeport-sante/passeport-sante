@@ -47,6 +47,16 @@ export class ModulesService {
     return this.prisma.module.findUnique({ where: { id } });
   }
 
+  findBySlug(slug: string) {
+    return this.prisma.module.findUnique({
+      where: { slug },
+      include: {
+        steps: { orderBy: { order: 'asc' }, select: { id: true, order: true, gameType: true } },
+        category: { select: { id: true, name: true, slug: true } },
+      },
+    });
+  }
+
   update(id: string, dto: UpdateModuleDto) {
     return this.prisma.module.update({ where: { id }, data: dto });
   }
