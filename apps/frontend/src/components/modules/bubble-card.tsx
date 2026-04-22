@@ -22,22 +22,6 @@ export type Category = {
   modules: Module[];
 };
 
-// ── Largeurs par mascotte (purement visuel, pas en BDD) ───────────────────────
-const MASCOT_WIDTHS: Record<string, number> = {
-  "Mme-ecran.png":          200,
-  "Mme-etoile.png":         210,
-  "Petit-savon.png":        170,
-  "empathie-mascotte.png":  195,
-  "Butternut-mascotte.png": 190,
-  "mascotte1.png":          205,
-  "mascote2.png":           190,
-  "mascotte3.png":          190,
-  "mascotte4.png":          190,
-  "mascotte-bouclier.png":  195,
-  "mascotte-sys-sante.png": 190,
-  "Sante-mental.png":       185,
-};
-const DEFAULT_WIDTH = 195;
 
 // Couleurs de repli si la BDD ne renvoie pas de couleurs
 const FALLBACK_PRIMARY   = "#EDF3FF";
@@ -46,8 +30,7 @@ const FALLBACK_SECONDARY = "#C7DCFF";
 // ── Composant ─────────────────────────────────────────────────────────────────
 
 export function BubbleCard({ module }: { module: Module }) {
-  const mascotFile  = module.mascotte ?? "";
-  const mascotWidth = MASCOT_WIDTHS[mascotFile] ?? DEFAULT_WIDTH;
+  const mascotFile = module.mascotte ?? "";
   const bgPrimary   = module.colorPrimary   ?? FALLBACK_PRIMARY;
   const bgCircle    = module.colorSecondary ?? FALLBACK_SECONDARY;
 
@@ -69,18 +52,14 @@ export function BubbleCard({ module }: { module: Module }) {
           />
         </div>
 
-        {/* Mascotte — z-index élevé, libre de déborder vers le haut */}
+        {/* Mascotte — container fixe, s'adapte à n'importe quelle image */}
         {mascotFile && (
-          <div
-            className="relative z-20 transition-transform duration-500 ease-in-out group-hover:-translate-y-3"
-            style={{ width: mascotWidth }}
-          >
+          <div className="relative z-20 w-full h-full transition-transform duration-500 ease-in-out group-hover:-translate-y-3">
             <Image
               src={`/assets/mascotte/${mascotFile}`}
               alt={module.title}
-              width={mascotWidth}
-              height={300}
-              className="h-auto w-full object-contain object-bottom"
+              fill
+              className="object-contain object-bottom"
             />
           </div>
         )}

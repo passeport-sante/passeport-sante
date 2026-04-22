@@ -11,8 +11,8 @@ interface ModuleData {
   colorPrimary: string | null;
   colorSecondary: string | null;
   category: { name: string } | null;
+  steps: { id: string; order: number; gameType: string }[];
 }
-
 interface Props {
   module: ModuleData;
 }
@@ -20,11 +20,11 @@ interface Props {
 const MAX_LEVEL = 5;
 
 const RIVE_FILES: Record<string, string> = {
-  "vaccination":      "/assets/rive/progressbar_vaccination.riv",
-  "sommeil":          "/assets/rive/progressbar_sommeil.riv",
-  "bien-manger":      "/assets/rive/progressbar_alimentation.riv",
-  "cyberharcelement": "/assets/rive/progressbar_addiction.riv",
-  "hygiene-bucco":    "/assets/rive/progressbar_sexualite.riv",
+  vaccination: "/assets/rive/progressbar_vaccination.riv",
+  sommeil: "/assets/rive/progressbar_sommeil.riv",
+  "bien-manger": "/assets/rive/progressbar_alimentation.riv",
+  cyberharcelement: "/assets/rive/progressbar_addiction.riv",
+  "hygiene-bucco": "/assets/rive/progressbar_sexualite.riv",
 };
 
 function getRiveFile(slug: string): string {
@@ -35,6 +35,9 @@ const CANVAS_HEIGHT = 520;
 
 // Positions X des steps dans l'artboard Rive (artboard ~750 unités de large)
 const STEP_X_ARTBOARD = [75.5, 228.5, 395.5, 547.5, 709];
+const STEP_Y_ARTBOARD = [253.5, 170, 253.5, 170, 253.5];
+const ARTBOARD_HEIGHT = 320;
+
 const ARTBOARD_WIDTH = 750;
 const BUBBLE_WIDTH = 320;
 
@@ -53,6 +56,13 @@ function getBubbleTriangleLeft(level: number): number {
   const bubbleLeft = getBubbleLeft(level);
   const pos = mascotCenterX - bubbleLeft - 8;
   return Math.max(16, Math.min(BUBBLE_WIDTH - 32, pos));
+}
+
+function getStepCanvasPos(index: number) {
+  return {
+    x: STEP_X_ARTBOARD[index] * (CANVAS_WIDTH / ARTBOARD_WIDTH),
+    y: STEP_Y_ARTBOARD[index] * (CANVAS_HEIGHT / ARTBOARD_HEIGHT),
+  };
 }
 
 export function ModuleImmersiveClient({ module }: Props) {
@@ -130,7 +140,10 @@ export function ModuleImmersiveClient({ module }: Props) {
       {/* ── Contenu principal ── */}
       <main className="flex-1 flex items-center justify-center pb-6">
         {/* Conteneur Rive + bulle alignés ensemble */}
-        <div className="relative" style={{ width: CANVAS_WIDTH, height: CANVAS_HEIGHT }}>
+        <div
+          className="relative"
+          style={{ width: CANVAS_WIDTH, height: CANVAS_HEIGHT }}
+        >
           {/* Bulle de dialogue — au-dessus de la mascotte */}
           <div
             className="absolute z-10 rounded-2xl px-7 py-5 shadow-xl transition-all duration-500"
@@ -159,7 +172,47 @@ export function ModuleImmersiveClient({ module }: Props) {
           </div>
 
           {/* Animation Rive */}
-          <GameProgress level={level} src={getRiveFile(module.slug)} width={CANVAS_WIDTH} height={CANVAS_HEIGHT} />
+          <GameProgress
+            level={level}
+            src={getRiveFile(module.slug)}
+            width={CANVAS_WIDTH}
+            height={CANVAS_HEIGHT}
+          />
+
+          {/* Zones cliquables sur chaque step */}
+          {module.steps
+            .sort((a, b) => a.order - b.order)
+            .map((step, index) => {
+              const pos = getStepCanvasPos(index);
+              const isUnlocked = step.order <= level;
+              const R = 48;
+
+              return isUnlocked ? (
+                <Link
+                  key={step.id}
+                  href={`/modules/${module.slug}/step/${step.id}`}
+                  className="absolute z-20 rounded-full hover:scale-110 transition-transform"
+                  style={{
+                    width: R * 2,
+                    height: R * 2,
+                    left: pos.x - R,
+                    top: pos.y - R,
+                  }}
+                  title={`Étape ${step.order}`}
+                />
+              ) : (
+                <div
+                  key={step.id}
+                  className="absolute z-20 rounded-full cursor-not-allowed"
+                  style={{
+                    width: R * 2,
+                    height: R * 2,
+                    left: pos.x - R,
+                    top: pos.y - R,
+                  }}
+                />
+              );
+            })}
         </div>
       </main>
     </div>
