@@ -20,6 +20,18 @@ export class StepService {
   findOne(id: string) {
     return this.prisma.step.findUnique({
       where: { id },
+      include: {
+        gameData: true,
+        module: {
+          select: {
+            slug: true,
+            title: true,
+            colorPrimary: true,
+            colorSecondary: true,
+            steps: { select: { id: true, order: true }, orderBy: { order: 'asc' } },
+          },
+        },
+      },
     });
   }
 

@@ -190,31 +190,31 @@ async function main() {
   // ─── Steps (module vaccination) ───────────────────────────────────────────────
   const stepKanban = await prisma.step.upsert({
     where: { id: "seed-step-1" },
-    update: {},
+    update: { gameType: "KANBAN", order: 1 },
     create: {
       id: "seed-step-1",
       gameType: "KANBAN",
       order: 1,
       mascotteImage: "mascotte_happy.png",
       content: {
-        title: "Trie les dangers",
-        instructions: "Place chaque danger dans la bonne catégorie",
+        title: "Trie les éléments",
+        instructions: "Place chaque élément dans la bonne catégorie",
       },
       moduleId: moduleVaccination.id,
     },
   });
 
-  const stepQuiz = await prisma.step.upsert({
+  const stepPhraseATrou = await prisma.step.upsert({
     where: { id: "seed-step-2" },
-    update: {},
+    update: { gameType: "PHRASE_A_TROU", order: 2 },
     create: {
       id: "seed-step-2",
-      gameType: "QUIZ",
+      gameType: "PHRASE_A_TROU",
       order: 2,
       mascotteImage: "mascotte_question.png",
       content: {
-        title: "Quiz de prévention",
-        instructions: "Réponds aux questions",
+        title: "Phrase à trou",
+        instructions: "Complète la phrase avec les bons mots",
       },
       moduleId: moduleVaccination.id,
     },
@@ -222,7 +222,7 @@ async function main() {
 
   await prisma.step.upsert({
     where: { id: "seed-step-3" },
-    update: {},
+    update: { gameType: "PUZZLE", order: 3 },
     create: {
       id: "seed-step-3",
       gameType: "PUZZLE",
@@ -235,7 +235,39 @@ async function main() {
       moduleId: moduleVaccination.id,
     },
   });
-  console.log(" Steps créés: KANBAN, QUIZ, PUZZLE");
+
+  await prisma.step.upsert({
+    where: { id: "seed-step-4" },
+    update: { gameType: "SCENARIO", order: 4 },
+    create: {
+      id: "seed-step-4",
+      gameType: "SCENARIO",
+      order: 4,
+      mascotteImage: "mascotte_happy.png",
+      content: {
+        title: "Que ferais-tu ?",
+        instructions: "Choisis la meilleure réaction",
+      },
+      moduleId: moduleVaccination.id,
+    },
+  });
+
+  await prisma.step.upsert({
+    where: { id: "seed-step-5" },
+    update: { gameType: "QUIZ", order: 5 },
+    create: {
+      id: "seed-step-5",
+      gameType: "QUIZ",
+      order: 5,
+      mascotteImage: "mascotte_question.png",
+      content: {
+        title: "Quiz final",
+        instructions: "Teste tes connaissances",
+      },
+      moduleId: moduleVaccination.id,
+    },
+  });
+  console.log(" Steps créés: KANBAN, PHRASE_A_TROU, PUZZLE, SCENARIO, QUIZ");
 
   // ─── Game Data ────────────────────────────────────────────────────────────────
   await prisma.gameData.upsert({
@@ -265,16 +297,109 @@ async function main() {
 
   await prisma.gameData.upsert({
     where: { id: "seed-gamedata-2" },
-    update: {},
+    update: {
+      questionData: {
+        phrase: "Le vaccin contre la grippe est recommandé ___ par an et protège contre ___ virus différents.",
+        options: ["une fois", "deux fois", "plusieurs", "trois"],
+      },
+      correctAnswer: { blanks: ["une fois", "plusieurs"] },
+    },
     create: {
       id: "seed-gamedata-2",
       questionData: {
-        question: "À quelle distance doit-on se tenir derrière un cycliste ?",
-        options: ["1 mètre", "3 mètres", "5 mètres", "10 mètres"],
+        phrase: "Le vaccin contre la grippe est recommandé ___ par an et protège contre ___ virus différents.",
+        options: ["une fois", "deux fois", "plusieurs", "trois"],
       },
-      correctAnswer: { answer: "1 mètre" },
-      hints: { hint1: "Pense au temps de réaction" },
-      stepId: stepQuiz.id,
+      correctAnswer: { blanks: ["une fois", "plusieurs"] },
+      stepId: stepPhraseATrou.id,
+    },
+  });
+
+  await prisma.gameData.upsert({
+    where: { id: "seed-gamedata-3" },
+    update: {},
+    create: {
+      id: "seed-gamedata-3",
+      questionData: {
+        title: "Reconstitue l'ordre des étapes de vaccination",
+        items: [
+          { id: "a", text: "Le médecin vérifie ton carnet de santé" },
+          { id: "b", text: "Tu reçois l'injection du vaccin" },
+          { id: "c", text: "Tu prends rendez-vous chez le médecin" },
+          { id: "d", text: "Tu patientes 15 min pour surveiller les réactions" },
+        ],
+      },
+      correctAnswer: { order: ["c", "a", "b", "d"] },
+      hints: { hint1: "Pense aux étapes dans l'ordre logique d'une consultation" },
+      stepId: "seed-step-3",
+    },
+  });
+
+  await prisma.gameData.upsert({
+    where: { id: "seed-gamedata-4" },
+    update: {},
+    create: {
+      id: "seed-gamedata-4",
+      questionData: {
+        situation: "Ton ami te dit qu'il ne veut pas se faire vacciner car il a peur que ça lui donne la maladie. Que lui réponds-tu ?",
+        choices: [
+          { id: "a", text: "Tu as raison, les vaccins peuvent être dangereux." },
+          { id: "b", text: "Les vaccins ne contiennent pas le virus actif, ils ne peuvent pas te rendre malade." },
+          { id: "c", text: "C'est ton choix, peu importe." },
+          { id: "d", text: "Tu n'as pas besoin de te vacciner si tu es en bonne santé." },
+        ],
+      },
+      correctAnswer: {
+        choiceId: "b",
+        explanation: "Les vaccins contiennent soit des virus inactivés, soit des fragments de virus. Ils ne peuvent pas provoquer la maladie mais entraînent ton système immunitaire à la reconnaître.",
+      },
+      stepId: "seed-step-4",
+    },
+  });
+
+  await prisma.gameData.upsert({
+    where: { id: "seed-gamedata-5" },
+    update: {},
+    create: {
+      id: "seed-gamedata-5",
+      questionData: {
+        questions: [
+          {
+            id: "q1",
+            text: "À quoi sert un vaccin ?",
+            options: [
+              { id: "a", text: "À guérir une maladie déjà contractée" },
+              { id: "b", text: "À préparer le système immunitaire à reconnaître un agent pathogène" },
+              { id: "c", text: "À éliminer tous les microbes du corps" },
+              { id: "d", text: "À remplacer les médicaments" },
+            ],
+          },
+          {
+            id: "q2",
+            text: "Qu'est-ce que l'immunité collective ?",
+            options: [
+              { id: "a", text: "Quand toute une équipe de sport est en bonne santé" },
+              { id: "b", text: "Quand suffisamment de personnes sont vaccinées pour protéger aussi celles qui ne peuvent pas l'être" },
+              { id: "c", text: "Une maladie qui touche tout le monde en même temps" },
+              { id: "d", text: "Un médicament donné à tout le monde" },
+            ],
+          },
+          {
+            id: "q3",
+            text: "Quelle maladie a été totalement éradiquée grâce aux vaccins ?",
+            options: [
+              { id: "a", text: "La grippe" },
+              { id: "b", text: "Le rhume" },
+              { id: "c", text: "La variole" },
+              { id: "d", text: "L'angine" },
+            ],
+          },
+        ],
+      },
+      correctAnswer: {
+        answers: { q1: "b", q2: "b", q3: "c" },
+      },
+      stepId: "seed-step-5",
     },
   });
   console.log(" Game data créée");

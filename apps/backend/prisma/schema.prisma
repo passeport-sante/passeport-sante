@@ -22,6 +22,8 @@ enum GameType {
   KANBAN
   QUIZ
   PUZZLE
+  PHRASE_A_TROU
+  SCENARIO
 }
 
 enum QuestionType {
