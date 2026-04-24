@@ -5,6 +5,7 @@ type ModuleDetail = {
   id: string;
   title: string;
   slug: string;
+  mascotte: string | null;
   colorPrimary: string | null;
   colorSecondary: string | null;
   category: { id: string; name: string; slug: string } | null;

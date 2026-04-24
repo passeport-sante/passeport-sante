@@ -89,10 +89,12 @@ model Module {
   slug           String   @unique
   duration       Int?
   isActive       Boolean  @default(true)
-  mascotte       String?
-  colorPrimary   String?
-  colorSecondary String?
-  createdAt      DateTime @default(now())
+  mascotte           String?
+  colorPrimary       String?
+  colorSecondary     String?
+  colorCard          String?
+  colorCardSecondary String?
+  createdAt          DateTime @default(now())
   updatedAt      DateTime @updatedAt
 
   organizationId String

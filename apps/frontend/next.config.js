@@ -5,13 +5,12 @@ const __dirname = fileURLToPath(new URL(".", import.meta.url));
 
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-  reactStrictMode: true,
+  reactStrictMode: false,
   transpilePackages: ["@react-pdf/renderer", "@rive-app/react-canvas"],
   webpack: (config, { dev, isServer }) => {
     if (dev && !isServer) {
       config.watchOptions = {
-        poll: 1000,
-        aggregateTimeout: 300,
+        ignored: /./,
       };
     }
 

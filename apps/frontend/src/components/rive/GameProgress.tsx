@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect } from "react";
+import { useEffect, useRef } from "react";
 import { useRive } from "@rive-app/react-canvas";
 import type { Rive as RiveType } from "@rive-app/canvas";
 
@@ -15,53 +15,58 @@ function setRiveLevel(rive: RiveType, level: number) {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const r = rive as any;
 
-  // Récupère ou crée un ViewModelInstance et le binde à l'artboard
   function getOrCreateVMI() {
-    // 1. Instance déjà bindée automatiquement au chargement
     if (r.viewModelInstance) return r.viewModelInstance;
-
-    // 2. defaultViewModel() est sur l'instance Rive, pas sur l'artboard
     const vm =
       r.defaultViewModel?.() ??
       r.viewModelByName?.("GameProgressController") ??
       r.viewModelByIndex?.(0);
-
     if (!vm) return null;
-
     const vmi = vm.defaultInstance?.() ?? vm.instance?.() ?? vm.instanceByIndex?.(0);
     if (!vmi) return null;
-
     r.bindViewModelInstance?.(vmi);
     return vmi;
   }
 
   const vmi = getOrCreateVMI();
-
-  if (!vmi) {
-    console.warn("❌ ViewModelInstance introuvable");
-    return;
-  }
-
+  if (!vmi) return;
   const prop = vmi.number?.("level");
-  if (!prop) {
-    console.warn("❌ Propriété 'level' introuvable sur le VMI. Props dispo :", vmi);
-    return;
-  }
-
+  if (!prop) return;
   prop.value = level;
-  console.log("✅ level →", level);
 }
 
-export function GameProgress({ level, src = "/assets/rive/progressbar_vaccination.riv", width = 750, height = 320 }: Props) {
+export function GameProgress({
+  level,
+  src = "/assets/rive/progressbar_vaccination.riv",
+  width = 750,
+  height = 320,
+}: Props) {
+  const initialized = useRef(false);
+  const currentLevel = useRef(level);
+
   const { rive, RiveComponent } = useRive({
     src,
     artboard: "GameProgress",
     stateMachines: "State Machine 1",
-    autoplay: true,
+    autoplay: false,
   });
 
+  // Premier rendu : positionner sans animer, puis jouer
   useEffect(() => {
-    if (!rive) return;
+    if (!rive || initialized.current) return;
+    initialized.current = true;
+    currentLevel.current = level;
+    setRiveLevel(rive, level);
+    const t = setTimeout(() => rive.play(), 100);
+    return () => clearTimeout(t);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [rive]);
+
+  // Changement de level (déclenché par le bouton "Étape suivante")
+  useEffect(() => {
+    if (!rive || !initialized.current) return;
+    if (currentLevel.current === level) return;
+    currentLevel.current = level;
     setRiveLevel(rive, level);
   }, [rive, level]);
 

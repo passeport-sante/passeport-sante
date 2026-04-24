@@ -26,6 +26,7 @@ export class StepService {
           select: {
             slug: true,
             title: true,
+            mascotte: true,
             colorPrimary: true,
             colorSecondary: true,
             steps: { select: { id: true, order: true }, orderBy: { order: 'asc' } },

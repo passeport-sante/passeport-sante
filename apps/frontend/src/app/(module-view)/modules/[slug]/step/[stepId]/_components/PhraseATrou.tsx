@@ -3,7 +3,8 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
-import { ArrowLeft, CheckCircle, XCircle } from "lucide-react";
+import { ArrowLeft } from "lucide-react";
+import { FeedbackOverlay } from "@/components/modules/FeedbackOverlay";
 
 interface StepData {
   id: string;
@@ -16,6 +17,7 @@ interface StepData {
   module: {
     slug: string;
     title: string;
+    mascotte?: string | null;
     colorPrimary: string | null;
     colorSecondary: string | null;
     steps: { id: string; order: number }[];
@@ -33,11 +35,8 @@ export function PhraseATrou({ step }: { step: StepData }) {
   const parts = phrase.split("___");
   const blankCount = parts.length - 1;
 
-  const [filled, setFilled] = useState<(string | null)[]>(
-    Array(blankCount).fill(null)
-  );
-  const [submitted, setSubmitted] = useState(false);
-  const [isCorrect, setIsCorrect] = useState(false);
+  const [filled, setFilled] = useState<(string | null)[]>(Array(blankCount).fill(null));
+  const [overlay, setOverlay] = useState<{ show: boolean; isCorrect: boolean } | null>(null);
 
   const primaryColor = step.module.colorPrimary ?? "#16A34A";
   const bottomColor = step.module.colorSecondary ?? "#052e16";
@@ -45,11 +44,12 @@ export function PhraseATrou({ step }: { step: StepData }) {
 
   const usedOptions = filled.filter(Boolean) as string[];
   const nextBlankIndex = filled.findIndex((f) => f === null);
+  const allFilled = filled.every((f) => f !== null);
+  const filledCount = filled.filter(Boolean).length;
 
   function handleOptionClick(word: string) {
-    if (submitted) return;
+    if (overlay?.show) return;
     if (usedOptions.includes(word)) {
-      // Retirer le mot si déjà placé
       setFilled((prev) => prev.map((f) => (f === word ? null : f)));
       return;
     }
@@ -62,7 +62,7 @@ export function PhraseATrou({ step }: { step: StepData }) {
   }
 
   function handleBlankClick(index: number) {
-    if (submitted) return;
+    if (overlay?.show) return;
     setFilled((prev) => {
       const next = [...prev];
       next[index] = null;
@@ -72,31 +72,32 @@ export function PhraseATrou({ step }: { step: StepData }) {
 
   function handleSubmit() {
     const correct = correctBlanks.every((w, i) => w === filled[i]);
-    setIsCorrect(correct);
-    setSubmitted(true);
+    setOverlay({ show: true, isCorrect: correct });
   }
 
-  function handleRetry() {
-    setFilled(Array(blankCount).fill(null));
-    setSubmitted(false);
+  function handleOverlayClose() {
+    const isCorrect = overlay?.isCorrect ?? false;
+    setOverlay(null);
+    if (!isCorrect) {
+      setFilled(Array(blankCount).fill(null));
+    } else {
+      const nextLevel = step.order + 1;
+      const key = `module_level_${step.module.slug}`;
+      const stored = parseInt(localStorage.getItem(key) ?? "1", 10);
+      if (nextLevel > stored) localStorage.setItem(key, String(nextLevel));
+      const isLast = step.order === totalSteps;
+      router.push(isLast
+        ? `/modules/${step.module.slug}?complete=true`
+        : `/modules/${step.module.slug}?from=${step.order}`
+      );
+    }
   }
-
-  function handleContinue() {
-    const nextLevel = step.order + 1;
-    const key = `module_level_${step.module.slug}`;
-    const stored = parseInt(localStorage.getItem(key) ?? "1", 10);
-    if (nextLevel > stored) localStorage.setItem(key, String(nextLevel));
-    router.push(`/modules/${step.module.slug}`);
-  }
-
-  const allFilled = filled.every((f) => f !== null);
 
   return (
     <div
       className="h-screen flex flex-col overflow-hidden"
       style={{ background: `linear-gradient(160deg, ${primaryColor} 0%, ${bottomColor} 100%)` }}
     >
-      {/* Navbar */}
       <header className="shrink-0 flex items-center justify-between px-8 py-5 bg-white">
         <Link
           href={`/modules/${step.module.slug}`}
@@ -105,120 +106,120 @@ export function PhraseATrou({ step }: { step: StepData }) {
           <div className="w-10 h-10 rounded-full border-2 border-gray-300 flex items-center justify-center">
             <ArrowLeft size={18} />
           </div>
-          <span className="font-bold text-sm tracking-widest uppercase">
-            {step.module.title}
-          </span>
+          <span className="font-bold text-sm tracking-widest uppercase">{step.module.title}</span>
         </Link>
 
         <div className="text-center">
-          <h1 className="font-black text-xl text-gray-900">
-            {step.content?.title ?? "Phrase à trou"}
-          </h1>
+          <h1 className="font-black text-xl text-gray-900">{step.content?.title ?? "Phrase à trou"}</h1>
           <p className="text-sm text-gray-400 mt-0.5">{step.content?.instructions}</p>
         </div>
 
         <div className="text-gray-400 font-bold text-sm">
-          Étape{" "}
-          <span className="text-gray-900 text-xl font-black">{step.order}</span>
-          {" "}/ {totalSteps}
+          Étape <span className="text-gray-900 text-xl font-black">{step.order}</span> / {totalSteps}
         </div>
       </header>
 
-      {/* Zone de jeu */}
-      <main className="flex-1 flex flex-col items-center justify-center gap-10 px-8">
-        {!submitted ? (
-          <>
-            {/* Phrase avec blancs */}
-            <div className="bg-white/90 backdrop-blur-sm rounded-3xl px-10 py-8 max-w-2xl w-full shadow-xl">
-              <p className="text-gray-800 text-lg font-semibold leading-loose text-center">
-                {parts.map((part, i) => (
-                  <span key={i}>
-                    {part}
-                    {i < blankCount && (
-                      <button
-                        onClick={() => handleBlankClick(i)}
-                        className="inline-flex items-center justify-center min-w-[130px] h-9 rounded-xl border-2 px-3 font-bold text-sm transition-all mx-1"
-                        style={
-                          filled[i]
-                            ? { borderColor: primaryColor, background: primaryColor, color: "#fff" }
-                            : { borderColor: "rgba(0,0,0,0.2)", background: "rgba(0,0,0,0.04)", color: "#9ca3af" }
-                        }
-                      >
-                        {filled[i] ?? "_ _ _"}
-                      </button>
-                    )}
-                  </span>
-                ))}
-              </p>
-            </div>
+      <main className="flex-1 flex flex-col items-center justify-center gap-8 px-8">
+        {/* Progression des blancs */}
+        <div className="flex items-center gap-2">
+          {Array.from({ length: blankCount }).map((_, i) => (
+            <div
+              key={i}
+              className="w-8 h-2 rounded-full transition-all duration-300"
+              style={{ background: filled[i] ? "#fff" : "rgba(255,255,255,0.25)" }}
+            />
+          ))}
+          {blankCount > 0 && (
+            <span className="text-white/60 text-xs font-bold ml-2">
+              {filledCount}/{blankCount}
+            </span>
+          )}
+        </div>
 
-            {/* Options */}
-            <div className="flex flex-wrap gap-3 justify-center max-w-xl">
-              {options.map((word) => {
-                const isUsed = usedOptions.includes(word);
-                return (
+        {/* Phrase avec blancs */}
+        <div className="bg-white/95 backdrop-blur-sm rounded-3xl px-10 py-8 max-w-2xl w-full shadow-xl">
+          <p className="text-gray-800 text-lg font-semibold leading-loose text-center">
+            {parts.map((part, i) => (
+              <span key={i}>
+                {part}
+                {i < blankCount && (
                   <button
-                    key={word}
-                    onClick={() => handleOptionClick(word)}
-                    className="px-5 py-2.5 rounded-xl font-bold text-sm transition-all"
+                    onClick={() => handleBlankClick(i)}
+                    className="inline-flex items-center justify-center min-w-[130px] h-10 rounded-xl border-2 px-3 font-black text-sm transition-all mx-1.5"
                     style={
-                      isUsed
-                        ? { background: "rgba(255,255,255,0.2)", color: "rgba(255,255,255,0.4)", border: "2px solid rgba(255,255,255,0.2)", textDecoration: "line-through" }
-                        : { background: "rgba(255,255,255,0.9)", color: "#1A1A1A", border: "2px solid transparent" }
+                      filled[i]
+                        ? { borderColor: primaryColor, background: primaryColor, color: "#fff", transform: "scale(1.02)" }
+                        : { borderColor: "rgba(0,0,0,0.15)", background: "rgba(0,0,0,0.03)", color: "#9ca3af" }
                     }
                   >
-                    {word}
+                    {filled[i] ?? "_ _ _"}
                   </button>
-                );
-              })}
-            </div>
+                )}
+              </span>
+            ))}
+          </p>
+        </div>
 
-            <button
-              onClick={handleSubmit}
-              disabled={!allFilled}
-              className="px-10 py-3 rounded-2xl text-white font-black text-base transition-opacity"
-              style={{
-                background: "rgba(255,255,255,0.2)",
-                backdropFilter: "blur(8px)",
-                border: "2px solid rgba(255,255,255,0.4)",
-                opacity: allFilled ? 1 : 0.4,
-              }}
-            >
-              Valider ma réponse
-            </button>
-          </>
-        ) : (
-          <div className="flex flex-col items-center gap-6 text-center">
-            {isCorrect ? (
-              <>
-                <CheckCircle size={80} className="text-white" />
-                <h2 className="text-3xl font-black text-white">Parfait !</h2>
-                <p className="text-white/80 text-lg">Tu as complété la phrase correctement.</p>
-                <button
-                  onClick={handleContinue}
-                  className="px-10 py-3 rounded-2xl text-white font-black text-base hover:opacity-90"
-                  style={{ background: "rgba(255,255,255,0.2)", border: "2px solid rgba(255,255,255,0.4)" }}
-                >
-                  Continuer →
-                </button>
-              </>
-            ) : (
-              <>
-                <XCircle size={80} className="text-white/80" />
-                <h2 className="text-3xl font-black text-white">Pas tout à fait...</h2>
-                <p className="text-white/80 text-lg">Essaie encore !</p>
-                <button
-                  onClick={handleRetry}
-                  className="px-10 py-3 rounded-2xl text-white font-black text-base hover:opacity-90"
-                  style={{ background: "rgba(255,255,255,0.2)", border: "2px solid rgba(255,255,255,0.4)" }}
-                >
-                  Réessayer
-                </button>
-              </>
-            )}
-          </div>
-        )}
+        {/* Options */}
+        <div className="flex flex-wrap gap-3 justify-center max-w-xl">
+          {options.map((word) => {
+            const isUsed = usedOptions.includes(word);
+            return (
+              <button
+                key={word}
+                onClick={() => handleOptionClick(word)}
+                className="px-6 py-3 rounded-2xl font-bold text-sm transition-all"
+                style={
+                  isUsed
+                    ? {
+                        background: "rgba(255,255,255,0.12)",
+                        color: "rgba(255,255,255,0.35)",
+                        border: "2px solid rgba(255,255,255,0.15)",
+                        textDecoration: "line-through",
+                        transform: "scale(0.95)",
+                      }
+                    : {
+                        background: "rgba(255,255,255,0.92)",
+                        color: "#1A1A1A",
+                        border: "2px solid transparent",
+                        boxShadow: "0 4px 12px rgba(0,0,0,0.1)",
+                      }
+                }
+              >
+                {word}
+              </button>
+            );
+          })}
+        </div>
+
+        <button
+          onClick={handleSubmit}
+          disabled={!allFilled}
+          className="px-10 py-3.5 rounded-2xl text-white font-black text-base transition-all"
+          style={{
+            background: allFilled ? "rgba(255,255,255,0.25)" : "rgba(255,255,255,0.1)",
+            backdropFilter: "blur(8px)",
+            border: `2px solid ${allFilled ? "rgba(255,255,255,0.6)" : "rgba(255,255,255,0.2)"}`,
+            opacity: allFilled ? 1 : 0.5,
+          }}
+        >
+          Valider ma réponse
+        </button>
       </main>
+
+      <FeedbackOverlay
+        show={overlay?.show ?? false}
+        isCorrect={overlay?.isCorrect ?? false}
+        explanation={
+          overlay?.isCorrect
+            ? "Tu as complété la phrase correctement. Bon travail !"
+            : "L'ordre ou les mots ne correspondent pas. Lis bien la phrase depuis le début et réessaie !"
+        }
+        mascotte={step.module.mascotte}
+        primaryColor={primaryColor}
+        onClose={handleOverlayClose}
+        closeLabel={overlay?.isCorrect ? "Continuer →" : "Réessayer"}
+      />
     </div>
   );
 }
