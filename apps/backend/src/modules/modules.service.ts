@@ -13,6 +13,8 @@ const MODULE_PUBLIC_FIELDS = {
   mascotte: true,
   colorPrimary: true,
   colorSecondary: true,
+  colorCard: true,
+  colorCardSecondary: true,
 } as const;
 
 @Injectable()
@@ -35,6 +37,7 @@ export class ModulesService {
         id: true,
         name: true,
         slug: true,
+        color: true,
         modules: {
           where: { isActive: true },
           select: MODULE_PUBLIC_FIELDS,

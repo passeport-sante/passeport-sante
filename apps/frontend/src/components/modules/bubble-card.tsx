@@ -11,14 +11,17 @@ export type Module = {
   slug: string;
   duration: number | null;
   mascotte: string | null;
-  colorPrimary: string | null;   // couleur de fond de la zone mascotte (depuis la BDD)
-  colorSecondary: string | null; // couleur du cercle déco (depuis la BDD)
+  colorPrimary: string | null;
+  colorSecondary: string | null;
+  colorCard: string | null;
+  colorCardSecondary: string | null;
 };
 
 export type Category = {
   id: string;
   name: string;
   slug: string;
+  color: string | null;
   modules: Module[];
 };
 
@@ -30,9 +33,9 @@ const FALLBACK_SECONDARY = "#C7DCFF";
 // ── Composant ─────────────────────────────────────────────────────────────────
 
 export function BubbleCard({ module }: { module: Module }) {
-  const mascotFile = module.mascotte ?? "";
-  const bgPrimary   = module.colorPrimary   ?? FALLBACK_PRIMARY;
-  const bgCircle    = module.colorSecondary ?? FALLBACK_SECONDARY;
+  const mascotFile   = module.mascotte ?? "";
+  const bgLeft       = module.colorCard      ?? module.colorPrimary   ?? FALLBACK_PRIMARY;
+  const bgLeftCircle = module.colorCardSecondary ?? module.colorSecondary ?? FALLBACK_SECONDARY;
 
   return (
     <article className="group flex bg-white rounded-[28px] shadow-[0_4px_20px_rgba(0,0,0,0.06)] hover:shadow-[0_10px_40px_rgba(0,0,0,0.12)] transition-all duration-300 ease-out hover:-translate-y-1 h-[200px]">
@@ -43,12 +46,12 @@ export function BubbleCard({ module }: { module: Module }) {
         {/* Fond coloré — clipé aux coins arrondis, ne contient PAS la mascotte */}
         <div
           className="absolute inset-0 rounded-l-[28px] overflow-hidden"
-          style={{ background: bgPrimary }}
+          style={{ background: bgLeft }}
           aria-hidden="true"
         >
           <div
             className="absolute bottom-[-60px] left-1/2 -translate-x-1/2 w-[220px] h-[220px] rounded-full opacity-70"
-            style={{ background: bgCircle }}
+            style={{ background: bgLeftCircle }}
           />
         </div>
 

@@ -18,7 +18,7 @@ type Module = {
 };
 
 function decodeJwt(token: string): { sub: string } {
-  return JSON.parse(atob(token.split(".")[1]));
+  return JSON.parse(atob(token.split(".")[1]!));
 }
 
 export default function NewSessionPage() {

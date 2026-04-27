@@ -44,6 +44,16 @@ export class CreateModuleDto {
   @IsOptional()
   colorSecondary?: string;
 
+  @ApiPropertyOptional({ description: "Couleur de fond de la card" })
+  @IsString()
+  @IsOptional()
+  colorCard?: string;
+
+  @ApiPropertyOptional({ description: "Couleur secondaire de la card" })
+  @IsString()
+  @IsOptional()
+  colorCardSecondary?: string;
+
   @ApiProperty()
   @IsString()
   @IsNotEmpty()

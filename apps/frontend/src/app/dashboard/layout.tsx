@@ -17,7 +17,7 @@ const NAV = [
 type UserProfile = { name: string; email: string; organization?: { name: string } };
 
 function decodeJwt(token: string): { sub: string } {
-  return JSON.parse(atob(token.split(".")[1]));
+  return JSON.parse(atob(token.split(".")[1]!));
 }
 
 export default function DashboardLayout({ children }: { children: React.ReactNode }) {

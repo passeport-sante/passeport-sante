@@ -53,6 +53,7 @@ async function main() {
       id: "seed-cat-1",
       name: "Santé & Bien-être",
       slug: "sante-bien-etre",
+      color: "#16A34A",
       order: 1,
     },
   });
@@ -64,6 +65,7 @@ async function main() {
       id: "seed-cat-2",
       name: "Sécurité numérique",
       slug: "securite-numerique",
+      color: "#DB2777",
       order: 2,
     },
   });
@@ -75,6 +77,7 @@ async function main() {
       id: "seed-cat-3",
       name: "Alimentation & Nutrition",
       slug: "alimentation-nutrition",
+      color: "#D97706",
       order: 3,
     },
   });
@@ -96,9 +99,11 @@ async function main() {
       slug: "vaccination",
       duration: 20,
       isActive: true,
-      mascotte: "mascotte1.png",
-      colorPrimary: "#16A34A",
-      colorSecondary: "#052e16",
+      mascotte: "mascotte5.png",
+      colorPrimary: "#1618a3",
+      colorSecondary: "#c9ae15",
+      colorCard: "#f7fcdc",
+      colorCardSecondary: "#f1f7bb",
       organizationId: org.id,
       categoryId: catSante.id,
     },
@@ -299,7 +304,8 @@ async function main() {
     where: { id: "seed-gamedata-2" },
     update: {
       questionData: {
-        phrase: "Le vaccin contre la grippe est recommandé ___ par an et protège contre ___ virus différents.",
+        phrase:
+          "Le vaccin contre la grippe est recommandé ___ par an et protège contre ___ virus différents.",
         options: ["une fois", "deux fois", "plusieurs", "trois"],
       },
       correctAnswer: { blanks: ["une fois", "plusieurs"] },
@@ -307,7 +313,8 @@ async function main() {
     create: {
       id: "seed-gamedata-2",
       questionData: {
-        phrase: "Le vaccin contre la grippe est recommandé ___ par an et protège contre ___ virus différents.",
+        phrase:
+          "Le vaccin contre la grippe est recommandé ___ par an et protège contre ___ virus différents.",
         options: ["une fois", "deux fois", "plusieurs", "trois"],
       },
       correctAnswer: { blanks: ["une fois", "plusieurs"] },
@@ -326,11 +333,16 @@ async function main() {
           { id: "a", text: "Le médecin vérifie ton carnet de santé" },
           { id: "b", text: "Tu reçois l'injection du vaccin" },
           { id: "c", text: "Tu prends rendez-vous chez le médecin" },
-          { id: "d", text: "Tu patientes 15 min pour surveiller les réactions" },
+          {
+            id: "d",
+            text: "Tu patientes 15 min pour surveiller les réactions",
+          },
         ],
       },
       correctAnswer: { order: ["c", "a", "b", "d"] },
-      hints: { hint1: "Pense aux étapes dans l'ordre logique d'une consultation" },
+      hints: {
+        hint1: "Pense aux étapes dans l'ordre logique d'une consultation",
+      },
       stepId: "seed-step-3",
     },
   });
@@ -341,17 +353,28 @@ async function main() {
     create: {
       id: "seed-gamedata-4",
       questionData: {
-        situation: "Ton ami te dit qu'il ne veut pas se faire vacciner car il a peur que ça lui donne la maladie. Que lui réponds-tu ?",
+        situation:
+          "Ton ami te dit qu'il ne veut pas se faire vacciner car il a peur que ça lui donne la maladie. Que lui réponds-tu ?",
         choices: [
-          { id: "a", text: "Tu as raison, les vaccins peuvent être dangereux." },
-          { id: "b", text: "Les vaccins ne contiennent pas le virus actif, ils ne peuvent pas te rendre malade." },
+          {
+            id: "a",
+            text: "Tu as raison, les vaccins peuvent être dangereux.",
+          },
+          {
+            id: "b",
+            text: "Les vaccins ne contiennent pas le virus actif, ils ne peuvent pas te rendre malade.",
+          },
           { id: "c", text: "C'est ton choix, peu importe." },
-          { id: "d", text: "Tu n'as pas besoin de te vacciner si tu es en bonne santé." },
+          {
+            id: "d",
+            text: "Tu n'as pas besoin de te vacciner si tu es en bonne santé.",
+          },
         ],
       },
       correctAnswer: {
         choiceId: "b",
-        explanation: "Les vaccins contiennent soit des virus inactivés, soit des fragments de virus. Ils ne peuvent pas provoquer la maladie mais entraînent ton système immunitaire à la reconnaître.",
+        explanation:
+          "Les vaccins contiennent soit des virus inactivés, soit des fragments de virus. Ils ne peuvent pas provoquer la maladie mais entraînent ton système immunitaire à la reconnaître.",
       },
       stepId: "seed-step-4",
     },
@@ -369,7 +392,10 @@ async function main() {
             text: "À quoi sert un vaccin ?",
             options: [
               { id: "a", text: "À guérir une maladie déjà contractée" },
-              { id: "b", text: "À préparer le système immunitaire à reconnaître un agent pathogène" },
+              {
+                id: "b",
+                text: "À préparer le système immunitaire à reconnaître un agent pathogène",
+              },
               { id: "c", text: "À éliminer tous les microbes du corps" },
               { id: "d", text: "À remplacer les médicaments" },
             ],
@@ -378,9 +404,18 @@ async function main() {
             id: "q2",
             text: "Qu'est-ce que l'immunité collective ?",
             options: [
-              { id: "a", text: "Quand toute une équipe de sport est en bonne santé" },
-              { id: "b", text: "Quand suffisamment de personnes sont vaccinées pour protéger aussi celles qui ne peuvent pas l'être" },
-              { id: "c", text: "Une maladie qui touche tout le monde en même temps" },
+              {
+                id: "a",
+                text: "Quand toute une équipe de sport est en bonne santé",
+              },
+              {
+                id: "b",
+                text: "Quand suffisamment de personnes sont vaccinées pour protéger aussi celles qui ne peuvent pas l'être",
+              },
+              {
+                id: "c",
+                text: "Une maladie qui touche tout le monde en même temps",
+              },
               { id: "d", text: "Un médicament donné à tout le monde" },
             ],
           },

@@ -40,7 +40,7 @@ export function FeedbackOverlay({
       >
         {/* Mascotte qui dépasse en haut */}
         {mascotte && (
-          <div className="absolute -top-20 left-1/2 -translate-x-1/2 w-36 h-36">
+          <div className="absolute -top-130 left-1/2 -translate-x-1/2 w-144 h-144">
             <Image
               src={`/assets/mascotte/${mascotte}`}
               alt="mascotte"
@@ -85,10 +85,18 @@ export function FeedbackOverlay({
 
       <style jsx global>{`
         @keyframes slide-up {
-          from { transform: translateY(40px); opacity: 0; }
-          to   { transform: translateY(0);    opacity: 1; }
+          from {
+            transform: translateY(40px);
+            opacity: 0;
+          }
+          to {
+            transform: translateY(0);
+            opacity: 1;
+          }
         }
-        .animate-slide-up { animation: slide-up 0.3s cubic-bezier(0.34,1.56,0.64,1) both; }
+        .animate-slide-up {
+          animation: slide-up 0.3s cubic-bezier(0.34, 1.56, 0.64, 1) both;
+        }
       `}</style>
     </div>
   );

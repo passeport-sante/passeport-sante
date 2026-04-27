@@ -123,9 +123,9 @@ function getSliceColor(
   idx: number,
   isSurvey: boolean,
 ): string {
-  if (isSurvey) return SURVEY_PALETTE[idx % SURVEY_PALETTE.length];
+  if (isSurvey) return SURVEY_PALETTE[idx % SURVEY_PALETTE.length] ?? "#9CA3AF";
   if (isCorrect === true) return COLORS.correct;
-  if (isCorrect === false) return WRONG_COLORS[idx % WRONG_COLORS.length];
+  if (isCorrect === false) return WRONG_COLORS[idx % WRONG_COLORS.length] ?? "#EF4444";
   return "#9CA3AF";
 }
 
@@ -174,7 +174,7 @@ function QuestionCard({ qs, index }: { qs: QuestionStats; index: number }) {
           return (
             <View key={slice.label} style={s.barRow}>
               <View style={[s.dot, { backgroundColor: color }]} />
-              <Text style={s.barLabel} numberOfLines={1}>
+              <Text style={s.barLabel}>
                 {slice.label}
               </Text>
               <View style={s.barTrack}>

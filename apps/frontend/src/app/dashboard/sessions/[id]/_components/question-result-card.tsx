@@ -27,9 +27,9 @@ export function QuestionResultCard({ stats, index }: Props) {
 
   let wrongIdx = 0;
   const slicesWithColor = slices.map((s, i) => {
-    if (isSurvey) return { ...s, color: SURVEY_PALETTE[i % SURVEY_PALETTE.length] };
+    if (isSurvey) return { ...s, color: SURVEY_PALETTE[i % SURVEY_PALETTE.length] ?? "#9CA3AF" };
     if (s.isCorrect === true) return { ...s, color: "#2A8970" };
-    if (s.isCorrect === false) return { ...s, color: WRONG_COLORS[wrongIdx++ % WRONG_COLORS.length] };
+    if (s.isCorrect === false) return { ...s, color: WRONG_COLORS[wrongIdx++ % WRONG_COLORS.length] ?? "#EF4444" };
     return { ...s, color: "#9CA3AF" };
   });
 

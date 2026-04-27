@@ -83,7 +83,7 @@ export default function DiagnosticDemoPage() {
   const [answers, setAnswers] = useState<Record<number, unknown>>({});
   const [done, setDone]     = useState(false);
 
-  const question  = QUESTIONS[index];
+  const question  = QUESTIONS[index]!;
   const answer    = answers[index];
   const total     = QUESTIONS.length;
   const isClassify = question?.type === "classify";

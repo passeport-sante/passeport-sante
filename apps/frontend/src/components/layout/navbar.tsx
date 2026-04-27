@@ -4,6 +4,7 @@ import Link from "next/link";
 import Image from "next/image";
 import { usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
+import { LogIn, UserKey } from "lucide-react";
 
 export function Navbar() {
   const pathname = usePathname();
@@ -44,7 +45,7 @@ export function Navbar() {
                 href={href}
                 className={`font-semibold text-lg transition-colors pb-0.5 ${
                   isActive
-                    ? "text-blue-600 border-b-2 border-blue-500"
+                    ? "text-blue-600 border-b-2 border-blue-600"
                     : "text-gray-900 hover:text-gray-600"
                 }`}
               >
@@ -54,7 +55,7 @@ export function Navbar() {
           })}
         </nav>
         {isLoggedIn ? (
-          <>
+          <div className="flex items-center gap-4">
             <Link
               href="/dashboard"
               className="shrink-0 px-8 py-3 bg-brand-green text-white font-semibold rounded-full hover:opacity-90 transition-opacity shadow-md text-sm"
@@ -68,13 +69,17 @@ export function Navbar() {
                 sessionStorage.clear();
                 window.location.href = "/";
               }}
-              className="shrink-0 px-8 py-3 bg-brand-green text-white font-semibold rounded-full hover:opacity-90 transition-opacity shadow-md text-sm"
+              className={`transition-colors ${
+                pathname === "/sign-in"
+                  ? "text-blue-600"
+                  : "text-gray-900 hover:text-gray-600"
+              }`}
             >
-              Déconnexion
+              <LogIn size={30} strokeWidth={2} />
             </button>
-          </>
+          </div>
         ) : (
-          <>
+          <div className="flex items-center gap-4">
             <Link
               href="/diagnostic"
               className="shrink-0 px-8 py-3 bg-brand-green text-white font-semibold rounded-full hover:opacity-90 transition-opacity shadow-md text-sm"
@@ -83,11 +88,15 @@ export function Navbar() {
             </Link>
             <Link
               href="/sign-in"
-              className="shrink-0 px-8 py-3 bg-brand-green text-white font-semibold rounded-full hover:opacity-90 transition-opacity shadow-md text-sm"
+              className={`transition-colors ${
+                pathname === "/sign-in"
+                  ? "text-blue-600"
+                  : "text-gray-900 hover:text-gray-600"
+              }`}
             >
-              Se connecter
+              <UserKey size={30} strokeWidth={2} />
             </Link>
-          </>
+          </div>
         )}
       </div>
     </header>

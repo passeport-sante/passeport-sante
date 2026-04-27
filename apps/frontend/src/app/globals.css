@@ -10,11 +10,6 @@ body {
   overflow-x: clip;
 }
 
-a {
-  color: inherit;
-  text-decoration: none;
-}
-
 .imgDark {
   display: none;
 }
@@ -35,8 +30,8 @@ a {
 @theme inline {
   --font-heading: var(--font-sans);
   --font-sans: var(--font-sans);
-  --color-brand-green: #4CAF50;
-  --color-brand-dark-green: #228B22;
+  --color-brand-green: #4caf50;
+  --color-brand-dark-green: #228b22;
   --color-brand-bg: #f4f7f6;
   --color-circle-green: #d4edda;
   --color-circle-blue: #ccd6f5;
@@ -285,7 +280,7 @@ a {
 
 /* Queue de la bulle — forme éclair pointant vers la mascotte */
 .speech-bubble::after {
-  content: '';
+  content: "";
   position: absolute;
   bottom: -28px;
   left: 52%;
@@ -326,8 +321,13 @@ a {
   Utilise animate-float uniquement pour les éléments qui doivent flotter en permanence.
 */
 @keyframes float {
-  0%, 100% { transform: translateY(0); }
-  50%       { transform: translateY(-10px); }
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-10px);
+  }
 }
 
 .animate-float {

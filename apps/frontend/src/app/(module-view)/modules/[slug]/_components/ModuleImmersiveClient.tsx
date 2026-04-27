@@ -3,6 +3,7 @@
 import { useState, useEffect, useRef } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
 import Link from "next/link";
+import Image from "next/image";
 import { ArrowLeft, ChevronRight } from "lucide-react";
 import { GameProgress } from "@/components/rive/GameProgress";
 
@@ -33,39 +34,55 @@ function getRiveFile(slug: string): string {
   return RIVE_FILES[slug] ?? "/assets/rive/progressbar_vaccination.riv";
 }
 
+
 const CANVAS_WIDTH = 1200;
 const CANVAS_HEIGHT = 520;
-const STEP_X_ARTBOARD = [75.5, 228.5, 395.5, 547.5, 709];
-const STEP_Y_ARTBOARD = [253.5, 170, 253.5, 170, 253.5];
+const STEP_X_ARTBOARD = [95, 228.5, 370, 502, 640];
+const STEP_Y_ARTBOARD = [218, 145, 218, 145, 218];
 const ARTBOARD_HEIGHT = 320;
 const ARTBOARD_WIDTH = 750;
 const BUBBLE_WIDTH = 320;
 
+// Rive renders the artboard with uniform "contain" scale — width is the limiting axis.
+const RIVE_SCALE = CANVAS_WIDTH / ARTBOARD_WIDTH; // 1.6
+// Vertical offset from letterboxing (artboard rendered shorter than canvas height)
+const RIVE_Y_OFFSET = (CANVAS_HEIGHT - ARTBOARD_HEIGHT * RIVE_SCALE) / 2;
+// Horizontal offset to reach the mascot/circle center from the artboard X anchor
+const MASCOT_CENTER_X_OFFSET = 40;
+
+function mascotCenterX(level: number): number {
+  return (
+    (STEP_X_ARTBOARD[level - 1] ?? 75.5) * RIVE_SCALE + MASCOT_CENTER_X_OFFSET
+  );
+}
+
 function getBubbleLeft(level: number): number {
-  const scale = CANVAS_WIDTH / ARTBOARD_WIDTH;
-  const x = STEP_X_ARTBOARD[level - 1] ?? 75.5;
-  const mascotCenterX = x * scale + 40;
-  const left = mascotCenterX - BUBBLE_WIDTH / 2;
+  const cx = mascotCenterX(level);
+  const left = cx - BUBBLE_WIDTH / 2;
   return Math.max(10, Math.min(CANVAS_WIDTH - BUBBLE_WIDTH - 10, left));
 }
 
 function getBubbleTriangleLeft(level: number): number {
-  const scale = CANVAS_WIDTH / ARTBOARD_WIDTH;
-  const x = STEP_X_ARTBOARD[level - 1] ?? 75.5;
-  const mascotCenterX = x * scale + 40;
-  const bubbleLeft = getBubbleLeft(level);
-  const pos = mascotCenterX - bubbleLeft - 8;
+  const cx = mascotCenterX(level);
+  const pos = cx - getBubbleLeft(level) - 8;
   return Math.max(16, Math.min(BUBBLE_WIDTH - 32, pos));
 }
 
 function getStepCanvasPos(index: number) {
   return {
-    x: (STEP_X_ARTBOARD[index] ?? 0) * (CANVAS_WIDTH / ARTBOARD_WIDTH),
-    y: (STEP_Y_ARTBOARD[index] ?? 0) * (CANVAS_HEIGHT / ARTBOARD_HEIGHT),
+    x: (STEP_X_ARTBOARD[index] ?? 0) * RIVE_SCALE,
+    y: (STEP_Y_ARTBOARD[index] ?? 0) * RIVE_SCALE + RIVE_Y_OFFSET,
   };
 }
 
+function resolveMascotte(raw: string | null): string | null {
+  if (!raw) return null;
+  if (raw.startsWith("/") || raw.startsWith("http")) return raw;
+  return `/assets/mascotte/${raw}`;
+}
+
 export function ModuleImmersiveClient({ module }: Props) {
+  const mascotteSrc = resolveMascotte(module.mascotte);
   const [riveLevel, setRiveLevel] = useState<number | null>(null);
   const [unlockedLevel, setUnlockedLevel] = useState<number | null>(null);
   const [showNextBtn, setShowNextBtn] = useState(false);
@@ -83,7 +100,7 @@ export function ModuleImmersiveClient({ module }: Props) {
 
     const unlocked = Math.min(
       Math.max(parseInt(localStorage.getItem(storageKey) ?? "1", 10), 1),
-      MAX_LEVEL
+      MAX_LEVEL,
     );
     const fromParam = searchParams.get("from");
 
@@ -104,7 +121,7 @@ export function ModuleImmersiveClient({ module }: Props) {
     } else {
       setRiveLevel(unlocked);
     }
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   function handleNextStep() {
@@ -150,7 +167,9 @@ export function ModuleImmersiveClient({ module }: Props) {
         <div className="text-center text-gray-900">
           <h1 className="font-black text-xl tracking-wide">{module.title}</h1>
           {module.category && (
-            <p className="text-sm text-gray-400 mt-0.5">{module.category.name}</p>
+            <p className="text-sm text-gray-400 mt-0.5">
+              {module.category.name}
+            </p>
           )}
         </div>
 
@@ -221,31 +240,28 @@ export function ModuleImmersiveClient({ module }: Props) {
             .map((step, index) => {
               const pos = getStepCanvasPos(index);
               const isUnlocked = step.order <= displayedUnlocked;
-              const R = 48;
+              const R = 58;
+
+              const zoneStyle: React.CSSProperties = {
+                width: R * 2,
+                height: R * 2,
+                left: pos.x - R,
+                top: pos.y - R,
+              };
 
               return isUnlocked ? (
                 <Link
                   key={step.id}
                   href={`/modules/${module.slug}/step/${step.id}`}
                   className="absolute z-20 rounded-full hover:scale-110 transition-transform"
-                  style={{
-                    width: R * 2,
-                    height: R * 2,
-                    left: pos.x - R,
-                    top: pos.y - R,
-                  }}
+                  style={zoneStyle}
                   title={`Étape ${step.order}`}
                 />
               ) : (
                 <div
                   key={step.id}
                   className="absolute z-20 rounded-full cursor-not-allowed"
-                  style={{
-                    width: R * 2,
-                    height: R * 2,
-                    left: pos.x - R,
-                    top: pos.y - R,
-                  }}
+                  style={zoneStyle}
                 />
               );
             })}
@@ -266,39 +282,33 @@ export function ModuleImmersiveClient({ module }: Props) {
             <ChevronRight size={20} strokeWidth={3} />
           </button>
         )}
-
-        {/* Bouton terminer le module */}
-        {showCompleteBtn && !showNextBtn && (
-          <button
-            onClick={() => setShowCompleteOverlay(true)}
-            className="flex items-center gap-3 px-10 py-4 rounded-2xl font-black text-base transition-all hover:scale-105 active:scale-95"
-            style={{
-              background: "rgba(255,255,255,0.95)",
-              color: primaryColor,
-              boxShadow: "0 8px 32px rgba(0,0,0,0.25)",
-            }}
-          >
-            Terminer le module ✓
-          </button>
-        )}
       </main>
 
       {/* Overlay de fin de module */}
       {showCompleteOverlay && (
         <div
           className="fixed inset-0 z-50 flex flex-col items-center justify-center"
-          style={{ background: "rgba(0,0,0,0.75)", backdropFilter: "blur(12px)" }}
+          style={{
+            background: "rgba(0,0,0,0.75)",
+            backdropFilter: "blur(12px)",
+          }}
         >
           {/* Mascotte */}
-          {module.mascotte && (
-            <div className="mb-6" style={{ filter: "drop-shadow(0 16px 48px rgba(0,0,0,0.4))" }}>
-              <img
-                src={module.mascotte}
+          {mascotteSrc && (
+            <div
+              className="mb-6"
+              style={{ filter: "drop-shadow(0 16px 48px rgba(0,0,0,0.4))" }}
+            >
+              <Image
+                src={mascotteSrc}
                 alt="Mascotte"
                 width={220}
                 height={220}
                 className="object-contain"
-                style={{ animation: "bounce-in 0.5s cubic-bezier(0.34,1.56,0.64,1) both" }}
+                style={{
+                  animation:
+                    "bounce-in 0.5s cubic-bezier(0.34,1.56,0.64,1) both",
+                }}
               />
             </div>
           )}
@@ -315,14 +325,19 @@ export function ModuleImmersiveClient({ module }: Props) {
             <h2 className="font-black text-3xl text-gray-900">Bravo !</h2>
             <p className="text-gray-600 text-lg leading-relaxed font-semibold">
               Tu as terminé le module{" "}
-              <span style={{ color: primaryColor }}>{module.title}</span> !<br />
-              J&apos;espère que tu as appris plein de choses et que tu t&apos;es bien amusé !
+              <span style={{ color: primaryColor }}>{module.title}</span> !
+              <br />
+              J&apos;espère que tu as appris plein de choses et que tu t&apos;es
+              bien amusé !
             </p>
 
             <Link
               href="/modules"
               className="mt-2 px-10 py-3.5 rounded-2xl font-black text-white text-base transition-all hover:scale-105 active:scale-95"
-              style={{ background: primaryColor, boxShadow: `0 6px 20px ${primaryColor}66` }}
+              style={{
+                background: primaryColor,
+                boxShadow: `0 6px 20px ${primaryColor}66`,
+              }}
             >
               Retour aux modules
             </Link>

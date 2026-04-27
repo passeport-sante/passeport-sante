@@ -82,7 +82,7 @@ export default function DiagnosticClient({ session }: Props) {
   };
 
   const next = async () => {
-    const question = questions[index];
+    const question = questions[index]!;
     const answer   = answers[index];
     const timing   = Math.round((Date.now() - startTime) / 1000);
 
@@ -136,7 +136,7 @@ export default function DiagnosticClient({ session }: Props) {
 
   // ── Rendu principal ────────────────────────────────────────────────────────
 
-  const question   = questions[index];
+  const question   = questions[index]!;
   const answer     = answers[index];
   const isClassify = question?.questionType === "CLASSIFY";
 

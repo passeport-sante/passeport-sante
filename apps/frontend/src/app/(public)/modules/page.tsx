@@ -40,7 +40,10 @@ export default async function ModulesPage() {
         {categories.map((category) => (
           <div key={category.id}>
             {/* Titre catégorie */}
-            <h2 className="text-lg font-bold text-brand-green border-l-4 border-brand-green pl-3 mb-8">
+            <h2
+              className="text-lg font-bold pl-3 mb-8 border-l-4"
+              style={{ color: category.color ?? "#2A8970", borderColor: category.color ?? "#2A8970" }}
+            >
               {category.name}
             </h2>
 
