@@ -36,17 +36,23 @@ function shuffle<T>(arr: T[]): T[] {
 export function PuzzleGame({ step }: { step: StepData }) {
   const router = useRouter();
 
-  const gameData = step.gameData?.[0];
-  const items = gameData?.questionData?.items ?? [];
-  const correctOrder = gameData?.correctAnswer?.order ?? [];
+  const allGameData = step.gameData ?? [];
+  const total = allGameData.length;
 
-  const [cards, setCards] = useState<PuzzleItem[]>(() => shuffle(items));
+  const [currentIndex, setCurrentIndex] = useState(0);
   const [overlay, setOverlay] = useState<{ show: boolean; isCorrect: boolean } | null>(null);
   const dragIndex = useRef<number | null>(null);
 
   const primaryColor = step.module.colorPrimary ?? "#16A34A";
   const bottomColor = step.module.colorSecondary ?? "#052e16";
   const totalSteps = step.module.steps.length;
+
+  const gameData = allGameData[currentIndex];
+  const items = gameData?.questionData?.items ?? [];
+  const correctOrder = gameData?.correctAnswer?.order ?? [];
+  const isLastItem = currentIndex === total - 1;
+
+  const [cards, setCards] = useState<PuzzleItem[]>(() => shuffle(items));
 
   function onDragStart(index: number) {
     dragIndex.current = index;
@@ -78,15 +84,20 @@ export function PuzzleGame({ step }: { step: StepData }) {
     setOverlay(null);
     if (!isCorrect) {
       setCards(shuffle(items));
+    } else if (!isLastItem) {
+      const nextItems = allGameData[currentIndex + 1]?.questionData?.items ?? [];
+      setCards(shuffle(nextItems));
+      setCurrentIndex((i) => i + 1);
     } else {
       const nextLevel = step.order + 1;
       const key = `module_level_${step.module.slug}`;
       const stored = parseInt(localStorage.getItem(key) ?? "1", 10);
       if (nextLevel > stored) localStorage.setItem(key, String(nextLevel));
       const isLast = step.order === totalSteps;
-      router.push(isLast
-        ? `/modules/${step.module.slug}?complete=true`
-        : `/modules/${step.module.slug}?from=${step.order}`
+      router.push(
+        isLast
+          ? `/modules/${step.module.slug}?complete=true`
+          : `/modules/${step.module.slug}?from=${step.order}`,
       );
     }
   }
@@ -118,7 +129,32 @@ export function PuzzleGame({ step }: { step: StepData }) {
       </header>
 
       <main className="flex-1 flex flex-col items-center justify-center gap-6 px-8">
-        <p className="text-white/70 text-sm font-semibold">
+        {/* Progression inter-puzzles */}
+        {total > 1 && (
+          <div className="flex items-center gap-2">
+            {Array.from({ length: total }).map((_, i) => (
+              <div
+                key={i}
+                className="h-2 rounded-full transition-all duration-300"
+                style={{
+                  width: i === currentIndex ? "32px" : "12px",
+                  background: i < currentIndex ? "#fff" : i === currentIndex ? "rgba(255,255,255,0.85)" : "rgba(255,255,255,0.25)",
+                }}
+              />
+            ))}
+            <span className="text-white/60 text-xs font-bold ml-1">
+              {currentIndex + 1} / {total}
+            </span>
+          </div>
+        )}
+
+        {gameData?.questionData?.title && (
+          <p className="text-white/80 text-sm font-semibold text-center max-w-xl">
+            {gameData.questionData.title}
+          </p>
+        )}
+
+        <p className="text-white/50 text-xs font-semibold">
           Glisse les cartes pour les remettre dans le bon ordre
         </p>
 
@@ -174,7 +210,9 @@ export function PuzzleGame({ step }: { step: StepData }) {
         mascotte={step.module.mascotte}
         primaryColor={primaryColor}
         onClose={handleOverlayClose}
-        closeLabel={overlay?.isCorrect ? "Continuer →" : "Réessayer"}
+        closeLabel={
+          overlay?.isCorrect ? (isLastItem ? "Continuer →" : "Puzzle suivant →") : "Réessayer"
+        }
       />
     </div>
   );

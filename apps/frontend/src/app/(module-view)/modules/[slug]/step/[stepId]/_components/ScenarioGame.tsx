@@ -32,18 +32,23 @@ interface StepData {
 export function ScenarioGame({ step }: { step: StepData }) {
   const router = useRouter();
 
-  const gameData = step.gameData?.[0];
-  const situation = gameData?.questionData?.situation ?? "";
-  const choices = gameData?.questionData?.choices ?? [];
-  const correctChoiceId = gameData?.correctAnswer?.choiceId ?? "";
-  const explanation = gameData?.correctAnswer?.explanation ?? "";
+  const allGameData = step.gameData ?? [];
+  const total = allGameData.length;
 
+  const [currentIndex, setCurrentIndex] = useState(0);
   const [selected, setSelected] = useState<string | null>(null);
   const [overlay, setOverlay] = useState<{ show: boolean; isCorrect: boolean } | null>(null);
 
   const primaryColor = step.module.colorPrimary ?? "#16A34A";
   const bottomColor = step.module.colorSecondary ?? "#052e16";
   const totalSteps = step.module.steps.length;
+
+  const gameData = allGameData[currentIndex];
+  const situation = gameData?.questionData?.situation ?? "";
+  const choices = gameData?.questionData?.choices ?? [];
+  const correctChoiceId = gameData?.correctAnswer?.choiceId ?? "";
+  const explanation = gameData?.correctAnswer?.explanation ?? "";
+  const isLastItem = currentIndex === total - 1;
 
   function handleSubmit() {
     const isCorrect = selected === correctChoiceId;
@@ -55,15 +60,19 @@ export function ScenarioGame({ step }: { step: StepData }) {
     setOverlay(null);
     if (!isCorrect) {
       setSelected(null);
+    } else if (!isLastItem) {
+      setSelected(null);
+      setCurrentIndex((i) => i + 1);
     } else {
       const nextLevel = step.order + 1;
       const key = `module_level_${step.module.slug}`;
       const stored = parseInt(localStorage.getItem(key) ?? "1", 10);
       if (nextLevel > stored) localStorage.setItem(key, String(nextLevel));
       const isLast = step.order === totalSteps;
-      router.push(isLast
-        ? `/modules/${step.module.slug}?complete=true`
-        : `/modules/${step.module.slug}?from=${step.order}`
+      router.push(
+        isLast
+          ? `/modules/${step.module.slug}?complete=true`
+          : `/modules/${step.module.slug}?from=${step.order}`,
       );
     }
   }
@@ -95,6 +104,25 @@ export function ScenarioGame({ step }: { step: StepData }) {
       </header>
 
       <main className="flex-1 flex flex-col items-center justify-center gap-8 px-8 py-6">
+        {/* Progression inter-scénarios */}
+        {total > 1 && (
+          <div className="flex items-center gap-2">
+            {Array.from({ length: total }).map((_, i) => (
+              <div
+                key={i}
+                className="h-2 rounded-full transition-all duration-300"
+                style={{
+                  width: i === currentIndex ? "32px" : "12px",
+                  background: i < currentIndex ? "#fff" : i === currentIndex ? "rgba(255,255,255,0.85)" : "rgba(255,255,255,0.25)",
+                }}
+              />
+            ))}
+            <span className="text-white/60 text-xs font-bold ml-1">
+              {currentIndex + 1} / {total}
+            </span>
+          </div>
+        )}
+
         {/* Carte situation */}
         <div className="bg-white/95 backdrop-blur-sm rounded-3xl px-10 py-8 max-w-2xl w-full shadow-xl">
           <p className="text-xs font-black uppercase tracking-widest mb-3" style={{ color: primaryColor }}>
@@ -152,11 +180,22 @@ export function ScenarioGame({ step }: { step: StepData }) {
       <FeedbackOverlay
         show={overlay?.show ?? false}
         isCorrect={overlay?.isCorrect ?? false}
-        explanation={explanation || (overlay?.isCorrect ? "Excellent choix !" : "Ce n'était pas la meilleure réaction. Réfléchis à ce qui protège le mieux dans cette situation.")}
+        explanation={
+          explanation ||
+          (overlay?.isCorrect
+            ? "Excellent choix !"
+            : "Ce n'était pas la meilleure réaction. Réfléchis à ce qui protège le mieux dans cette situation.")
+        }
         mascotte={step.module.mascotte}
         primaryColor={primaryColor}
         onClose={handleOverlayClose}
-        closeLabel={overlay?.isCorrect ? "Continuer →" : "Réessayer"}
+        closeLabel={
+          overlay?.isCorrect
+            ? isLastItem
+              ? "Continuer →"
+              : "Situation suivante →"
+            : "Réessayer"
+        }
       />
     </div>
   );

@@ -27,20 +27,26 @@ interface StepData {
 export function PhraseATrou({ step }: { step: StepData }) {
   const router = useRouter();
 
-  const gameData = step.gameData?.[0];
+  const allGameData = step.gameData ?? [];
+  const total = allGameData.length;
+
+  const [currentIndex, setCurrentIndex] = useState(0);
+  const [overlay, setOverlay] = useState<{ show: boolean; isCorrect: boolean } | null>(null);
+
+  const primaryColor = step.module.colorPrimary ?? "#16A34A";
+  const bottomColor = step.module.colorSecondary ?? "#052e16";
+  const totalSteps = step.module.steps.length;
+
+  const gameData = allGameData[currentIndex];
   const phrase = gameData?.questionData?.phrase ?? "";
   const options = gameData?.questionData?.options ?? [];
   const correctBlanks = gameData?.correctAnswer?.blanks ?? [];
 
   const parts = phrase.split("___");
   const blankCount = parts.length - 1;
+  const isLastItem = currentIndex === total - 1;
 
-  const [filled, setFilled] = useState<(string | null)[]>(Array(blankCount).fill(null));
-  const [overlay, setOverlay] = useState<{ show: boolean; isCorrect: boolean } | null>(null);
-
-  const primaryColor = step.module.colorPrimary ?? "#16A34A";
-  const bottomColor = step.module.colorSecondary ?? "#052e16";
-  const totalSteps = step.module.steps.length;
+  const [filled, setFilled] = useState<(string | null)[]>(() => Array(blankCount).fill(null));
 
   const usedOptions = filled.filter(Boolean) as string[];
   const nextBlankIndex = filled.findIndex((f) => f === null);
@@ -80,15 +86,22 @@ export function PhraseATrou({ step }: { step: StepData }) {
     setOverlay(null);
     if (!isCorrect) {
       setFilled(Array(blankCount).fill(null));
+    } else if (!isLastItem) {
+      const nextGD = allGameData[currentIndex + 1];
+      const nextPhrase = nextGD?.questionData?.phrase ?? "";
+      const nextBlankCount = nextPhrase.split("___").length - 1;
+      setFilled(Array(nextBlankCount).fill(null));
+      setCurrentIndex((i) => i + 1);
     } else {
       const nextLevel = step.order + 1;
       const key = `module_level_${step.module.slug}`;
       const stored = parseInt(localStorage.getItem(key) ?? "1", 10);
       if (nextLevel > stored) localStorage.setItem(key, String(nextLevel));
       const isLast = step.order === totalSteps;
-      router.push(isLast
-        ? `/modules/${step.module.slug}?complete=true`
-        : `/modules/${step.module.slug}?from=${step.order}`
+      router.push(
+        isLast
+          ? `/modules/${step.module.slug}?complete=true`
+          : `/modules/${step.module.slug}?from=${step.order}`,
       );
     }
   }
@@ -120,6 +133,25 @@ export function PhraseATrou({ step }: { step: StepData }) {
       </header>
 
       <main className="flex-1 flex flex-col items-center justify-center gap-8 px-8">
+        {/* Progression inter-phrases */}
+        {total > 1 && (
+          <div className="flex items-center gap-2">
+            {Array.from({ length: total }).map((_, i) => (
+              <div
+                key={i}
+                className="h-2 rounded-full transition-all duration-300"
+                style={{
+                  width: i === currentIndex ? "32px" : "12px",
+                  background: i < currentIndex ? "#fff" : i === currentIndex ? "rgba(255,255,255,0.85)" : "rgba(255,255,255,0.25)",
+                }}
+              />
+            ))}
+            <span className="text-white/60 text-xs font-bold ml-1">
+              {currentIndex + 1} / {total}
+            </span>
+          </div>
+        )}
+
         {/* Progression des blancs */}
         <div className="flex items-center gap-2">
           {Array.from({ length: blankCount }).map((_, i) => (
@@ -218,7 +250,13 @@ export function PhraseATrou({ step }: { step: StepData }) {
         mascotte={step.module.mascotte}
         primaryColor={primaryColor}
         onClose={handleOverlayClose}
-        closeLabel={overlay?.isCorrect ? "Continuer →" : "Réessayer"}
+        closeLabel={
+          overlay?.isCorrect
+            ? isLastItem
+              ? "Continuer →"
+              : "Phrase suivante →"
+            : "Réessayer"
+        }
       />
     </div>
   );

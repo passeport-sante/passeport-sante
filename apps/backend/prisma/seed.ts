@@ -91,7 +91,7 @@ async function main() {
   // ─── Modules ──────────────────────────────────────────────────────────────────
   const moduleVaccination = await prisma.module.upsert({
     where: { slug: "vaccination" },
-    update: { colorPrimary: "#16A34A", colorSecondary: "#052e16" },
+    update: { colorPrimary: "#1618a3", colorSecondary: "#c9ae15" },
     create: {
       id: "seed-module-1",
       title: "Vaccination",
@@ -123,6 +123,8 @@ async function main() {
       mascotte: "Mme-etoile.png",
       colorPrimary: "#7C3AED",
       colorSecondary: "#1e1b4b",
+      colorCard: "#f9f5ff",
+      colorCardSecondary: "#f3e8ff",
       organizationId: org.id,
       categoryId: catSante.id,
     },
@@ -142,25 +144,29 @@ async function main() {
       mascotte: "Petit-savon.png",
       colorPrimary: "#0891B2",
       colorSecondary: "#0C2340",
+      colorCard: "#e0f7fa",
+      colorCardSecondary: "#b2ebf2",
       organizationId: org.id,
       categoryId: catSante.id,
     },
   });
 
   const moduleCyber = await prisma.module.upsert({
-    where: { slug: "cyberharcelement" },
+    where: { slug: "ecrans" },
     update: { colorPrimary: "#DB2777", colorSecondary: "#4a044e" },
     create: {
       id: "seed-module-4",
-      title: "Cyberharcèlement",
+      title: "Ecrans",
       description:
         "Identifier, réagir et se protéger face au harcèlement en ligne.",
-      slug: "cyberharcelement",
+      slug: "ecrans",
       duration: 25,
       isActive: true,
-      mascotte: "empathie-mascotte.png",
+      mascotte: "mascotte6.png",
       colorPrimary: "#DB2777",
       colorSecondary: "#4a044e",
+      colorCard: "#fce7f3",
+      colorCardSecondary: "#fbcfe8",
       organizationId: org.id,
       categoryId: catNumerique.id,
     },
@@ -179,6 +185,8 @@ async function main() {
       mascotte: "Butternut-mascotte.png",
       colorPrimary: "#D97706",
       colorSecondary: "#14290A",
+      colorCard: "#ffedd5",
+      colorCardSecondary: "#fed7aa",
       organizationId: org.id,
       categoryId: catNutrition.id,
     },
@@ -195,15 +203,22 @@ async function main() {
   // ─── Steps (module vaccination) ───────────────────────────────────────────────
   const stepKanban = await prisma.step.upsert({
     where: { id: "seed-step-1" },
-    update: { gameType: "KANBAN", order: 1 },
+    update: {
+      gameType: "KANBAN",
+      order: 1,
+      content: {
+        title: "Vrai ou Intox ?",
+        instructions: "Classe chaque affirmation dans la bonne catégorie",
+      },
+    },
     create: {
       id: "seed-step-1",
       gameType: "KANBAN",
       order: 1,
-      mascotteImage: "mascotte_happy.png",
+      mascotteImage: "mascotte5.png",
       content: {
-        title: "Trie les éléments",
-        instructions: "Place chaque élément dans la bonne catégorie",
+        title: "Vrai ou Intox ?",
+        instructions: "Classe chaque affirmation dans la bonne catégorie",
       },
       moduleId: moduleVaccination.id,
     },
@@ -211,31 +226,47 @@ async function main() {
 
   const stepPhraseATrou = await prisma.step.upsert({
     where: { id: "seed-step-2" },
-    update: { gameType: "PHRASE_A_TROU", order: 2 },
+    update: {
+      gameType: "PHRASE_A_TROU",
+      order: 2,
+      content: {
+        title: "Le calendrier vaccinal",
+        instructions: "Complète les phrases avec les bons mots",
+      },
+    },
     create: {
       id: "seed-step-2",
       gameType: "PHRASE_A_TROU",
       order: 2,
-      mascotteImage: "mascotte_question.png",
+      mascotteImage: "mascotte5.png",
       content: {
-        title: "Phrase à trou",
-        instructions: "Complète la phrase avec les bons mots",
+        title: "Le calendrier vaccinal",
+        instructions: "Complète les phrases avec les bons mots",
       },
       moduleId: moduleVaccination.id,
     },
   });
 
-  await prisma.step.upsert({
+  const stepPuzzle = await prisma.step.upsert({
     where: { id: "seed-step-3" },
-    update: { gameType: "PUZZLE", order: 3 },
+    update: {
+      gameType: "PUZZLE",
+      order: 3,
+      content: {
+        title: "Dans le bon ordre !",
+        instructions:
+          "Replace les étapes d'une vaccination dans l'ordre correct",
+      },
+    },
     create: {
       id: "seed-step-3",
       gameType: "PUZZLE",
       order: 3,
-      mascotteImage: "mascotte_puzzle.png",
+      mascotteImage: "mascotte5.png",
       content: {
-        title: "Reconstitue la scène",
-        instructions: "Replace les éléments dans le bon ordre",
+        title: "Dans le bon ordre !",
+        instructions:
+          "Replace les étapes d'une vaccination dans l'ordre correct",
       },
       moduleId: moduleVaccination.id,
     },
@@ -243,15 +274,22 @@ async function main() {
 
   await prisma.step.upsert({
     where: { id: "seed-step-4" },
-    update: { gameType: "SCENARIO", order: 4 },
+    update: {
+      gameType: "SCENARIO",
+      order: 4,
+      content: {
+        title: "Que ferais-tu ?",
+        instructions: "Choisis la meilleure réaction face à cette situation",
+      },
+    },
     create: {
       id: "seed-step-4",
       gameType: "SCENARIO",
       order: 4,
-      mascotteImage: "mascotte_happy.png",
+      mascotteImage: "mascotte5.png",
       content: {
         title: "Que ferais-tu ?",
-        instructions: "Choisis la meilleure réaction",
+        instructions: "Choisis la meilleure réaction face à cette situation",
       },
       moduleId: moduleVaccination.id,
     },
@@ -259,15 +297,22 @@ async function main() {
 
   await prisma.step.upsert({
     where: { id: "seed-step-5" },
-    update: { gameType: "QUIZ", order: 5 },
+    update: {
+      gameType: "QUIZ",
+      order: 5,
+      content: {
+        title: "Quiz final",
+        instructions: "Teste toutes tes connaissances sur la vaccination",
+      },
+    },
     create: {
       id: "seed-step-5",
       gameType: "QUIZ",
       order: 5,
-      mascotteImage: "mascotte_question.png",
+      mascotteImage: "mascotte5.png",
       content: {
         title: "Quiz final",
-        instructions: "Teste tes connaissances",
+        instructions: "Teste toutes tes connaissances sur la vaccination",
       },
       moduleId: moduleVaccination.id,
     },
@@ -275,60 +320,85 @@ async function main() {
   console.log(" Steps créés: KANBAN, PHRASE_A_TROU, PUZZLE, SCENARIO, QUIZ");
 
   // ─── Game Data ────────────────────────────────────────────────────────────────
+
+  // Step 1 — Kanban : Vrai ou Intox sur la vaccination
   await prisma.gameData.upsert({
     where: { id: "seed-gamedata-1" },
-    update: {},
+    update: {
+      questionData: {
+        items: [
+          "Les vaccins protègent toute la communauté",
+          "Un vaccin peut donner la maladie",
+          "Le vaccin HPV concerne filles et garçons",
+          "Seuls les bébés ont besoin de vaccins",
+          "La polio a été éradiquée grâce aux vaccins",
+          "Les vaccins sont inutiles si on est en bonne santé",
+        ],
+        categories: ["Vrai", "Intox"],
+      },
+      correctAnswer: {
+        "Les vaccins protègent toute la communauté": "Vrai",
+        "Un vaccin peut donner la maladie": "Intox",
+        "Le vaccin HPV concerne filles et garçons": "Vrai",
+        "Seuls les bébés ont besoin de vaccins": "Intox",
+        "La polio a été éradiquée grâce aux vaccins": "Vrai",
+        "Les vaccins sont inutiles si on est en bonne santé": "Intox",
+      },
+    },
     create: {
       id: "seed-gamedata-1",
       questionData: {
         items: [
-          "Casque à vélo",
-          "Téléphone en conduisant",
-          "Ceinture de sécurité",
-          "Vitesse excessive",
+          "Les vaccins protègent toute la communauté",
+          "Un vaccin peut donner la maladie",
+          "Le vaccin HPV concerne filles et garçons",
+          "Seuls les bébés ont besoin de vaccins",
+          "La polio a été éradiquée grâce aux vaccins",
+          "Les vaccins sont inutiles si on est en bonne santé",
         ],
-        categories: ["Sécurité", "Danger"],
+        categories: ["Vrai", "Intox"],
       },
       correctAnswer: {
-        "Casque à vélo": "Sécurité",
-        "Téléphone en conduisant": "Danger",
-        "Ceinture de sécurité": "Sécurité",
-        "Vitesse excessive": "Danger",
+        "Les vaccins protègent toute la communauté": "Vrai",
+        "Un vaccin peut donner la maladie": "Intox",
+        "Le vaccin HPV concerne filles et garçons": "Vrai",
+        "Seuls les bébés ont besoin de vaccins": "Intox",
+        "La polio a été éradiquée grâce aux vaccins": "Vrai",
+        "Les vaccins sont inutiles si on est en bonne santé": "Intox",
       },
-      hints: { hint1: "Pense à ce qui protège vs ce qui met en danger" },
       stepId: stepKanban.id,
     },
   });
 
+  // Step 2 — Phrase à trou : Le calendrier vaccinal
   await prisma.gameData.upsert({
     where: { id: "seed-gamedata-2" },
     update: {
       questionData: {
         phrase:
-          "Le vaccin contre la grippe est recommandé ___ par an et protège contre ___ virus différents.",
-        options: ["une fois", "deux fois", "plusieurs", "trois"],
+          "Le vaccin contre le Papillomavirus est recommandé pour les ___ et les ___, entre ___ et ___ ans.",
+        options: ["filles", "garçons", "11", "14", "6", "18"],
       },
-      correctAnswer: { blanks: ["une fois", "plusieurs"] },
+      correctAnswer: { blanks: ["filles", "garçons", "11", "14"] },
     },
     create: {
       id: "seed-gamedata-2",
       questionData: {
         phrase:
-          "Le vaccin contre la grippe est recommandé ___ par an et protège contre ___ virus différents.",
-        options: ["une fois", "deux fois", "plusieurs", "trois"],
+          "Le vaccin contre le Papillomavirus est recommandé pour les ___ et les ___, entre ___ et ___ ans.",
+        options: ["filles", "garçons", "11", "14", "6", "18"],
       },
-      correctAnswer: { blanks: ["une fois", "plusieurs"] },
+      correctAnswer: { blanks: ["filles", "garçons", "11", "14"] },
       stepId: stepPhraseATrou.id,
     },
   });
 
+  // Step 3 — Puzzle #1 : Ordre des étapes d'une vaccination
   await prisma.gameData.upsert({
     where: { id: "seed-gamedata-3" },
-    update: {},
-    create: {
-      id: "seed-gamedata-3",
+    update: {
       questionData: {
-        title: "Reconstitue l'ordre des étapes de vaccination",
+        title: "Reconstitue l'ordre des étapes d'une vaccination",
         items: [
           { id: "a", text: "Le médecin vérifie ton carnet de santé" },
           { id: "b", text: "Tu reçois l'injection du vaccin" },
@@ -340,99 +410,433 @@ async function main() {
         ],
       },
       correctAnswer: { order: ["c", "a", "b", "d"] },
-      hints: {
-        hint1: "Pense aux étapes dans l'ordre logique d'une consultation",
+    },
+    create: {
+      id: "seed-gamedata-3",
+      questionData: {
+        title: "Reconstitue l'ordre des étapes d'une vaccination",
+        items: [
+          { id: "a", text: "Le médecin vérifie ton carnet de santé" },
+          { id: "b", text: "Tu reçois l'injection du vaccin" },
+          { id: "c", text: "Tu prends rendez-vous chez le médecin" },
+          {
+            id: "d",
+            text: "Tu patientes 15 min pour surveiller les réactions",
+          },
+        ],
       },
-      stepId: "seed-step-3",
+      correctAnswer: { order: ["c", "a", "b", "d"] },
+      stepId: stepPuzzle.id,
     },
   });
 
+  // Step 4 — Scénario : Mon ami pense que le HPV ne concerne pas les garçons
   await prisma.gameData.upsert({
     where: { id: "seed-gamedata-4" },
-    update: {},
-    create: {
-      id: "seed-gamedata-4",
+    update: {
       questionData: {
         situation:
-          "Ton ami te dit qu'il ne veut pas se faire vacciner car il a peur que ça lui donne la maladie. Que lui réponds-tu ?",
+          "Ton ami pense que le vaccin contre le Papillomavirus n'est que pour les filles et qu'en tant que garçon, il n'en a pas besoin. Que lui réponds-tu ?",
         choices: [
-          {
-            id: "a",
-            text: "Tu as raison, les vaccins peuvent être dangereux.",
-          },
+          { id: "a", text: "Tu as raison, ce vaccin est réservé aux filles." },
           {
             id: "b",
-            text: "Les vaccins ne contiennent pas le virus actif, ils ne peuvent pas te rendre malade.",
+            text: "Le HPV concerne tout le monde. Les garçons aussi peuvent contracter et transmettre le virus.",
           },
-          { id: "c", text: "C'est ton choix, peu importe." },
+          { id: "c", text: "De toute façon, les vaccins ne servent à rien." },
           {
             id: "d",
-            text: "Tu n'as pas besoin de te vacciner si tu es en bonne santé.",
+            text: "Tu peux attendre d'avoir 18 ans pour en parler à ton médecin.",
           },
         ],
       },
       correctAnswer: {
         choiceId: "b",
         explanation:
-          "Les vaccins contiennent soit des virus inactivés, soit des fragments de virus. Ils ne peuvent pas provoquer la maladie mais entraînent ton système immunitaire à la reconnaître.",
+          "Depuis 2023, le vaccin HPV est recommandé pour les filles ET les garçons entre 11 et 14 ans. Les garçons peuvent contracter le Papillomavirus et le transmettre, la vaccination les protège aussi.",
+      },
+    },
+    create: {
+      id: "seed-gamedata-4",
+      questionData: {
+        situation:
+          "Ton ami pense que le vaccin contre le Papillomavirus n'est que pour les filles et qu'en tant que garçon, il n'en a pas besoin. Que lui réponds-tu ?",
+        choices: [
+          { id: "a", text: "Tu as raison, ce vaccin est réservé aux filles." },
+          {
+            id: "b",
+            text: "Le HPV concerne tout le monde. Les garçons aussi peuvent contracter et transmettre le virus.",
+          },
+          { id: "c", text: "De toute façon, les vaccins ne servent à rien." },
+          {
+            id: "d",
+            text: "Tu peux attendre d'avoir 18 ans pour en parler à ton médecin.",
+          },
+        ],
+      },
+      correctAnswer: {
+        choiceId: "b",
+        explanation:
+          "Depuis 2023, le vaccin HPV est recommandé pour les filles ET les garçons entre 11 et 14 ans. Les garçons peuvent contracter le Papillomavirus et le transmettre, la vaccination les protège aussi.",
       },
       stepId: "seed-step-4",
     },
   });
 
+  // Step 2 — Phrase à trou #2 : La polio
+  await prisma.gameData.upsert({
+    where: { id: "seed-gamedata-2b" },
+    update: {
+      questionData: {
+        phrase: "En ___, la poliomyélite a été déclarée éradiquée en ___.",
+        options: ["2002", "1995", "Europe", "France", "2010", "Afrique"],
+      },
+      correctAnswer: { blanks: ["2002", "Europe"] },
+    },
+    create: {
+      id: "seed-gamedata-2b",
+      questionData: {
+        phrase: "En ___, la poliomyélite a été déclarée éradiquée en ___.",
+        options: ["2002", "1995", "Europe", "France", "2010", "Afrique"],
+      },
+      correctAnswer: { blanks: ["2002", "Europe"] },
+      stepId: stepPhraseATrou.id,
+    },
+  });
+
+  // Step 2 — Phrase à trou #3 : Les trois vaccins 11-14 ans
+  await prisma.gameData.upsert({
+    where: { id: "seed-gamedata-2c" },
+    update: {
+      questionData: {
+        phrase:
+          "Entre 11 et 14 ans, les trois vaccins recommandés sont le ___, les ___ et le ___.",
+        options: [
+          "DTP",
+          "méningocoques C",
+          "HPV",
+          "grippe",
+          "hépatite B",
+          "rage",
+        ],
+      },
+      correctAnswer: { blanks: ["DTP", "méningocoques C", "HPV"] },
+    },
+    create: {
+      id: "seed-gamedata-2c",
+      questionData: {
+        phrase:
+          "Entre 11 et 14 ans, les trois vaccins recommandés sont le ___, les ___ et le ___.",
+        options: [
+          "DTP",
+          "méningocoques C",
+          "HPV",
+          "grippe",
+          "hépatite B",
+          "rage",
+        ],
+      },
+      correctAnswer: { blanks: ["DTP", "méningocoques C", "HPV"] },
+      stepId: stepPhraseATrou.id,
+    },
+  });
+
+  // Step 3 — Puzzle #2 : Comment agit un vaccin dans le corps
+  await prisma.gameData.upsert({
+    where: { id: "seed-gamedata-3b" },
+    update: {
+      questionData: {
+        title: "Comment agit un vaccin dans ton corps ?",
+        items: [
+          {
+            id: "a",
+            text: "Le vaccin introduit une forme inoffensive de l'agent pathogène",
+          },
+          {
+            id: "b",
+            text: "Ton système immunitaire détecte l'agent et fabrique des anticorps",
+          },
+          {
+            id: "c",
+            text: "Les anticorps restent dans ta mémoire immunitaire",
+          },
+          { id: "d", text: "Si le vrai virus arrive un jour, tu es protégé !" },
+        ],
+      },
+      correctAnswer: { order: ["a", "b", "c", "d"] },
+    },
+    create: {
+      id: "seed-gamedata-3b",
+      questionData: {
+        title: "Comment agit un vaccin dans ton corps ?",
+        items: [
+          {
+            id: "a",
+            text: "Le vaccin introduit une forme inoffensive de l'agent pathogène",
+          },
+          {
+            id: "b",
+            text: "Ton système immunitaire détecte l'agent et fabrique des anticorps",
+          },
+          {
+            id: "c",
+            text: "Les anticorps restent dans ta mémoire immunitaire",
+          },
+          { id: "d", text: "Si le vrai virus arrive un jour, tu es protégé !" },
+        ],
+      },
+      correctAnswer: { order: ["a", "b", "c", "d"] },
+      stepId: stepPuzzle.id,
+    },
+  });
+
+  // Step 4 — Scénario #2 : petite sœur qui a peur de la piqûre
+  await prisma.gameData.upsert({
+    where: { id: "seed-gamedata-4b" },
+    update: {
+      questionData: {
+        situation:
+          "Ta petite sœur de 12 ans doit recevoir son vaccin contre les méningocoques mais elle a très peur de la piqûre et refuse d'y aller. Qu'est-ce que tu lui dis ?",
+        choices: [
+          {
+            id: "a",
+            text: "C'est pas grave, tu n'es pas obligée de te vacciner.",
+          },
+          {
+            id: "b",
+            text: "La piqûre fait un peu mal mais c'est rapide. Ce vaccin te protège d'une maladie grave qui peut être mortelle.",
+          },
+          {
+            id: "c",
+            text: "Les vaccins c'est pour les bébés, à ton âge t'en as plus besoin.",
+          },
+          {
+            id: "d",
+            text: "Tu peux attendre d'être grande pour décider toi-même.",
+          },
+        ],
+      },
+      correctAnswer: {
+        choiceId: "b",
+        explanation:
+          "La méningite à méningocoque C peut être très grave, voire mortelle. Le vaccin reste la meilleure protection. La piqûre ne dure qu'un instant et vaut vraiment la peine !",
+      },
+    },
+    create: {
+      id: "seed-gamedata-4b",
+      questionData: {
+        situation:
+          "Ta petite sœur de 12 ans doit recevoir son vaccin contre les méningocoques mais elle a très peur de la piqûre et refuse d'y aller. Qu'est-ce que tu lui dis ?",
+        choices: [
+          {
+            id: "a",
+            text: "C'est pas grave, tu n'es pas obligée de te vacciner.",
+          },
+          {
+            id: "b",
+            text: "La piqûre fait un peu mal mais c'est rapide. Ce vaccin te protège d'une maladie grave qui peut être mortelle.",
+          },
+          {
+            id: "c",
+            text: "Les vaccins c'est pour les bébés, à ton âge t'en as plus besoin.",
+          },
+          {
+            id: "d",
+            text: "Tu peux attendre d'être grande pour décider toi-même.",
+          },
+        ],
+      },
+      correctAnswer: {
+        choiceId: "b",
+        explanation:
+          "La méningite à méningocoque C peut être très grave, voire mortelle. Le vaccin reste la meilleure protection. La piqûre ne dure qu'un instant et vaut vraiment la peine !",
+      },
+      stepId: "seed-step-4",
+    },
+  });
+
+  // Step 5 — Quiz final (5 questions)
   await prisma.gameData.upsert({
     where: { id: "seed-gamedata-5" },
-    update: {},
+    update: {
+      questionData: {
+        questions: [
+          {
+            id: "q1",
+            text: "Qu'est-ce qu'un vaccin ?",
+            options: [
+              {
+                id: "a",
+                text: "Un médicament qui guérit les maladies déjà contractées",
+              },
+              {
+                id: "b",
+                text: "Une préparation qui entraîne le système immunitaire à reconnaître un agent pathogène",
+              },
+              {
+                id: "c",
+                text: "Un complément alimentaire pour booster ses défenses",
+              },
+              {
+                id: "d",
+                text: "Un traitement uniquement réservé aux personnes malades",
+              },
+            ],
+            explanation:
+              "Un vaccin prépare ton système immunitaire à reconnaître et combattre un agent pathogène, sans te rendre malade.",
+          },
+          {
+            id: "q2",
+            text: "En 2002, quelle maladie a été éradiquée en Europe grâce aux vaccins ?",
+            options: [
+              { id: "a", text: "La grippe" },
+              { id: "b", text: "La varicelle" },
+              { id: "c", text: "La poliomyélite (polio)" },
+              { id: "d", text: "La rougeole" },
+            ],
+            explanation:
+              "La poliomyélite a été déclarée éradiquée en Europe en 2002 grâce à la vaccination massive mise en place depuis les années 1950.",
+          },
+          {
+            id: "q3",
+            text: "Quels vaccins sont recommandés entre 11 et 14 ans ?",
+            options: [
+              { id: "a", text: "Grippe, rage et hépatite A" },
+              { id: "b", text: "DTP, méningocoques C et HPV" },
+              { id: "c", text: "Aucun vaccin à cet âge" },
+              { id: "d", text: "Seulement le vaccin contre la varicelle" },
+            ],
+            explanation:
+              "Entre 11 et 14 ans, le calendrier vaccinal recommande le rappel DTP (diphtérie, tétanos, polio), le vaccin méningocoques C et le vaccin HPV.",
+          },
+          {
+            id: "q4",
+            text: "Qui doit se faire vacciner contre le Papillomavirus (HPV) ?",
+            options: [
+              { id: "a", text: "Uniquement les filles" },
+              { id: "b", text: "Uniquement les garçons" },
+              { id: "c", text: "Les filles et les garçons" },
+              { id: "d", text: "Personne avant 18 ans" },
+            ],
+            explanation:
+              "Depuis 2023, la vaccination HPV est recommandée pour tous — filles et garçons — entre 11 et 14 ans, car le virus peut toucher et se transmettre par les deux.",
+          },
+          {
+            id: "q5",
+            text: "Où peut-on se faire vacciner ?",
+            options: [
+              { id: "a", text: "Uniquement à l'hôpital" },
+              {
+                id: "b",
+                text: "Chez le médecin, en pharmacie, à l'infirmerie du collège ou avec l'infirmière scolaire",
+              },
+              {
+                id: "c",
+                text: "Seulement dans un laboratoire d'analyses médicales",
+              },
+              {
+                id: "d",
+                text: "Nulle part avant 18 ans sans accord des parents",
+              },
+            ],
+            explanation:
+              "La vaccination est accessible dans de nombreux endroits : chez le médecin généraliste, en pharmacie, à l'infirmerie du collège et auprès de l'infirmière scolaire.",
+          },
+        ],
+      },
+      correctAnswer: {
+        answers: { q1: "b", q2: "c", q3: "b", q4: "c", q5: "b" },
+      },
+    },
     create: {
       id: "seed-gamedata-5",
       questionData: {
         questions: [
           {
             id: "q1",
-            text: "À quoi sert un vaccin ?",
-            options: [
-              { id: "a", text: "À guérir une maladie déjà contractée" },
-              {
-                id: "b",
-                text: "À préparer le système immunitaire à reconnaître un agent pathogène",
-              },
-              { id: "c", text: "À éliminer tous les microbes du corps" },
-              { id: "d", text: "À remplacer les médicaments" },
-            ],
-          },
-          {
-            id: "q2",
-            text: "Qu'est-ce que l'immunité collective ?",
+            text: "Qu'est-ce qu'un vaccin ?",
             options: [
               {
                 id: "a",
-                text: "Quand toute une équipe de sport est en bonne santé",
+                text: "Un médicament qui guérit les maladies déjà contractées",
               },
               {
                 id: "b",
-                text: "Quand suffisamment de personnes sont vaccinées pour protéger aussi celles qui ne peuvent pas l'être",
+                text: "Une préparation qui entraîne le système immunitaire à reconnaître un agent pathogène",
               },
               {
                 id: "c",
-                text: "Une maladie qui touche tout le monde en même temps",
+                text: "Un complément alimentaire pour booster ses défenses",
               },
-              { id: "d", text: "Un médicament donné à tout le monde" },
+              {
+                id: "d",
+                text: "Un traitement uniquement réservé aux personnes malades",
+              },
             ],
+            explanation:
+              "Un vaccin prépare ton système immunitaire à reconnaître et combattre un agent pathogène, sans te rendre malade.",
+          },
+          {
+            id: "q2",
+            text: "En 2002, quelle maladie a été éradiquée en Europe grâce aux vaccins ?",
+            options: [
+              { id: "a", text: "La grippe" },
+              { id: "b", text: "La varicelle" },
+              { id: "c", text: "La poliomyélite (polio)" },
+              { id: "d", text: "La rougeole" },
+            ],
+            explanation:
+              "La poliomyélite a été déclarée éradiquée en Europe en 2002 grâce à la vaccination massive mise en place depuis les années 1950.",
           },
           {
             id: "q3",
-            text: "Quelle maladie a été totalement éradiquée grâce aux vaccins ?",
+            text: "Quels vaccins sont recommandés entre 11 et 14 ans ?",
             options: [
-              { id: "a", text: "La grippe" },
-              { id: "b", text: "Le rhume" },
-              { id: "c", text: "La variole" },
-              { id: "d", text: "L'angine" },
+              { id: "a", text: "Grippe, rage et hépatite A" },
+              { id: "b", text: "DTP, méningocoques C et HPV" },
+              { id: "c", text: "Aucun vaccin à cet âge" },
+              { id: "d", text: "Seulement le vaccin contre la varicelle" },
             ],
+            explanation:
+              "Entre 11 et 14 ans, le calendrier vaccinal recommande le rappel DTP (diphtérie, tétanos, polio), le vaccin méningocoques C et le vaccin HPV.",
+          },
+          {
+            id: "q4",
+            text: "Qui doit se faire vacciner contre le Papillomavirus (HPV) ?",
+            options: [
+              { id: "a", text: "Uniquement les filles" },
+              { id: "b", text: "Uniquement les garçons" },
+              { id: "c", text: "Les filles et les garçons" },
+              { id: "d", text: "Personne avant 18 ans" },
+            ],
+            explanation:
+              "Depuis 2023, la vaccination HPV est recommandée pour tous — filles et garçons — entre 11 et 14 ans, car le virus peut toucher et se transmettre par les deux.",
+          },
+          {
+            id: "q5",
+            text: "Où peut-on se faire vacciner ?",
+            options: [
+              { id: "a", text: "Uniquement à l'hôpital" },
+              {
+                id: "b",
+                text: "Chez le médecin, en pharmacie, à l'infirmerie du collège ou avec l'infirmière scolaire",
+              },
+              {
+                id: "c",
+                text: "Seulement dans un laboratoire d'analyses médicales",
+              },
+              {
+                id: "d",
+                text: "Nulle part avant 18 ans sans accord des parents",
+              },
+            ],
+            explanation:
+              "La vaccination est accessible dans de nombreux endroits : chez le médecin généraliste, en pharmacie, à l'infirmerie du collège et auprès de l'infirmière scolaire.",
           },
         ],
       },
       correctAnswer: {
-        answers: { q1: "b", q2: "b", q3: "c" },
+        answers: { q1: "b", q2: "c", q3: "b", q4: "c", q5: "b" },
       },
       stepId: "seed-step-5",
     },
@@ -1276,7 +1680,7 @@ async function main() {
   }
   console.log(` ${diagnosticQuestions.length} questions diagnostic créées`);
 
-  console.log("\n🎉 Seeding terminé !");
+  console.log("\n Seeding terminé !");
   console.log("─────────────────────────────");
   console.log("Admin     :", admin.email, "/ Admin123!");
   console.log("Formateur :", trainer.email, "/ Trainer123!");
