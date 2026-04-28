@@ -6,8 +6,10 @@ import Link from "next/link";
 import Image from "next/image";
 import { ArrowLeft, ChevronRight } from "lucide-react";
 import { GameProgress } from "@/components/rive/GameProgress";
+import { createGuestStudent, setGuestStudentId, getGuestStudentId } from "@/lib/modules";
 
 interface ModuleData {
+  id: string;
   title: string;
   slug: string;
   mascotte: string | null;
@@ -97,6 +99,14 @@ export function ModuleImmersiveClient({ module }: Props) {
   useEffect(() => {
     if (didInit.current) return;
     didInit.current = true;
+
+    // Si l'élève arrive depuis /session avec un sessionId, on crée son GuestStudent
+    const sessionId = searchParams.get("sessionId");
+    if (sessionId && !getGuestStudentId(module.slug)) {
+      createGuestStudent(sessionId)
+        .then((id) => setGuestStudentId(module.slug, id))
+        .catch(() => {});
+    }
 
     const unlocked = Math.min(
       Math.max(parseInt(localStorage.getItem(storageKey) ?? "1", 10), 1),

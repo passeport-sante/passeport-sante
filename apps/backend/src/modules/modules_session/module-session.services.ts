@@ -14,7 +14,7 @@ export class ModuleSessionService {
   create(dto: CreateModuleSessionDto) {
     const accessCode = this.generateCode();
     const baseUrl = this.config.get<string>("FRONTEND_URL") ?? "http://localhost:3000";
-    const accessUrl = `${baseUrl}/modules/${accessCode}`;
+    const accessUrl = `${baseUrl}/session/${accessCode}`;
 
     return this.prisma.moduleSession.create({
       data: { ...dto, accessCode, accessUrl },
@@ -32,7 +32,41 @@ export class ModuleSessionService {
   }
 
   findOne(id: string) {
-    return this.prisma.moduleSession.findUnique({ where: { id } });
+    return this.prisma.moduleSession.findUnique({
+      where: { id },
+      include: {
+        module: {
+          select: {
+            id: true,
+            title: true,
+            slug: true,
+            colorPrimary: true,
+            steps: {
+              select: { id: true, order: true, gameType: true, content: true },
+              orderBy: { order: "asc" },
+            },
+          },
+        },
+        _count: { select: { guestStudents: true } },
+        guestStudents: {
+          select: {
+            id: true,
+            kanbanResponses: { select: { stepId: true, isCorrect: true } },
+            quizResponses:   { select: { stepId: true, isCorrect: true } },
+            puzzleResponses: { select: { stepId: true, isCorrect: true } },
+          },
+        },
+      },
+    });
+  }
+
+  findByCode(code: string) {
+    return this.prisma.moduleSession.findFirst({
+      where: { accessCode: code },
+      include: {
+        module: { select: { id: true, title: true, slug: true, colorPrimary: true } },
+      },
+    });
   }
 
   update(id: string, dto: UpdateModuleSessionDto) {

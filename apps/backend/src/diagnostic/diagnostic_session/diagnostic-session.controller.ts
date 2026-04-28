@@ -6,6 +6,7 @@ import {
   Patch,
   Param,
   Delete,
+  NotFoundException,
 } from "@nestjs/common";
 import { DiagnosticSessionService } from "./diagnostic-session.services";
 import { CreateDiagnosticSessionDto } from "./dto/create-diagnostic.dto";
@@ -30,8 +31,10 @@ export class DiagnosticSessionController {
   }
 
   @Get("by-code/:code")
-  findByCode(@Param("code") code: string) {
-    return this.diagnosticSessionService.findByAccessCode(code);
+  async findByCode(@Param("code") code: string) {
+    const session = await this.diagnosticSessionService.findByAccessCode(code);
+    if (!session) throw new NotFoundException("Session introuvable");
+    return session;
   }
 
   @Get(":id")

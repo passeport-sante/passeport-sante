@@ -1,10 +1,11 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useRef } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { ArrowLeft, Trophy } from "lucide-react";
 import { FeedbackOverlay } from "@/components/modules/FeedbackOverlay";
+import { getGuestStudentId, submitQuizResponse } from "@/lib/modules";
 
 interface Option {
   id: string;
@@ -27,6 +28,7 @@ interface StepData {
     correctAnswer: { answers: Record<string, string> };
   }[];
   module: {
+    id: string;
     slug: string;
     title: string;
     mascotte?: string | null;
@@ -48,6 +50,7 @@ export function QuizGame({ step }: { step: StepData }) {
   const [userAnswers, setUserAnswers] = useState<Record<string, string>>({});
   const [overlay, setOverlay] = useState<{ show: boolean; isCorrect: boolean } | null>(null);
   const [finished, setFinished] = useState(false);
+  const startTimeRef = useRef(Date.now());
 
   const primaryColor = step.module.colorPrimary ?? "#16A34A";
   const bottomColor = step.module.colorSecondary ?? "#052e16";
@@ -63,7 +66,22 @@ export function QuizGame({ step }: { step: StepData }) {
   function handleConfirm() {
     if (!selected || !currentQuestion) return;
     const isCorrect = correctAnswers[currentQuestion.id] === selected;
+    const timing = Math.round((Date.now() - startTimeRef.current) / 1000);
     setUserAnswers((prev) => ({ ...prev, [currentQuestion.id]: selected }));
+
+    const guestStudentId = getGuestStudentId(step.module.slug);
+    if (guestStudentId) {
+      submitQuizResponse({
+        guestStudentId,
+        stepId: step.id,
+        moduleId: step.module.id,
+        userAnswer: { questionId: currentQuestion.id, answer: selected },
+        isCorrect,
+        timing,
+      }).catch(() => {});
+    }
+
+    startTimeRef.current = Date.now();
     setOverlay({ show: true, isCorrect });
   }
 

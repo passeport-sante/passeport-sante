@@ -63,7 +63,7 @@ export default function NewSessionPage() {
       const endpoint =
         type === "diagnostic"
           ? `${API}/api/diagnostic/session`
-          : `${API}/api/modules/session`;
+          : `${API}/api/module-sessions`;
 
       const body =
         type === "diagnostic"

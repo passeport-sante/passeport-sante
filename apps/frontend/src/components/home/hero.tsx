@@ -33,10 +33,10 @@ export function Hero() {
                 Commencer le parcours <ArrowRight size={20} />
               </Link>
               <Link
-                href="/modules"
-                className="inline-flex items-center px-10 py-5 bg-white text-gray-600 font-semibold rounded-full text-base border-2 border-gray-200 hover:border-gray-300 transition-colors"
+                href="/session"
+                className="inline-flex items-center gap-3 px-10 py-5 bg-white text-gray-700 font-bold rounded-full text-base border-2 border-gray-200 hover:border-brand-dark-green hover:text-brand-dark-green transition-colors"
               >
-                Voir les thèmes
+                Rejoindre une session
               </Link>
             </div>
           </div>

@@ -24,6 +24,7 @@ export class StepService {
         gameData: true,
         module: {
           select: {
+            id: true,
             slug: true,
             title: true,
             mascotte: true,

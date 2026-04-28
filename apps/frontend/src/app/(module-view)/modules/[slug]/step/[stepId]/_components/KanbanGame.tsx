@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { ArrowLeft } from "lucide-react";
 import { FeedbackOverlay } from "@/components/modules/FeedbackOverlay";
+import { getGuestStudentId, submitKanbanResponse } from "@/lib/modules";
 
 interface StepData {
   id: string;
@@ -15,6 +16,7 @@ interface StepData {
     correctAnswer: Record<string, string>;
   }[];
   module: {
+    id: string;
     slug: string;
     title: string;
     mascotte?: string | null;
@@ -83,6 +85,16 @@ export function KanbanGame({ step }: { step: StepData }) {
 
   function handleSubmit() {
     const correct = items.every((item) => assignments[item] === correctAnswer[item]);
+    const guestStudentId = getGuestStudentId(step.module.slug);
+    if (guestStudentId) {
+      submitKanbanResponse({
+        guestStudentId,
+        stepId: step.id,
+        moduleId: step.module.id,
+        userAnswer: assignments as Record<string, string>,
+        isCorrect: correct,
+      }).catch(() => {});
+    }
     setOverlay({ show: true, isCorrect: correct });
   }
 

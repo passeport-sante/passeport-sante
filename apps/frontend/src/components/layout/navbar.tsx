@@ -9,8 +9,10 @@ import { LogIn, UserKey } from "lucide-react";
 export function Navbar() {
   const pathname = usePathname();
   const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
+    setMounted(true);
     setIsLoggedIn(!!localStorage.getItem("access_token"));
   }, []);
 
@@ -38,7 +40,7 @@ export function Navbar() {
         </Link>
         <nav className="flex items-center gap-12 flex-1 justify-center">
           {links.map(({ href, label }) => {
-            const isActive = pathname === href;
+            const isActive = mounted && pathname === href;
             return (
               <Link
                 key={href}
@@ -70,7 +72,7 @@ export function Navbar() {
                 window.location.href = "/";
               }}
               className={`transition-colors ${
-                pathname === "/sign-in"
+                mounted && pathname === "/sign-in"
                   ? "text-blue-600"
                   : "text-gray-900 hover:text-gray-600"
               }`}
@@ -81,7 +83,7 @@ export function Navbar() {
         ) : (
           <div className="flex items-center gap-4">
             <Link
-              href="/diagnostic"
+              href="/session"
               className="shrink-0 px-8 py-3 bg-brand-green text-white font-semibold rounded-full hover:opacity-90 transition-opacity shadow-md text-sm"
             >
               Rejoindre
@@ -89,7 +91,7 @@ export function Navbar() {
             <Link
               href="/sign-in"
               className={`transition-colors ${
-                pathname === "/sign-in"
+                mounted && pathname === "/sign-in"
                   ? "text-blue-600"
                   : "text-gray-900 hover:text-gray-600"
               }`}

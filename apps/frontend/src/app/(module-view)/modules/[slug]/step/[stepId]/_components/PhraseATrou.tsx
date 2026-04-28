@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { ArrowLeft } from "lucide-react";
 import { FeedbackOverlay } from "@/components/modules/FeedbackOverlay";
+import { getGuestStudentId, submitQuizResponse } from "@/lib/modules";
 
 interface StepData {
   id: string;
@@ -15,6 +16,7 @@ interface StepData {
     correctAnswer: { blanks: string[] };
   }[];
   module: {
+    id: string;
     slug: string;
     title: string;
     mascotte?: string | null;
@@ -78,6 +80,16 @@ export function PhraseATrou({ step }: { step: StepData }) {
 
   function handleSubmit() {
     const correct = correctBlanks.every((w, i) => w === filled[i]);
+    const guestStudentId = getGuestStudentId(step.module.slug);
+    if (guestStudentId) {
+      submitQuizResponse({
+        guestStudentId,
+        stepId: step.id,
+        moduleId: step.module.id,
+        userAnswer: { blanks: filled, phraseIndex: currentIndex },
+        isCorrect: correct,
+      }).catch(() => {});
+    }
     setOverlay({ show: true, isCorrect: correct });
   }
 

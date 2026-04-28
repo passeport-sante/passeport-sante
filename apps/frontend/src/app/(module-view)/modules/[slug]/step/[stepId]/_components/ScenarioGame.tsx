@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { ArrowLeft } from "lucide-react";
 import { FeedbackOverlay } from "@/components/modules/FeedbackOverlay";
+import { getGuestStudentId, submitQuizResponse } from "@/lib/modules";
 
 interface Choice {
   id: string;
@@ -20,6 +21,7 @@ interface StepData {
     correctAnswer: { choiceId: string; explanation?: string };
   }[];
   module: {
+    id: string;
     slug: string;
     title: string;
     mascotte?: string | null;
@@ -52,6 +54,16 @@ export function ScenarioGame({ step }: { step: StepData }) {
 
   function handleSubmit() {
     const isCorrect = selected === correctChoiceId;
+    const guestStudentId = getGuestStudentId(step.module.slug);
+    if (guestStudentId) {
+      submitQuizResponse({
+        guestStudentId,
+        stepId: step.id,
+        moduleId: step.module.id,
+        userAnswer: { choiceId: selected, scenarioIndex: currentIndex },
+        isCorrect,
+      }).catch(() => {});
+    }
     setOverlay({ show: true, isCorrect });
   }
 

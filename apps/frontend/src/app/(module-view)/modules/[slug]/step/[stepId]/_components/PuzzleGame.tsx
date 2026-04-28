@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { ArrowLeft, GripVertical } from "lucide-react";
 import { FeedbackOverlay } from "@/components/modules/FeedbackOverlay";
+import { getGuestStudentId, submitPuzzleResponse } from "@/lib/modules";
 
 interface PuzzleItem {
   id: string;
@@ -20,6 +21,7 @@ interface StepData {
     correctAnswer: { order: string[] };
   }[];
   module: {
+    id: string;
     slug: string;
     title: string;
     mascotte?: string | null;
@@ -76,6 +78,18 @@ export function PuzzleGame({ step }: { step: StepData }) {
   function handleSubmit() {
     const userOrder = cards.map((c) => c.id);
     const isCorrect = correctOrder.every((id, i) => id === userOrder[i]);
+
+    const guestStudentId = getGuestStudentId(step.module.slug);
+    if (guestStudentId) {
+      submitPuzzleResponse({
+        guestStudentId,
+        stepId: step.id,
+        moduleId: step.module.id,
+        userAnswer: { order: userOrder, puzzleIndex: currentIndex },
+        isCorrect,
+      }).catch(() => {});
+    }
+
     setOverlay({ show: true, isCorrect });
   }
 

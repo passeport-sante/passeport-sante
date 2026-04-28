@@ -42,6 +42,58 @@ export type SessionDetail = Omit<SessionSummary, "_count"> & {
   diagnosticResponses: ResponseEntry[];
 };
 
+export type ModuleSessionSummary = {
+  id: string;
+  className: string;
+  accessCode: string;
+  accessUrl: string;
+  isActive: boolean;
+  createdAt: string;
+  module: { id: string; title: string; colorPrimary: string | null };
+  _count: { guestStudents: number };
+};
+
+type StepResponseEntry = { stepId: string; isCorrect: boolean | null };
+
+export type ModuleGuestStudent = {
+  id: string;
+  kanbanResponses:  StepResponseEntry[];
+  quizResponses:    StepResponseEntry[];
+  puzzleResponses:  StepResponseEntry[];
+};
+
+export type ModuleStepMeta = {
+  id: string;
+  order: number;
+  gameType: string;
+  content: { title?: string } | null;
+};
+
+export type ModuleSessionDetail = {
+  id: string;
+  className: string;
+  accessCode: string;
+  isActive: boolean;
+  createdAt: string;
+  module: {
+    id: string;
+    title: string;
+    slug: string;
+    colorPrimary: string | null;
+    steps: ModuleStepMeta[];
+  };
+  _count: { guestStudents: number };
+  guestStudents: ModuleGuestStudent[];
+};
+
+export type StepStats = {
+  step: ModuleStepMeta;
+  totalAttempts: number;
+  correctCount: number;
+  incorrectCount: number;
+  successRate: number;
+};
+
 // ── Answer distribution ───────────────────────────────────────────────────────
 
 export type AnswerSlice = {
@@ -59,7 +111,10 @@ export type QuestionStats = {
 // ── Helpers ───────────────────────────────────────────────────────────────────
 
 function authHeaders(token: string) {
-  return { Authorization: `Bearer ${token}`, "Content-Type": "application/json" };
+  return {
+    Authorization: `Bearer ${token}`,
+    "Content-Type": "application/json",
+  };
 }
 
 export async function fetchSessions(token: string): Promise<SessionSummary[]> {
@@ -70,7 +125,10 @@ export async function fetchSessions(token: string): Promise<SessionSummary[]> {
   return res.json();
 }
 
-export async function fetchSessionDetail(id: string, token: string): Promise<SessionDetail | null> {
+export async function fetchSessionDetail(
+  id: string,
+  token: string,
+): Promise<SessionDetail | null> {
   const res = await fetch(`${API}/api/diagnostic/session/${id}`, {
     headers: authHeaders(token),
   });
@@ -110,8 +168,13 @@ function extractArrayAnswer(userAnswer: Record<string, unknown>): string[] {
 
 // ── Compute per-question distribution ─────────────────────────────────────────
 
-export function computeQuestionStats(responses: ResponseEntry[]): QuestionStats[] {
-  const map = new Map<string, { question: QuestionMeta; responses: ResponseEntry[] }>();
+export function computeQuestionStats(
+  responses: ResponseEntry[],
+): QuestionStats[] {
+  const map = new Map<
+    string,
+    { question: QuestionMeta; responses: ResponseEntry[] }
+  >();
 
   for (const r of responses) {
     if (!map.has(r.questionId)) {
@@ -128,14 +191,20 @@ export function computeQuestionStats(responses: ResponseEntry[]): QuestionStats[
     });
 }
 
-function buildSlices(question: QuestionMeta, responses: ResponseEntry[]): AnswerSlice[] {
+function buildSlices(
+  question: QuestionMeta,
+  responses: ResponseEntry[],
+): AnswerSlice[] {
   const type = question.questionType;
 
   if (type === "OPEN") return [];
 
   if (type === "TRUE_FALSE") {
-    const correct = (question.correctAnswer as { answer?: string } | null)?.answer ?? null;
-    const choices: string[] = (question.options as { choices?: string[] } | null)?.choices ?? ["OUI", "NON"];
+    const correct =
+      (question.correctAnswer as { answer?: string } | null)?.answer ?? null;
+    const choices: string[] = (
+      question.options as { choices?: string[] } | null
+    )?.choices ?? ["OUI", "NON"];
     const counts: Record<string, number> = {};
     for (const r of responses) {
       const ans = extractScalarAnswer(r.userAnswer);
@@ -149,8 +218,10 @@ function buildSlices(question: QuestionMeta, responses: ResponseEntry[]): Answer
   }
 
   if (type === "MCQ") {
-    const choices: string[] = (question.options as { choices?: string[] } | null)?.choices ?? [];
-    const correct = (question.correctAnswer as { answer?: string } | null)?.answer ?? null;
+    const choices: string[] =
+      (question.options as { choices?: string[] } | null)?.choices ?? [];
+    const correct =
+      (question.correctAnswer as { answer?: string } | null)?.answer ?? null;
     const counts: Record<string, number> = {};
     for (const r of responses) {
       const ans = extractScalarAnswer(r.userAnswer);
@@ -160,15 +231,21 @@ function buildSlices(question: QuestionMeta, responses: ResponseEntry[]): Answer
     const slices: AnswerSlice[] = [];
     for (const label of choices) {
       seen.add(label);
-      slices.push({ label, count: counts[label] ?? 0, isCorrect: correct !== null ? label === correct : null });
+      slices.push({
+        label,
+        count: counts[label] ?? 0,
+        isCorrect: correct !== null ? label === correct : null,
+      });
     }
     // réponses inattendues (format inconnu) — on les ignore silencieusement
     return slices;
   }
 
   if (type === "MCQ_MULTI") {
-    const choices: string[] = (question.options as { choices?: string[] } | null)?.choices ?? [];
-    const correctAnswers: string[] = (question.correctAnswer as { answers?: string[] } | null)?.answers ?? [];
+    const choices: string[] =
+      (question.options as { choices?: string[] } | null)?.choices ?? [];
+    const correctAnswers: string[] =
+      (question.correctAnswer as { answers?: string[] } | null)?.answers ?? [];
     const counts: Record<string, number> = {};
     for (const r of responses) {
       for (const ans of extractArrayAnswer(r.userAnswer)) {
@@ -199,4 +276,51 @@ export function computeAvgScore(responses: ResponseEntry[]): number {
   if (graded.length === 0) return 0;
   const correct = graded.filter((r) => r.isCorrect === true).length;
   return Math.round((correct / graded.length) * 100);
+}
+
+export async function fetchModuleSessions(
+  token: string,
+): Promise<ModuleSessionSummary[]> {
+  const res = await fetch(`${API}/api/module-sessions`, {
+    headers: authHeaders(token),
+  });
+  if (!res.ok) return [];
+  return res.json();
+}
+
+export async function fetchModuleSessionDetail(
+  id: string,
+  token: string,
+): Promise<ModuleSessionDetail | null> {
+  const res = await fetch(`${API}/api/module-sessions/${id}`, {
+    headers: authHeaders(token),
+  });
+  if (!res.ok) return null;
+  return res.json();
+}
+
+export async function closeModuleSession(id: string, token: string): Promise<void> {
+  await fetch(`${API}/api/module-sessions/${id}`, {
+    method: "PATCH",
+    headers: authHeaders(token),
+    body: JSON.stringify({ isActive: false }),
+  });
+}
+
+export function computeModuleStepStats(detail: ModuleSessionDetail): StepStats[] {
+  return detail.module.steps.map((step) => {
+    const allResponses: { isCorrect: boolean | null }[] = [];
+    for (const gs of detail.guestStudents) {
+      allResponses.push(
+        ...gs.kanbanResponses.filter((r) => r.stepId === step.id),
+        ...gs.quizResponses.filter((r) => r.stepId === step.id),
+        ...gs.puzzleResponses.filter((r) => r.stepId === step.id),
+      );
+    }
+    const graded = allResponses.filter((r) => r.isCorrect !== null);
+    const correctCount = graded.filter((r) => r.isCorrect === true).length;
+    const incorrectCount = graded.filter((r) => r.isCorrect === false).length;
+    const successRate = graded.length > 0 ? Math.round((correctCount / graded.length) * 100) : 0;
+    return { step, totalAttempts: graded.length, correctCount, incorrectCount, successRate };
+  });
 }

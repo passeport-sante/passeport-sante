@@ -8,6 +8,8 @@ type ModuleDetail = {
   mascotte: string | null;
   colorPrimary: string | null;
   colorSecondary: string | null;
+  colorCard: string | null;
+  colorCardSecondary: string | null;
   category: { id: string; name: string; slug: string } | null;
   steps: { id: string; order: number; gameType: string }[];
 };
