@@ -86,8 +86,7 @@ export function PhraseATrou({ step }: { step: StepData }) {
         guestStudentId,
         stepId: step.id,
         moduleId: step.module.id,
-        userAnswer: { blanks: filled.filter((b): b is string => b !== null), phraseIndex: currentIndex },
-        isCorrect: correct,
+        userAnswer: { blanks: filled.filter((b): b is string => b !== null).join(','), phraseIndex: currentIndex.toString() },        isCorrect: correct,
       }).catch(() => {});
     }
     setOverlay({ show: true, isCorrect: correct });
