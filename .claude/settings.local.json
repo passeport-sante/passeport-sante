@@ -2,7 +2,8 @@
   "permissions": {
     "allow": [
       "Bash(ls docker-compose*)",
-      "Bash(pg_isready -h localhost -p 5432)"
+      "Bash(pg_isready -h localhost -p 5432)",
+      "Bash(xargs grep *)"
     ]
   }
 }
