@@ -60,7 +60,7 @@ export function ScenarioGame({ step }: { step: StepData }) {
         guestStudentId,
         stepId: step.id,
         moduleId: step.module.id,
-        userAnswer: { choiceId: selected, scenarioIndex: currentIndex },
+        userAnswer: { choiceId: selected!, scenarioIndex: String(currentIndex) },
         isCorrect,
       }).catch(() => {});
     }
