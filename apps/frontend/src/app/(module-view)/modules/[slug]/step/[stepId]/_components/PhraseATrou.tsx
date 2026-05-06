@@ -86,7 +86,7 @@ export function PhraseATrou({ step }: { step: StepData }) {
         guestStudentId,
         stepId: step.id,
         moduleId: step.module.id,
-        userAnswer: { blanks: filled, phraseIndex: currentIndex },
+        userAnswer: { blanks: filled.filter((b): b is string => b !== null), phraseIndex: currentIndex },
         isCorrect: correct,
       }).catch(() => {});
     }
