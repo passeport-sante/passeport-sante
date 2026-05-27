@@ -1,4 +1,3 @@
-import { Activity, CheckCircle, Users, BarChart2 } from "lucide-react";
 import type { SessionSummary } from "@/lib/dashboard";
 
 interface Props {
@@ -11,48 +10,38 @@ export function StatsRow({ sessions }: Props) {
   const totalStudents = sessions.reduce((acc, s) => acc + s._count.guestStudents, 0);
   const totalResponses = sessions.reduce((acc, s) => acc + s._count.diagnosticResponses, 0);
 
-  const stats = [
-    {
-      label: "Sessions totales",
-      value: totalSessions,
-      icon: BarChart2,
-      color: "#1B6B8A",
-      bg: "#EBF4F8",
-    },
-    {
-      label: "Sessions actives",
-      value: activeSessions,
-      icon: Activity,
-      color: "#2A8970",
-      bg: "#EBF6F3",
-    },
-    {
-      label: "Élèves total",
-      value: totalStudents,
-      icon: Users,
-      color: "#4CAF5A",
-      bg: "#EDF7EE",
-    },
-    {
-      label: "Réponses collectées",
-      value: totalResponses,
-      icon: CheckCircle,
-      color: "#6366F1",
-      bg: "#EEEEFD",
-    },
+  const stats: { label: string; value: number; highlight?: boolean }[] = [
+    { label: "Sessions totales", value: totalSessions },
+    { label: "Sessions actives", value: activeSessions, highlight: true },
+    { label: "Élèves", value: totalStudents },
+    { label: "Réponses collectées", value: totalResponses },
   ];
 
   return (
-    <div className="grid grid-cols-4 gap-4">
-      {stats.map(({ label, value, icon: Icon, color, bg }) => (
-        <div key={label} className="bg-white rounded-2xl p-5 shadow-sm border border-gray-100 flex items-center gap-4">
-          <div className="w-12 h-12 rounded-xl flex items-center justify-center shrink-0" style={{ background: bg }}>
-            <Icon size={22} style={{ color }} />
-          </div>
-          <div>
-            <p className="text-2xl font-black text-[#1A1A1A]">{value}</p>
-            <p className="text-xs text-gray-400 font-medium">{label}</p>
-          </div>
+    <div className="grid grid-cols-2 md:grid-cols-4 bg-white rounded-xl border border-gray-200 overflow-hidden">
+      {stats.map(({ label, value, highlight }, i) => (
+        <div
+          key={label}
+          className={`px-5 py-4 ${i > 0 ? "border-l border-gray-200" : ""} ${
+            highlight ? "bg-blue-50/40" : ""
+          }`}
+        >
+          <p className="text-[11px] text-gray-500 font-medium uppercase tracking-wider flex items-center gap-1.5">
+            {highlight && (
+              <span className="relative flex items-center justify-center">
+                <span className="absolute w-2 h-2 rounded-full bg-emerald-500/40 animate-ping" />
+                <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
+              </span>
+            )}
+            {label}
+          </p>
+          <p
+            className={`text-[28px] font-bold mt-1 tabular-nums leading-none tracking-tight ${
+              highlight ? "text-blue-600" : "text-[#1A1A1A]"
+            }`}
+          >
+            {value}
+          </p>
         </div>
       ))}
     </div>

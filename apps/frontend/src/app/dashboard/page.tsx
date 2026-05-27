@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import { Plus } from "lucide-react";
+import { Plus, Stethoscope, BookOpen } from "lucide-react";
 import {
   fetchSessions,
   closeSession,
@@ -52,107 +52,144 @@ export default function DashboardPage() {
   const moduleTerminated = moduleSessions.filter((s) => !s.isActive);
 
   return (
-    <div className="p-8 space-y-8 min-h-screen">
-      {/* Page header */}
-      <div className="flex items-center justify-between">
+    <div className="px-8 py-10 max-w-[1200px] mx-auto space-y-8 min-h-screen">
+      {/* Header */}
+      <div className="flex items-end justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-black text-[#1A1A1A]">Tableau de bord</h1>
-          <p className="text-gray-400 text-sm mt-1">Gérez vos sessions</p>
+          <h1 className="text-[22px] font-semibold text-[#1A1A1A] tracking-tight">
+            Tableau de bord
+          </h1>
+          <p className="text-sm text-gray-500 mt-1">
+            Gérez vos sessions
+          </p>
         </div>
         <Link
           href="/dashboard/sessions/new"
-          className="flex items-center gap-2 px-5 py-2.5 text-white text-sm font-semibold rounded-xl shadow hover:opacity-90 transition-opacity"
-          style={{ background: "linear-gradient(135deg, #1B6B8A, #2A8970)" }}
+          className="inline-flex items-center gap-1.5 h-9 px-3.5 bg-blue-600 text-white text-[13px] font-medium rounded-lg hover:bg-blue-700 transition-colors"
         >
-          <Plus size={17} />
+          <Plus size={15} strokeWidth={2.5} />
           Nouvelle session
         </Link>
       </div>
 
       {loading ? (
         <div className="flex items-center justify-center py-24">
-          <div className="w-8 h-8 border-4 border-[#2A8970] border-t-transparent rounded-full animate-spin" />
+          <div className="w-6 h-6 border-2 border-gray-300 border-t-blue-600 rounded-full animate-spin" />
         </div>
       ) : (
         <>
           <StatsRow sessions={diagSessions} />
 
           {/* ── Sessions diagnostic actives ── */}
-          <section>
-            <h2 className="text-lg font-bold text-[#1A1A1A] mb-4">
-              Sessions diagnostic
-              {diagActive.length > 0 && (
-                <span className="ml-2 px-2 py-0.5 bg-emerald-100 text-emerald-600 text-xs font-semibold rounded-full">
-                  {diagActive.length}
-                </span>
-              )}
-            </h2>
-            {diagActive.length === 0 ? (
-              <div className="bg-white rounded-2xl border border-dashed border-gray-200 p-10 text-center">
-                <p className="text-gray-400 text-sm">Aucune session diagnostic active.</p>
-                <Link
-                  href="/dashboard/sessions/new"
-                  className="inline-flex items-center gap-2 mt-4 px-5 py-2.5 text-white text-sm font-semibold rounded-xl"
-                  style={{ background: "linear-gradient(135deg, #1B6B8A, #2A8970)" }}
-                >
-                  <Plus size={16} />
-                  Créer une session
-                </Link>
-              </div>
-            ) : (
-              <div className="grid grid-cols-3 gap-4">
-                {diagActive.map((s) => (
-                  <SessionCard key={s.id} session={s} onClose={handleClose} />
-                ))}
-              </div>
-            )}
-          </section>
+          <Section
+            title="Sessions diagnostic"
+            count={diagActive.length}
+            empty={
+              <EmptyBlock
+                icon={<Stethoscope size={18} className="text-gray-400" />}
+                title="Aucune session diagnostic active"
+                cta="Créer une session"
+                href="/dashboard/sessions/new"
+              />
+            }
+            isEmpty={diagActive.length === 0}
+          >
+            <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-3">
+              {diagActive.map((s) => (
+                <SessionCard key={s.id} session={s} onClose={handleClose} />
+              ))}
+            </div>
+          </Section>
 
           {/* ── Sessions modules actives ── */}
-          <section>
-            <h2 className="text-lg font-bold text-[#1A1A1A] mb-4">
-              Sessions modules
-              {moduleActive.length > 0 && (
-                <span className="ml-2 px-2 py-0.5 bg-blue-100 text-blue-600 text-xs font-semibold rounded-full">
-                  {moduleActive.length}
-                </span>
-              )}
-            </h2>
-            {moduleActive.length === 0 ? (
-              <div className="bg-white rounded-2xl border border-dashed border-gray-200 p-10 text-center">
-                <p className="text-gray-400 text-sm">Aucune session module active.</p>
-                <Link
-                  href="/dashboard/sessions/new"
-                  className="inline-flex items-center gap-2 mt-4 px-5 py-2.5 text-white text-sm font-semibold rounded-xl"
-                  style={{ background: "linear-gradient(135deg, #1B6B8A, #2A8970)" }}
-                >
-                  <Plus size={16} />
-                  Créer une session
-                </Link>
-              </div>
-            ) : (
-              <div className="grid grid-cols-3 gap-4">
-                {moduleActive.map((s) => (
-                  <ModuleSessionCard key={s.id} session={s} onClose={handleCloseModule} />
-                ))}
-              </div>
-            )}
-          </section>
+          <Section
+            title="Sessions modules"
+            count={moduleActive.length}
+            empty={
+              <EmptyBlock
+                icon={<BookOpen size={18} className="text-gray-400" />}
+                title="Aucune session module active"
+                cta="Créer une session"
+                href="/dashboard/sessions/new"
+              />
+            }
+            isEmpty={moduleActive.length === 0}
+          >
+            <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-3">
+              {moduleActive.map((s) => (
+                <ModuleSessionCard key={s.id} session={s} onClose={handleCloseModule} />
+              ))}
+            </div>
+          </Section>
 
           {/* ── Sessions terminées ── */}
-          <section>
-            <h2 className="text-lg font-bold text-[#1A1A1A] mb-4">
-              Sessions terminées
-              {(diagTerminated.length + moduleTerminated.length) > 0 && (
-                <span className="ml-2 px-2 py-0.5 bg-gray-100 text-gray-500 text-xs font-semibold rounded-full">
-                  {diagTerminated.length + moduleTerminated.length}
-                </span>
-              )}
-            </h2>
-            <SessionsTable sessions={diagTerminated} moduleSessions={moduleTerminated} />
-          </section>
+          {(diagTerminated.length + moduleTerminated.length) > 0 && (
+            <Section
+              title="Sessions terminées"
+              count={diagTerminated.length + moduleTerminated.length}
+              isEmpty={false}
+            >
+              <SessionsTable sessions={diagTerminated} moduleSessions={moduleTerminated} />
+            </Section>
+          )}
         </>
       )}
+    </div>
+  );
+}
+
+function Section({
+  title,
+  count,
+  children,
+  empty,
+  isEmpty,
+}: {
+  title: string;
+  count: number;
+  children: React.ReactNode;
+  empty?: React.ReactNode;
+  isEmpty: boolean;
+}) {
+  return (
+    <section className="space-y-3">
+      <div className="flex items-center gap-2.5">
+        <h2 className="text-[16px] font-bold text-[#1A1A1A] tracking-tight">{title}</h2>
+        {count > 0 && (
+          <span className="inline-flex items-center justify-center min-w-[20px] h-[20px] px-1.5 rounded-full bg-gray-100 text-gray-600 text-[11px] font-semibold tabular-nums">
+            {count}
+          </span>
+        )}
+      </div>
+      {isEmpty ? empty : children}
+    </section>
+  );
+}
+
+function EmptyBlock({
+  icon,
+  title,
+  cta,
+  href,
+}: {
+  icon: React.ReactNode;
+  title: string;
+  cta: string;
+  href: string;
+}) {
+  return (
+    <div className="bg-white rounded-xl border border-gray-200 py-10 text-center">
+      <div className="w-10 h-10 rounded-lg bg-gray-100 flex items-center justify-center mx-auto mb-3">
+        {icon}
+      </div>
+      <p className="text-[13px] text-gray-600">{title}</p>
+      <Link
+        href={href}
+        className="inline-flex items-center gap-1.5 mt-4 h-8 px-3 bg-blue-600 text-white text-[13px] font-medium rounded-lg hover:bg-blue-700 transition-colors"
+      >
+        <Plus size={14} strokeWidth={2.5} />
+        {cta}
+      </Link>
     </div>
   );
 }

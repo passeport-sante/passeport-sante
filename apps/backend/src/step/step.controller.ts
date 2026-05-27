@@ -11,6 +11,7 @@ import {
 import { StepService } from "./step.service";
 import { CreateStepDto } from "./dto/create-step.dto";
 import { UpdateStepDto } from "./dto/update-step.dto";
+import { ReorderStepsDto } from "./dto/reorder-steps.dto";
 import { ApiBearerAuth } from "@nestjs/swagger";
 import { JwtAuthGuard } from "../auth/jwt-auth.guard";
 import { RolesGuard } from "../auth/guards/roles.guard";
@@ -26,6 +27,14 @@ export class StepController {
   @Post()
   create(@Body() createStepDto: CreateStepDto) {
     return this.stepService.create(createStepDto);
+  }
+
+  // ⚠️ Déclaré AVANT @Patch(':id') pour ne pas être capturé par la route paramétrée
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles("ADMIN")
+  @Patch("reorder")
+  reorder(@Body() dto: ReorderStepsDto) {
+    return this.stepService.reorder(dto);
   }
 
   @Get()

@@ -92,174 +92,189 @@ export default function NewSessionPage() {
     (type === "diagnostic" || selectedModuleId !== null);
 
   return (
-    <div className="p-8 max-w-2xl">
+    <div className="px-8 py-10 max-w-2xl mx-auto">
       {/* Header */}
       <div className="flex items-center gap-3 mb-8">
         <Link
           href="/dashboard"
-          className="p-2 rounded-xl bg-white border border-gray-100 shadow-sm hover:bg-gray-50 transition-colors"
+          className="p-1.5 rounded-md text-gray-500 hover:text-gray-700 hover:bg-gray-100 transition-colors"
         >
-          <ArrowLeft size={18} className="text-gray-500" />
+          <ArrowLeft size={18} />
         </Link>
         <div>
-          <h1 className="text-2xl font-black text-[#1A1A1A]">Nouvelle session</h1>
-          <p className="text-gray-400 text-sm">Créez une session pour votre classe</p>
+          <h1 className="text-[22px] font-semibold text-[#1A1A1A] tracking-tight">
+            Nouvelle session
+          </h1>
+          <p className="text-sm text-gray-500 mt-0.5">Créez une session pour votre classe</p>
         </div>
       </div>
 
-      <form onSubmit={handleSubmit} className="space-y-6">
-
+      <form onSubmit={handleSubmit} className="space-y-5">
         {/* Étape 1 — Type de session */}
-        <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 space-y-4">
-          <p className="text-sm font-bold text-[#1A1A1A]">
-            <span className="inline-flex items-center justify-center w-5 h-5 rounded-full text-white text-xs mr-2" style={{ background: "#1B6B8A" }}>1</span>
-            Type de session
-          </p>
+        <Section step={1} title="Type de session">
           <div className="grid grid-cols-2 gap-3">
-            {/* Diagnostic */}
-            <button
-              type="button"
-              onClick={() => { setType("diagnostic"); setSelectedModuleId(null); }}
-              className={`relative flex flex-col items-start gap-3 p-5 rounded-xl border-2 text-left transition-all ${
-                type === "diagnostic"
-                  ? "border-[#1B6B8A] bg-[#EBF4F8]"
-                  : "border-gray-200 bg-gray-50 hover:border-gray-300"
-              }`}
-            >
-              {type === "diagnostic" && (
-                <span className="absolute top-3 right-3 w-5 h-5 rounded-full bg-[#1B6B8A] flex items-center justify-center">
-                  <Check size={11} className="text-white" strokeWidth={3} />
-                </span>
-              )}
-              <div className="w-10 h-10 rounded-xl flex items-center justify-center" style={{ background: "#EBF4F8" }}>
-                <Stethoscope size={20} className="text-[#1B6B8A]" />
-              </div>
-              <div>
-                <p className="font-bold text-[#1A1A1A] text-sm">Diagnostic</p>
-                <p className="text-xs text-gray-400 mt-0.5 leading-snug">
-                  61 questions fixes — santé, numérique, bien-être
-                </p>
-              </div>
-            </button>
-
-            {/* Module */}
-            <button
-              type="button"
+            <ChoiceCard
+              icon={<Stethoscope size={18} className="text-gray-600" />}
+              title="Diagnostic"
+              description="61 questions fixes — santé, numérique, bien-être"
+              selected={type === "diagnostic"}
+              onClick={() => {
+                setType("diagnostic");
+                setSelectedModuleId(null);
+              }}
+            />
+            <ChoiceCard
+              icon={<BookOpen size={18} className="text-gray-600" />}
+              title="Module"
+              description="Choisissez un module thématique de la plateforme"
+              selected={type === "module"}
               onClick={() => setType("module")}
-              className={`relative flex flex-col items-start gap-3 p-5 rounded-xl border-2 text-left transition-all ${
-                type === "module"
-                  ? "border-[#2A8970] bg-[#EBF6F3]"
-                  : "border-gray-200 bg-gray-50 hover:border-gray-300"
-              }`}
-            >
-              {type === "module" && (
-                <span className="absolute top-3 right-3 w-5 h-5 rounded-full bg-[#2A8970] flex items-center justify-center">
-                  <Check size={11} className="text-white" strokeWidth={3} />
-                </span>
-              )}
-              <div className="w-10 h-10 rounded-xl flex items-center justify-center" style={{ background: "#EBF6F3" }}>
-                <BookOpen size={20} className="text-[#2A8970]" />
-              </div>
-              <div>
-                <p className="font-bold text-[#1A1A1A] text-sm">Module</p>
-                <p className="text-xs text-gray-400 mt-0.5 leading-snug">
-                  Choisissez un module thématique de la plateforme
-                </p>
-              </div>
-            </button>
+            />
           </div>
-        </div>
+        </Section>
 
-        {/* Étape 2 — Choix du module (si type = module) */}
+        {/* Étape 2 — Choix du module */}
         {type === "module" && (
-          <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 space-y-4">
-            <p className="text-sm font-bold text-[#1A1A1A]">
-              <span className="inline-flex items-center justify-center w-5 h-5 rounded-full text-white text-xs mr-2" style={{ background: "#2A8970" }}>2</span>
-              Choisir un module
-            </p>
-
+          <Section step={2} title="Choisir un module">
             {loadingModules ? (
               <div className="flex items-center justify-center py-8">
-                <div className="w-6 h-6 border-3 border-[#2A8970] border-t-transparent rounded-full animate-spin" />
+                <div className="w-5 h-5 border-2 border-gray-300 border-t-blue-600 rounded-full animate-spin" />
               </div>
             ) : modules.length === 0 ? (
-              <p className="text-gray-400 text-sm text-center py-6">Aucun module disponible.</p>
+              <p className="text-gray-500 text-sm text-center py-6">Aucun module disponible.</p>
             ) : (
-              <div className="grid grid-cols-2 gap-2 max-h-64 overflow-y-auto pr-1">
-                {modules.map((m) => (
-                  <button
-                    key={m.id}
-                    type="button"
-                    onClick={() => setSelectedModuleId(m.id)}
-                    className={`flex items-start gap-3 p-4 rounded-xl border-2 text-left transition-all ${
-                      selectedModuleId === m.id
-                        ? "border-[#2A8970] bg-[#EBF6F3]"
-                        : "border-gray-100 hover:border-gray-200 bg-gray-50"
-                    }`}
-                  >
-                    <div
-                      className="w-2.5 h-2.5 rounded-full mt-1.5 shrink-0"
-                      style={{ background: m.colorPrimary ?? "#2A8970" }}
-                    />
-                    <div className="min-w-0">
-                      <p className="font-semibold text-[#1A1A1A] text-sm leading-tight">{m.title}</p>
-                      {m.duration && (
-                        <p className="text-xs text-gray-400 mt-0.5">{m.duration} min</p>
-                      )}
-                    </div>
-                    {selectedModuleId === m.id && (
-                      <Check size={14} className="text-[#2A8970] shrink-0 ml-auto" strokeWidth={3} />
-                    )}
-                  </button>
-                ))}
+              <div className="grid grid-cols-2 gap-2 max-h-64 overflow-y-auto">
+                {modules.map((m) => {
+                  const selected = selectedModuleId === m.id;
+                  return (
+                    <button
+                      key={m.id}
+                      type="button"
+                      onClick={() => setSelectedModuleId(m.id)}
+                      className={`flex items-center gap-2.5 px-3 py-2.5 rounded-lg border text-left transition-colors ${
+                        selected
+                          ? "border-blue-600 bg-blue-50/50"
+                          : "border-gray-200 hover:border-gray-300 bg-white"
+                      }`}
+                    >
+                      <span
+                        className="w-2 h-2 rounded-full shrink-0"
+                        style={{ background: m.colorPrimary ?? "#9CA3AF" }}
+                      />
+                      <span className="min-w-0 flex-1">
+                        <p className="text-[13px] font-medium text-[#1A1A1A] truncate">{m.title}</p>
+                        {m.duration && (
+                          <p className="text-[11px] text-gray-500 mt-0.5">{m.duration} min</p>
+                        )}
+                      </span>
+                      {selected && <Check size={13} className="text-blue-600 shrink-0" strokeWidth={2.5} />}
+                    </button>
+                  );
+                })}
               </div>
             )}
-          </div>
+          </Section>
         )}
 
         {/* Étape finale — Nom de la classe */}
         {type !== null && (
-          <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 space-y-3">
-            <p className="text-sm font-bold text-[#1A1A1A]">
-              <span className="inline-flex items-center justify-center w-5 h-5 rounded-full text-white text-xs mr-2" style={{ background: "#1B6B8A" }}>
-                {type === "diagnostic" ? "2" : "3"}
-              </span>
-              Nom de la classe
-            </p>
+          <Section step={type === "diagnostic" ? 2 : 3} title="Nom de la classe">
             <input
               type="text"
               value={className}
               onChange={(e) => setClassName(e.target.value)}
               placeholder="Ex : 5ème A, Terminale B..."
-              className="w-full px-4 py-3 rounded-xl border border-gray-200 bg-gray-50 text-sm focus:outline-none focus:ring-2 focus:ring-[#2A8970] focus:border-transparent transition"
+              className="w-full h-10 px-3 rounded-lg bg-white border border-gray-200 text-[13px] focus:outline-none focus:border-gray-400 placeholder:text-gray-400"
               required
             />
-          </div>
+          </Section>
         )}
 
         {error && (
-          <p className="text-sm text-red-500 bg-red-50 px-4 py-3 rounded-xl">{error}</p>
+          <p className="text-[13px] text-red-700 bg-red-50 border border-red-200 px-3 py-2 rounded-lg">
+            {error}
+          </p>
         )}
 
         {/* Actions */}
-        <div className="flex gap-3">
+        <div className="flex gap-2 pt-2">
           <Link
             href="/dashboard"
-            className="flex-1 px-5 py-3 bg-white border border-gray-200 text-gray-600 text-sm font-semibold rounded-xl text-center hover:bg-gray-50 transition-colors"
+            className="flex-1 inline-flex items-center justify-center h-10 px-4 bg-white border border-gray-200 text-gray-700 text-[13px] font-medium rounded-lg hover:bg-gray-50 transition-colors"
           >
             Annuler
           </Link>
           <button
             type="submit"
             disabled={loading || !canSubmit}
-            className="flex-1 flex items-center justify-center gap-2 px-5 py-3 text-white text-sm font-semibold rounded-xl hover:opacity-90 transition-opacity disabled:opacity-40"
-            style={{ background: "linear-gradient(135deg, #1B6B8A, #2A8970)" }}
+            className="flex-1 inline-flex items-center justify-center gap-2 h-10 px-4 bg-blue-600 text-white text-[13px] font-medium rounded-lg hover:bg-blue-700 transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
           >
-            {loading && <Loader2 size={16} className="animate-spin" />}
+            {loading && <Loader2 size={14} className="animate-spin" />}
             {loading ? "Création..." : "Créer la session"}
           </button>
         </div>
       </form>
     </div>
+  );
+}
+
+function Section({
+  step,
+  title,
+  children,
+}: {
+  step: number;
+  title: string;
+  children: React.ReactNode;
+}) {
+  return (
+    <div className="bg-white rounded-xl border border-gray-200 p-5 space-y-3">
+      <p className="text-[13px] font-semibold text-[#1A1A1A] flex items-center gap-2">
+        <span className="inline-flex items-center justify-center w-5 h-5 rounded-full bg-gray-100 text-gray-700 text-[11px] font-semibold">
+          {step}
+        </span>
+        {title}
+      </p>
+      {children}
+    </div>
+  );
+}
+
+function ChoiceCard({
+  icon,
+  title,
+  description,
+  selected,
+  onClick,
+}: {
+  icon: React.ReactNode;
+  title: string;
+  description: string;
+  selected: boolean;
+  onClick: () => void;
+}) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      className={`relative flex flex-col items-start gap-2.5 p-4 rounded-lg border text-left transition-colors ${
+        selected
+          ? "border-blue-600 bg-blue-50/50"
+          : "border-gray-200 bg-white hover:border-gray-300"
+      }`}
+    >
+      {selected && (
+        <span className="absolute top-2.5 right-2.5 w-4 h-4 rounded-full bg-blue-600 flex items-center justify-center">
+          <Check size={10} className="text-white" strokeWidth={3} />
+        </span>
+      )}
+      <div className="w-8 h-8 rounded-lg bg-gray-100 flex items-center justify-center">
+        {icon}
+      </div>
+      <div>
+        <p className="text-[13px] font-semibold text-[#1A1A1A]">{title}</p>
+        <p className="text-[11px] text-gray-500 mt-0.5 leading-relaxed">{description}</p>
+      </div>
+    </button>
   );
 }

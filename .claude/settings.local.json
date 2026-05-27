@@ -8,7 +8,12 @@
       "Bash(rtk tsc *)",
       "Bash(rtk npm *)",
       "Bash(rtk curl *)",
-      "Bash(rtk grep *)"
+      "Bash(rtk grep *)",
+      "Bash(npm install *)",
+      "Bash(npm ls *)",
+      "Bash(rtk find *)",
+      "Bash(rm -rf \"c:/Users/cleme/Desktop/Workspace/Codes/prevention-platform/node_modules/@dnd-kit\")",
+      "Bash(npm cache *)"
     ]
   }
 }
