@@ -38,16 +38,9 @@ export function AdminModuleCard({ module, onDuplicate, onToggleActive, onDelete 
   }, [menuOpen]);
 
   const color = module.colorPrimary ?? "#1B6B8A";
-  const secondary = module.colorSecondary ?? color;
 
   return (
     <div className="group relative bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden flex flex-col hover:shadow-md transition-shadow">
-      {/* Bandeau couleur */}
-      <div
-        className="h-2 w-full"
-        style={{ background: `linear-gradient(90deg, ${color}, ${secondary})` }}
-      />
-
       <div className="p-5 flex flex-col gap-4 flex-1">
         {/* Header : icône, titre, statut, menu */}
         <div className="flex items-start gap-3">
