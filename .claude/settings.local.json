@@ -3,7 +3,11 @@
     "allow": [
       "Bash(ls docker-compose*)",
       "Bash(pg_isready -h localhost -p 5432)",
-      "Bash(xargs grep *)"
+      "Bash(xargs grep *)",
+      "Bash(rtk ls *)",
+      "Bash(rtk tsc *)",
+      "Bash(rtk npm *)",
+      "Bash(rtk curl *)"
     ]
   }
 }
