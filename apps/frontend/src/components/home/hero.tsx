@@ -4,10 +4,23 @@ import type { CSSProperties } from "react";
 import { PhoneSvg } from "./phone-svg";
 import { TaSanteSvg } from "./ta-sante-svg";
 
-const CIRCLE_BLUE = "#7FB8D9";
-const CIRCLE_NAVY = "#3E6A9C";
-const CIRCLE_SAGE = "#9CC084";
 const INK = "#0F1B2D";
+
+// Reflet spéculaire blanc commun (haut-gauche) — donne l'effet sphère vitrée
+const GLOSS =
+  "radial-gradient(circle at 38% 28%, rgba(255,255,255,0.9) 0%, rgba(255,255,255,0.35) 16%, rgba(255,255,255,0) 46%)";
+
+// Helper : fond glossy = reflet + corps blanc translucide au centre, couleur repoussée au bord
+// (alpha en hex 8 chiffres : 66 ≈ 40%, b3 ≈ 70%)
+function glossyBg(mid: string, edge: string) {
+  return (
+    `${GLOSS}, radial-gradient(circle at 50% 44%, ` +
+    `rgba(255,255,255,0.92) 0%, ` +
+    `rgba(255,255,255,0.6) 42%, ` +
+    `${mid}66 72%, ` +
+    `${edge}b3 100%)`
+  );
+}
 
 const circlesStyles: Record<string, CSSProperties> = {
   wrap: { position: "relative", width: 470, height: 280 },
@@ -17,27 +30,28 @@ const circlesStyles: Record<string, CSSProperties> = {
     width: 245,
     height: 175,
     borderRadius: "50%",
-    opacity: 0.78,
-    mixBlendMode: "multiply",
   },
-  // Inner shadow : inset 0 -3px 58px 0px (couleur de la bulle elle-même)
+  // Bulles glossy : reflet + volume radial + inner shadow colorée (profondeur) + ombre portée douce
   circleTop: {
-    background: CIRCLE_BLUE,
+    background: glossyBg("#7FB8D9", "#5891ba"),
     top: 0,
     left: 88,
-    boxShadow: `inset 0 -3px 58px 0px ${CIRCLE_BLUE}`,
+    boxShadow:
+      "inset 0 3px 36px 2px #5891ba, 0 14px 30px -14px rgba(15,27,45,0.28)",
   },
   circleBL: {
-    background: CIRCLE_NAVY,
+    background: glossyBg("#3E6A9C", "#2f527a"),
     top: 95,
     left: 0,
-    boxShadow: `inset 0 -3px 58px 0px ${CIRCLE_NAVY}`,
+    boxShadow:
+      "inset 0 3px 36px 2px #2f527a, 0 14px 30px -14px rgba(15,27,45,0.28)",
   },
   circleMR: {
-    background: CIRCLE_SAGE,
+    background: glossyBg("#9CC084", "#79a35f"),
     top: 75,
     left: 225,
-    boxShadow: `inset 0 -3px 58px 0px ${CIRCLE_SAGE}`,
+    boxShadow:
+      "inset 0 3px 36px 2px #79a35f, 0 14px 30px -14px rgba(15,27,45,0.28)",
   },
   label: {
     position: "absolute",

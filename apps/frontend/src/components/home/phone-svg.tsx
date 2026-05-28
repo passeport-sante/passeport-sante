@@ -74,11 +74,7 @@ export function PhoneSvg({
           <line x1="-10" y1="0" x2="10" y2="0" />
           <line x1="0" y1="-10" x2="0" y2="10" />
         </g>
-      </g>
-
-      {/* ── Ombre douce sous le téléphone ─────────────────────── */}
-      <ellipse cx="180" cy="425" rx="110" ry="6" fill={stroke} opacity="0.08" />
-
+      </g>  
       {/* ── Corps du téléphone (compact, ratio ~0.51) ─────────── */}
       <path
         d="
