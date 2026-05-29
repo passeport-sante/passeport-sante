@@ -111,13 +111,13 @@ export function Hero() {
           <div
             className="absolute select-none pointer-events-none"
             style={{
-              top: "45px",
+              top: "50px",
               left: "calc(44% + 8px)",
               transform: "rotate(-8deg)",
               transformOrigin: "left center",
               width: "37vw",
               filter:
-                "drop-shadow(0 0 12px rgba(76,175,80,0.55)) drop-shadow(0 0 32px rgba(76,175,80,0.4)) drop-shadow(0 0 64px rgba(37,118,12,0.25))",
+                "drop-shadow(0 0 12px rgba(76, 87, 175, 0.55)) drop-shadow(0 0 32px rgba(76,175,80,0.4)) drop-shadow(0 0 64px rgba(37,118,12,0.25))",
             }}
           >
             <TaSanteSvg className="w-full h-auto" />
@@ -204,7 +204,7 @@ export function Hero() {
             </Link>
             <Link
               href="/modules"
-              className="inline-flex items-center justify-center px-8 py-5 bg-white text-brand-ink font-bold rounded-2xl text-base border-2 border-gray-200 hover:border-brand-dark-green hover:text-brand-dark-green transition-colors whitespace-nowrap"
+              className="inline-flex items-center justify-center px-8 py-5 bg-white text-brand-ink font-bold rounded-2xl text-base border-2 border-blue-200 hover:border-blue-500 hover:text-blue-500 transition-colors whitespace-nowrap"
             >
               Voir les thèmes
             </Link>

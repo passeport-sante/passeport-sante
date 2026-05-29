@@ -21,7 +21,7 @@ export function TaSanteSvg({ className, style }: TaSanteSvgProps) {
     >
       <defs>
         {/* Gradient vert → bleu sur les lettres */}
-        <linearGradient id="ts-gradient" x1="0%" y1="0%" x2="100%" y2="100%">
+        <linearGradient id="ts-gradient" x1="0%" y1="0%" x2="100%" y2="0%">
           <stop offset="0%" stopColor="#4CAF50" />
           <stop offset="55%" stopColor="#5FA6C0" />
           <stop offset="100%" stopColor="#1F6F8B" />
