@@ -14,7 +14,12 @@
       "Bash(rtk find *)",
       "Bash(rm -rf \"c:/Users/cleme/Desktop/Workspace/Codes/prevention-platform/node_modules/@dnd-kit\")",
       "Bash(npm cache *)",
-      "Bash(node -e \"const p=require\\('./package.json'\\); console.log\\(JSON.stringify\\(p.scripts,null,2\\)\\)\")"
+      "Bash(node -e \"const p=require\\('./package.json'\\); console.log\\(JSON.stringify\\(p.scripts,null,2\\)\\)\")",
+      "Bash(rtk read *)",
+      "Bash(rtk docker *)",
+      "Bash(findstr prevention *)",
+      "Bash(findstr /i \"step error modules compiled GET 404\")",
+      "Bash(curl -s -X POST http://localhost:5000/api/auth/login -H \"Content-Type: application/json\" -d '{\"email\":\"admin@prevention.com\",\"password\":\"Admin123!\"}')"
     ]
   }
 }

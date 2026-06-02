@@ -25,8 +25,9 @@ export type AdminModuleDetail = AdminModule & {
   categoryId: string | null;
   steps: {
     id: string;
+    kind: "GAME" | "CONTENT";
     order: number;
-    gameType: string;
+    gameType: string | null;
     content: Record<string, unknown> | null;
   }[];
 };

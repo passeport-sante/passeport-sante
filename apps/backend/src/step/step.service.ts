@@ -56,7 +56,7 @@ export class StepService {
             mascotte: true,
             colorPrimary: true,
             colorSecondary: true,
-            steps: { select: { id: true, order: true }, orderBy: { order: "asc" } },
+            steps: { select: { id: true, order: true, kind: true, gameType: true }, orderBy: { order: "asc" } },
           },
         },
       },

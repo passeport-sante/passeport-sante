@@ -1,22 +1,27 @@
 "use client";
 
-import type { AdminStep, AdminGameData } from "@/lib/steps-admin";
+import type { AdminStep, AdminGameData, StepContent } from "@/lib/steps-admin";
 import { KanbanEditor } from "./kanban-editor";
 import { QuizEditor } from "./quiz-editor";
 import { ScenarioEditor } from "./scenario-editor";
 import { PhraseEditor } from "./phrase-editor";
 import { PuzzleEditor } from "./puzzle-editor";
+import { ContentEditor } from "./content-editor";
 
 interface Props {
   step: AdminStep;
   color: string;
   onSave: (payload: {
-    content: { title?: string; instructions?: string };
-    gameData: AdminGameData[];
+    content: StepContent;
+    gameData?: AdminGameData[];
   }) => Promise<void>;
 }
 
 export function StepEditor(props: Props) {
+  if (props.step.kind === "CONTENT") {
+    return <ContentEditor {...props} />;
+  }
+
   switch (props.step.gameType) {
     case "KANBAN":
       return <KanbanEditor {...props} />;

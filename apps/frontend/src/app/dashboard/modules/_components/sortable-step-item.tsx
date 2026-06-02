@@ -2,13 +2,26 @@
 
 import { useSortable } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
-import { GripVertical, Trash2 } from "lucide-react";
-import { GAME_TYPE_META, type GameType } from "@/lib/steps-admin";
+import { GripVertical, Trash2, Lightbulb, Image as ImageIcon, Video } from "lucide-react";
+import {
+  GAME_TYPE_META,
+  CONTENT_TYPE_META,
+  type GameType,
+  type ContentType,
+} from "@/lib/steps-admin";
+
+const CONTENT_ICONS: Record<ContentType, React.ReactNode> = {
+  INFO: <Lightbulb size={13} />,
+  IMAGE: <ImageIcon size={13} />,
+  VIDEO: <Video size={13} />,
+};
 
 interface Props {
   id: string;
-  order: number;
-  gameType: GameType;
+  kind: "GAME" | "CONTENT";
+  gameNumber: number | null;
+  gameType: GameType | null;
+  contentType: ContentType | null;
   title: string;
   selected: boolean;
   onSelect: () => void;
@@ -17,14 +30,20 @@ interface Props {
 
 export function SortableStepItem({
   id,
-  order,
+  kind,
+  gameNumber,
   gameType,
+  contentType,
   title,
   selected,
   onSelect,
   onDelete,
 }: Props) {
-  const meta = GAME_TYPE_META[gameType];
+  const isContent = kind === "CONTENT";
+  const meta = isContent
+    ? CONTENT_TYPE_META[contentType ?? "INFO"]
+    : GAME_TYPE_META[gameType ?? "QUIZ"];
+
   const {
     attributes,
     listeners,
@@ -49,7 +68,9 @@ export function SortableStepItem({
       className={`group relative flex items-center gap-2 p-3 rounded-xl border-2 cursor-pointer transition-all ${
         selected
           ? "bg-white shadow-sm"
-          : "bg-white hover:bg-gray-50 border-transparent"
+          : isContent
+            ? "bg-gray-50/60 hover:bg-gray-50 border-transparent"
+            : "bg-white hover:bg-gray-50 border-transparent"
       }`}
     >
       {/* Drag handle */}
@@ -63,25 +84,41 @@ export function SortableStepItem({
         <GripVertical size={16} />
       </button>
 
-      {/* Numéro */}
-      <span
-        className="w-6 h-6 rounded-lg flex items-center justify-center text-[11px] font-black shrink-0"
-        style={{ background: `${meta.color}15`, color: meta.color }}
-      >
-        {order}
-      </span>
+      {/* Numéro d'étape (jeux) ou puce de sous-étape (contenu) */}
+      {isContent ? (
+        <span
+          className="w-6 h-6 rounded-lg flex items-center justify-center shrink-0"
+          style={{ background: `${meta.color}15`, color: meta.color }}
+          title="Sous-étape de contenu"
+        >
+          {CONTENT_ICONS[contentType ?? "INFO"]}
+        </span>
+      ) : (
+        <span
+          className="w-6 h-6 rounded-lg flex items-center justify-center text-[11px] font-black shrink-0"
+          style={{ background: `${meta.color}15`, color: meta.color }}
+        >
+          {gameNumber}
+        </span>
+      )}
 
-      {/* Badge gameType */}
+      {/* Badge type */}
       <span
         className="px-2 py-0.5 rounded-md text-[10px] font-bold tracking-wide shrink-0"
-        style={{ background: meta.color, color: "white" }}
+        style={
+          isContent
+            ? { background: `${meta.color}20`, color: meta.color }
+            : { background: meta.color, color: "white" }
+        }
       >
-        {meta.short.toUpperCase()}
+        {isContent ? "SOUS-ÉTAPE" : meta.short.toUpperCase()}
       </span>
 
       {/* Titre */}
       <span className="text-sm font-semibold text-[#1A1A1A] truncate flex-1">
-        {title || <span className="text-gray-400 italic">Sans titre</span>}
+        {title || (
+          <span className="text-gray-400 italic">{isContent ? meta.label : "Sans titre"}</span>
+        )}
       </span>
 
       {/* Delete */}

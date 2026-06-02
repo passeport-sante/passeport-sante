@@ -1,4 +1,4 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { ConflictException, Injectable, NotFoundException } from '@nestjs/common';
 import { Prisma } from '@prisma/client';
 import { CreateModuleDto } from './dto/create-module.dto';
 import { UpdateModuleDto } from './dto/update-module.dto';
@@ -49,7 +49,7 @@ export class ModulesService {
         createdAt: true,
         updatedAt: true,
         category: { select: { id: true, name: true, slug: true, color: true } },
-        _count: { select: { steps: true, moduleSessions: true } },
+        _count: { select: { steps: { where: { kind: 'GAME' } }, moduleSessions: true } },
       },
     });
   }
@@ -85,7 +85,7 @@ export class ModulesService {
     return this.prisma.module.findUnique({
       where: { slug },
       include: {
-        steps: { orderBy: { order: 'asc' }, select: { id: true, order: true, gameType: true } },
+        steps: { orderBy: { order: 'asc' }, select: { id: true, order: true, kind: true, gameType: true } },
         category: { select: { id: true, name: true, slug: true } },
       },
     });
@@ -122,6 +122,7 @@ export class ModulesService {
         categoryId: source.categoryId,
         steps: {
           create: source.steps.map((step: (typeof source.steps)[number]) => ({
+            kind: step.kind,
             gameType: step.gameType,
             order: step.order,
             mascotteImage: step.mascotteImage,
@@ -139,8 +140,44 @@ export class ModulesService {
     });
   }
 
-  remove(id: string) {
-    return this.prisma.module.delete({ where: { id } });
+  // Supprime un module et tout son contenu propre (steps + gameData) en transaction.
+  // Bloque si des sessions référencent le module : on conserve les données élèves.
+  async remove(id: string) {
+    const module = await this.prisma.module.findUnique({
+      where: { id },
+      select: { id: true, _count: { select: { moduleSessions: true } } },
+    });
+    if (!module) throw new NotFoundException('Module introuvable');
+
+    if (module._count.moduleSessions > 0) {
+      throw new ConflictException(
+        'Ce module est référencé par des sessions. Désactivez-le au lieu de le supprimer.',
+      );
+    }
+
+    return this.prisma.$transaction(async (tx) => {
+      const steps = await tx.step.findMany({
+        where: { moduleId: id },
+        select: { id: true },
+      });
+      const stepIds = steps.map((s) => s.id);
+
+      if (stepIds.length > 0) {
+        await tx.gameData.deleteMany({ where: { stepId: { in: stepIds } } });
+        await tx.kanbanResponse.deleteMany({ where: { stepId: { in: stepIds } } });
+        await tx.quizResponse.deleteMany({ where: { stepId: { in: stepIds } } });
+        await tx.puzzleResponse.deleteMany({ where: { stepId: { in: stepIds } } });
+      }
+
+      await tx.kanbanResponse.deleteMany({ where: { moduleId: id } });
+      await tx.quizResponse.deleteMany({ where: { moduleId: id } });
+      await tx.puzzleResponse.deleteMany({ where: { moduleId: id } });
+      await tx.moduleProgress.deleteMany({ where: { moduleId: id } });
+      await tx.statisticsData.deleteMany({ where: { moduleId: id } });
+      await tx.step.deleteMany({ where: { moduleId: id } });
+
+      return tx.module.delete({ where: { id } });
+    });
   }
 
   private async findAvailableSlug(base: string): Promise<string> {

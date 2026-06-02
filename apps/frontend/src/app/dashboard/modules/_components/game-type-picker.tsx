@@ -1,9 +1,14 @@
 "use client";
 
-import { X, ListTodo, HelpCircle, ListOrdered, Type, MessageCircle } from "lucide-react";
-import { GAME_TYPE_META, type GameType } from "@/lib/steps-admin";
+import { X, ListTodo, HelpCircle, ListOrdered, Type, MessageCircle, Lightbulb, Image as ImageIcon, Video } from "lucide-react";
+import {
+  GAME_TYPE_META,
+  CONTENT_TYPE_META,
+  type GameType,
+  type ContentType,
+} from "@/lib/steps-admin";
 
-const ICONS: Record<GameType, React.ReactNode> = {
+const GAME_ICONS: Record<GameType, React.ReactNode> = {
   KANBAN: <ListTodo size={22} />,
   QUIZ: <HelpCircle size={22} />,
   PUZZLE: <ListOrdered size={22} />,
@@ -11,12 +16,24 @@ const ICONS: Record<GameType, React.ReactNode> = {
   SCENARIO: <MessageCircle size={22} />,
 };
 
-const ORDER: GameType[] = ["KANBAN", "QUIZ", "PUZZLE", "PHRASE_A_TROU", "SCENARIO"];
+const CONTENT_ICONS: Record<ContentType, React.ReactNode> = {
+  INFO: <Lightbulb size={22} />,
+  IMAGE: <ImageIcon size={22} />,
+  VIDEO: <Video size={22} />,
+};
+
+const GAME_ORDER: GameType[] = ["KANBAN", "QUIZ", "PUZZLE", "PHRASE_A_TROU", "SCENARIO"];
+const CONTENT_ORDER: ContentType[] = ["INFO", "IMAGE", "VIDEO"];
+
+// Choix renvoyé : soit une étape de jeu, soit une sous-étape de contenu
+export type StepPick =
+  | { kind: "GAME"; gameType: GameType }
+  | { kind: "CONTENT"; contentType: ContentType };
 
 interface Props {
   open: boolean;
   onCancel: () => void;
-  onSelect: (gameType: GameType) => void;
+  onSelect: (pick: StepPick) => void;
 }
 
 export function GameTypePicker({ open, onCancel, onSelect }: Props) {
@@ -28,14 +45,14 @@ export function GameTypePicker({ open, onCancel, onSelect }: Props) {
       onClick={onCancel}
     >
       <div
-        className="bg-white rounded-2xl shadow-xl max-w-2xl w-full p-6 space-y-5"
+        className="bg-white rounded-2xl shadow-xl max-w-2xl w-full p-6 space-y-6 max-h-[90vh] overflow-y-auto"
         onClick={(e) => e.stopPropagation()}
       >
         <div className="flex items-start justify-between gap-3">
           <div>
-            <h2 className="text-lg font-bold text-[#1A1A1A]">Quel type d&apos;étape ?</h2>
+            <h2 className="text-lg font-bold text-[#1A1A1A]">Ajouter une étape</h2>
             <p className="text-sm text-gray-500 mt-0.5">
-              Choisissez la mécanique pédagogique adaptée à votre contenu
+              Une étape de jeu (comptée dans la progression) ou une sous-étape de contenu
             </p>
           </div>
           <button
@@ -46,33 +63,73 @@ export function GameTypePicker({ open, onCancel, onSelect }: Props) {
           </button>
         </div>
 
-        <div className="grid grid-cols-2 gap-3">
-          {ORDER.map((gt) => {
-            const meta = GAME_TYPE_META[gt];
-            return (
-              <button
-                key={gt}
-                onClick={() => onSelect(gt)}
-                className="flex items-start gap-3 p-4 rounded-2xl border-2 border-gray-100 hover:border-gray-200 text-left transition-all hover:shadow-md group"
-                style={{ background: meta.bg }}
-              >
-                <div
-                  className="w-11 h-11 rounded-xl flex items-center justify-center text-white shrink-0 transition-transform group-hover:scale-110"
-                  style={{ background: meta.color }}
+        {/* Étapes de jeu */}
+        <div className="space-y-3">
+          <p className="text-xs font-bold uppercase tracking-wide text-gray-400">Étape de jeu</p>
+          <div className="grid grid-cols-2 gap-3">
+            {GAME_ORDER.map((gt) => {
+              const meta = GAME_TYPE_META[gt];
+              return (
+                <button
+                  key={gt}
+                  onClick={() => onSelect({ kind: "GAME", gameType: gt })}
+                  className="flex items-start gap-3 p-4 rounded-2xl border-2 border-gray-100 hover:border-gray-200 text-left transition-all hover:shadow-md group"
+                  style={{ background: meta.bg }}
                 >
-                  {ICONS[gt]}
-                </div>
-                <div className="min-w-0">
-                  <p className="font-bold text-sm" style={{ color: meta.color }}>
-                    {meta.label}
-                  </p>
-                  <p className="text-xs text-gray-600 mt-1 leading-relaxed">
-                    {meta.description}
-                  </p>
-                </div>
-              </button>
-            );
-          })}
+                  <div
+                    className="w-11 h-11 rounded-xl flex items-center justify-center text-white shrink-0 transition-transform group-hover:scale-110"
+                    style={{ background: meta.color }}
+                  >
+                    {GAME_ICONS[gt]}
+                  </div>
+                  <div className="min-w-0">
+                    <p className="font-bold text-sm" style={{ color: meta.color }}>
+                      {meta.label}
+                    </p>
+                    <p className="text-xs text-gray-600 mt-1 leading-relaxed">
+                      {meta.description}
+                    </p>
+                  </div>
+                </button>
+              );
+            })}
+          </div>
+        </div>
+
+        {/* Sous-étapes de contenu */}
+        <div className="space-y-3">
+          <p className="text-xs font-bold uppercase tracking-wide text-gray-400">
+            Sous-étape de contenu{" "}
+            <span className="font-medium normal-case text-gray-400">(non comptée comme étape principale)</span>
+          </p>
+          <div className="grid grid-cols-3 gap-3">
+            {CONTENT_ORDER.map((ct) => {
+              const meta = CONTENT_TYPE_META[ct];
+              return (
+                <button
+                  key={ct}
+                  onClick={() => onSelect({ kind: "CONTENT", contentType: ct })}
+                  className="flex flex-col items-start gap-2 p-4 rounded-2xl border-2 border-gray-100 hover:border-gray-200 text-left transition-all hover:shadow-md group"
+                  style={{ background: meta.bg }}
+                >
+                  <div
+                    className="w-11 h-11 rounded-xl flex items-center justify-center text-white shrink-0 transition-transform group-hover:scale-110"
+                    style={{ background: meta.color }}
+                  >
+                    {CONTENT_ICONS[ct]}
+                  </div>
+                  <div className="min-w-0">
+                    <p className="font-bold text-sm" style={{ color: meta.color }}>
+                      {meta.label}
+                    </p>
+                    <p className="text-xs text-gray-600 mt-1 leading-relaxed">
+                      {meta.description}
+                    </p>
+                  </div>
+                </button>
+              );
+            })}
+          </div>
         </div>
       </div>
     </div>

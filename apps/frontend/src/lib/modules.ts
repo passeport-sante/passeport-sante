@@ -29,7 +29,7 @@ export async function submitQuizResponse(payload: {
   guestStudentId: string;
   stepId: string;
   moduleId: string;
-  userAnswer: Record<string, string>;
+  userAnswer: Record<string, unknown>;
   isCorrect: boolean;
   timing?: number;
 }): Promise<void> {

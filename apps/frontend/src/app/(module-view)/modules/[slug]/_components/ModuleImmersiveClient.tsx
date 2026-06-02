@@ -16,7 +16,7 @@ interface ModuleData {
   colorPrimary: string | null;
   colorSecondary: string | null;
   category: { name: string } | null;
-  steps: { id: string; order: number; gameType: string }[];
+  steps: { id: string; order: number; gameType: string | null; kind?: "GAME" | "CONTENT" }[];
 }
 interface Props {
   module: ModuleData;
@@ -244,12 +244,14 @@ export function ModuleImmersiveClient({ module }: Props) {
             />
           )}
 
-          {/* Zones cliquables */}
+          {/* Zones cliquables — uniquement les étapes de jeu (les sous-étapes de contenu n'ont pas de cercle) */}
           {module.steps
+            .filter((s) => (s.kind ?? "GAME") === "GAME")
             .sort((a, b) => a.order - b.order)
             .map((step, index) => {
               const pos = getStepCanvasPos(index);
-              const isUnlocked = step.order <= displayedUnlocked;
+              // Déblocage par rang parmi les jeux (1..5), pas par l'order global
+              const isUnlocked = index + 1 <= displayedUnlocked;
               const R = 58;
 
               const zoneStyle: React.CSSProperties = {
@@ -265,7 +267,7 @@ export function ModuleImmersiveClient({ module }: Props) {
                   href={`/modules/${module.slug}/step/${step.id}`}
                   className="absolute z-20 rounded-full hover:scale-110 transition-transform"
                   style={zoneStyle}
-                  title={`Étape ${step.order}`}
+                  title={`Étape ${index + 1}`}
                 />
               ) : (
                 <div

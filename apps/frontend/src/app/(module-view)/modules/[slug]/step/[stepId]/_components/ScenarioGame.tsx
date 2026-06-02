@@ -6,6 +6,7 @@ import Link from "next/link";
 import { ArrowLeft } from "lucide-react";
 import { FeedbackOverlay } from "@/components/modules/FeedbackOverlay";
 import { getGuestStudentId, submitQuizResponse } from "@/lib/modules";
+import { goToNextStep, gameProgress, type FlowStep } from "@/lib/step-flow";
 
 interface Choice {
   id: string;
@@ -27,7 +28,7 @@ interface StepData {
     mascotte?: string | null;
     colorPrimary: string | null;
     colorSecondary: string | null;
-    steps: { id: string; order: number }[];
+    steps: FlowStep[];
   };
 }
 
@@ -43,7 +44,7 @@ export function ScenarioGame({ step }: { step: StepData }) {
 
   const primaryColor = step.module.colorPrimary ?? "#16A34A";
   const bottomColor = step.module.colorSecondary ?? "#052e16";
-  const totalSteps = step.module.steps.length;
+  const { level: gameLevel, total: totalGameLevels } = gameProgress(step.module.steps, step.order);
 
   const gameData = allGameData[currentIndex];
   const situation = gameData?.questionData?.situation ?? "";
@@ -76,16 +77,7 @@ export function ScenarioGame({ step }: { step: StepData }) {
       setSelected(null);
       setCurrentIndex((i) => i + 1);
     } else {
-      const nextLevel = step.order + 1;
-      const key = `module_level_${step.module.slug}`;
-      const stored = parseInt(localStorage.getItem(key) ?? "1", 10);
-      if (nextLevel > stored) localStorage.setItem(key, String(nextLevel));
-      const isLast = step.order === totalSteps;
-      router.push(
-        isLast
-          ? `/modules/${step.module.slug}?complete=true`
-          : `/modules/${step.module.slug}?from=${step.order}`,
-      );
+      goToNextStep(router, step.module.slug, step.module.steps, step.order);
     }
   }
 
@@ -111,7 +103,7 @@ export function ScenarioGame({ step }: { step: StepData }) {
         </div>
 
         <div className="text-gray-400 font-bold text-sm">
-          Étape <span className="text-gray-900 text-xl font-black">{step.order}</span> / {totalSteps}
+          Étape <span className="text-gray-900 text-xl font-black">{gameLevel}</span> / {totalGameLevels}
         </div>
       </header>
 

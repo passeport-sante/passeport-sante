@@ -24,20 +24,22 @@ import {
   deleteStep,
   reorderSteps,
   defaultContentFor,
+  defaultContentForType,
   defaultGameDataFor,
-  GAME_TYPE_META,
   type AdminStep,
   type AdminGameData,
+  type StepContent,
   type GameType,
 } from "@/lib/steps-admin";
-import { GameTypePicker } from "./game-type-picker";
+import { GameTypePicker, type StepPick } from "./game-type-picker";
 import { SortableStepItem } from "./sortable-step-item";
 import { StepEditor } from "./step-editors/step-editor";
 
 interface StepLite {
   id: string;
+  kind: "GAME" | "CONTENT";
   order: number;
-  gameType: string;
+  gameType: string | null;
   content: Record<string, unknown> | null;
 }
 
@@ -111,17 +113,26 @@ export function StepsTab({ moduleId, colorPrimary, steps: initialSteps, onChange
     }
   }
 
-  async function handleAddStep(gameType: GameType) {
+  async function handleAddStep(pick: StepPick) {
     setShowPicker(false);
     const nextOrder = (steps.at(-1)?.order ?? 0) + 1;
     try {
-      const created = await createStep({
-        moduleId,
-        gameType,
-        order: nextOrder,
-        content: defaultContentFor(gameType),
-        gameData: defaultGameDataFor(gameType),
-      });
+      const created =
+        pick.kind === "GAME"
+          ? await createStep({
+              moduleId,
+              kind: "GAME",
+              gameType: pick.gameType,
+              order: nextOrder,
+              content: defaultContentFor(pick.gameType),
+              gameData: defaultGameDataFor(pick.gameType),
+            })
+          : await createStep({
+              moduleId,
+              kind: "CONTENT",
+              order: nextOrder,
+              content: defaultContentForType(pick.contentType),
+            });
       await onChange();
       setSelectedId(created.id);
     } catch (err) {
@@ -145,8 +156,8 @@ export function StepsTab({ moduleId, colorPrimary, steps: initialSteps, onChange
   }
 
   async function handleSaveStep(payload: {
-    content: { title?: string; instructions?: string };
-    gameData: AdminGameData[];
+    content: StepContent;
+    gameData?: AdminGameData[];
   }) {
     if (!current) return;
     const updated = await updateStep(current.id, payload);
@@ -159,6 +170,21 @@ export function StepsTab({ moduleId, colorPrimary, steps: initialSteps, onChange
     [steps],
   );
 
+  // Numéro d'étape principale = rang parmi les jeux ; les sous-étapes n'en ont pas
+  const gameNumberById = useMemo(() => {
+    const map: Record<string, number> = {};
+    let n = 0;
+    for (const s of orderedSteps) {
+      if (s.kind === "GAME") map[s.id] = ++n;
+    }
+    return map;
+  }, [orderedSteps]);
+
+  const gameStepCount = useMemo(
+    () => orderedSteps.filter((s) => s.kind === "GAME").length,
+    [orderedSteps],
+  );
+
   return (
     <div className="grid grid-cols-1 lg:grid-cols-5 gap-6">
       {/* Liste sortable — 2/5 */}
@@ -167,7 +193,7 @@ export function StepsTab({ moduleId, colorPrimary, steps: initialSteps, onChange
           <h3 className="text-sm font-bold text-[#1A1A1A] flex items-center gap-2">
             <Layers size={15} className="text-gray-400" />
             Étapes du module
-            <span className="text-xs font-semibold text-gray-400">({orderedSteps.length})</span>
+            <span className="text-xs font-semibold text-gray-400">({gameStepCount} jeu{gameStepCount > 1 ? "x" : ""})</span>
           </h3>
           <button
             onClick={() => setShowPicker(true)}
@@ -206,14 +232,16 @@ export function StepsTab({ moduleId, colorPrimary, steps: initialSteps, onChange
             >
               <div className="space-y-2">
                 {orderedSteps.map((s) => {
-                  const title = (s.content as { title?: string } | null)?.title ?? "";
+                  const content = (s.content ?? {}) as StepContent;
                   return (
                     <SortableStepItem
                       key={s.id}
                       id={s.id}
-                      order={s.order}
-                      gameType={s.gameType as GameType}
-                      title={title}
+                      kind={s.kind}
+                      gameNumber={gameNumberById[s.id] ?? null}
+                      gameType={(s.gameType as GameType | null) ?? null}
+                      contentType={content.contentType ?? null}
+                      title={content.title ?? ""}
                       selected={selectedId === s.id}
                       onSelect={() => setSelectedId(s.id)}
                       onDelete={() => setConfirmDelete(s.id)}

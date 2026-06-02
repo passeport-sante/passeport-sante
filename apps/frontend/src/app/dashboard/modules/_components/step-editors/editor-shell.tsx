@@ -40,7 +40,7 @@ export function EditorShell({
   validationError,
   children,
 }: ShellProps) {
-  const meta = GAME_TYPE_META[step.gameType];
+  const meta = GAME_TYPE_META[step.gameType ?? "QUIZ"];
   const [saving, setSaving] = useState(false);
   const [justSaved, setJustSaved] = useState(false);
   const savedTimerRef = useRef<NodeJS.Timeout | null>(null);
@@ -91,7 +91,7 @@ export function EditorShell({
             {meta.short.toUpperCase()}
           </span>
           <span className="text-sm font-bold text-[#1A1A1A] truncate">
-            Étape {step.order} — {meta.label}
+            {meta.label}
           </span>
         </div>
 

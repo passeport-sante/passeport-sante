@@ -97,7 +97,7 @@ export default function EditModulePage({ params }: PageProps) {
     );
   }
 
-  const stepCount = module.steps?.length ?? 0;
+  const stepCount = module.steps?.filter((s) => s.kind === "GAME").length ?? 0;
 
   return (
     <div className={`p-8 ${tab === "steps" ? "max-w-[1400px]" : "max-w-6xl"}`}>

@@ -9,12 +9,28 @@ export type GameType =
   | "PHRASE_A_TROU"
   | "SCENARIO";
 
+export type StepKind = "GAME" | "CONTENT";
+
+export type ContentType = "INFO" | "IMAGE" | "VIDEO";
+
+// Contenu d'un step : champs de jeu (title/instructions) OU champs de sous-étape de contenu
+export type StepContent = {
+  title?: string;
+  instructions?: string;
+  contentType?: ContentType;
+  body?: string;
+  imageUrl?: string;
+  videoUrl?: string;
+  caption?: string;
+};
+
 export type AdminStep = {
   id: string;
+  kind: StepKind;
   order: number;
-  gameType: GameType;
+  gameType: GameType | null;
   mascotteImage: string | null;
-  content: { title?: string; instructions?: string } | null;
+  content: StepContent | null;
   moduleId: string;
   gameData: AdminGameData[];
   module?: {
@@ -36,17 +52,18 @@ export type AdminGameData = {
 
 export type CreateStepPayload = {
   moduleId: string;
-  gameType: GameType;
+  kind?: StepKind;
+  gameType?: GameType;
   order: number;
   mascotteImage?: string;
-  content?: { title?: string; instructions?: string };
+  content?: StepContent;
   gameData?: AdminGameData[];
 };
 
 export type UpdateStepPayload = {
   order?: number;
   mascotteImage?: string;
-  content?: { title?: string; instructions?: string };
+  content?: StepContent;
   gameData?: AdminGameData[];
 };
 
@@ -158,6 +175,46 @@ export const GAME_TYPE_META: Record<
   },
 };
 
+// ── Métadonnées d'affichage des sous-étapes de contenu ──────────────────────
+
+export const CONTENT_TYPE_META: Record<
+  ContentType,
+  { label: string; short: string; color: string; bg: string; description: string }
+> = {
+  INFO: {
+    label: "Le saviez-vous ?",
+    short: "Info",
+    color: "#0EA5E9",
+    bg: "#F0F9FF",
+    description: "Un encart d'information complémentaire à lire (pas de jeu).",
+  },
+  IMAGE: {
+    label: "Image",
+    short: "Image",
+    color: "#16A34A",
+    bg: "#F0FDF4",
+    description: "Afficher une image en plein écran (via URL).",
+  },
+  VIDEO: {
+    label: "Vidéo",
+    short: "Vidéo",
+    color: "#E11D48",
+    bg: "#FFF1F2",
+    description: "Intégrer une vidéo YouTube ou Vimeo (via URL).",
+  },
+};
+
+export function defaultContentForType(contentType: ContentType): StepContent {
+  switch (contentType) {
+    case "INFO":
+      return { contentType, title: "Le saviez-vous ?", body: "Saisis ici l'information à transmettre aux élèves." };
+    case "IMAGE":
+      return { contentType, title: "", imageUrl: "", caption: "" };
+    case "VIDEO":
+      return { contentType, title: "", videoUrl: "", caption: "" };
+  }
+}
+
 // ── Gabarits par défaut quand on crée un step vide ──────────────────────────
 
 export function defaultContentFor(gameType: GameType): { title: string; instructions: string } {
@@ -247,4 +304,25 @@ export function defaultGameDataFor(gameType: GameType): AdminGameData[] {
 
 export function shortId(): string {
   return Math.random().toString(36).slice(2, 8);
+}
+
+// ── Vidéo : normalise un lien YouTube/Vimeo en URL d'intégration (embed) ─────
+// Accepte aussi une URL d'embed déjà valide. Renvoie null si non reconnu.
+export function toEmbedUrl(raw: string): string | null {
+  const url = raw.trim();
+  if (!url) return null;
+
+  // YouTube : watch?v=, youtu.be/, /embed/, /shorts/
+  const yt =
+    url.match(/(?:youtube\.com\/watch\?v=|youtu\.be\/|youtube\.com\/embed\/|youtube\.com\/shorts\/)([\w-]{11})/);
+  if (yt) return `https://www.youtube.com/embed/${yt[1]}`;
+
+  // Vimeo : vimeo.com/123456789 ou player.vimeo.com/video/123456789
+  const vimeo = url.match(/vimeo\.com\/(?:video\/)?(\d+)/);
+  if (vimeo) return `https://player.vimeo.com/video/${vimeo[1]}`;
+
+  // Déjà une URL d'embed http(s) → on la garde telle quelle
+  if (/^https?:\/\//.test(url)) return url;
+
+  return null;
 }

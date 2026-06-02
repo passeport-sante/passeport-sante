@@ -10,14 +10,19 @@ import {
   ValidateNested,
 } from "class-validator";
 import { Type } from "class-transformer";
-import { GameType } from "@prisma/client";
+import { GameType, StepKind } from "@prisma/client";
 import { GameDataInputDto } from "./game-data.dto";
 
 export class CreateStepDto {
-  @ApiProperty({ enum: GameType })
+  @ApiPropertyOptional({ enum: StepKind, default: StepKind.GAME })
+  @IsEnum(StepKind)
+  @IsOptional()
+  kind?: StepKind;
+
+  @ApiPropertyOptional({ enum: GameType, description: "Requis pour une étape de jeu (kind=GAME)" })
   @IsEnum(GameType)
-  @IsNotEmpty()
-  gameType!: GameType;
+  @IsOptional()
+  gameType?: GameType;
 
   @ApiProperty()
   @IsInt()
