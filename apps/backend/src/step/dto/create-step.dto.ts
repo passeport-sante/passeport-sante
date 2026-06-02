@@ -1,31 +1,40 @@
-import { ApiProperty } from "@nestjs/swagger";
+import { ApiProperty, ApiPropertyOptional } from "@nestjs/swagger";
 import {
+  IsArray,
   IsEnum,
   IsInt,
   IsObject,
   IsNotEmpty,
   IsOptional,
   IsString,
+  ValidateNested,
 } from "class-validator";
-import { GameType } from "@prisma/client";
+import { Type } from "class-transformer";
+import { GameType, StepKind } from "@prisma/client";
+import { GameDataInputDto } from "./game-data.dto";
 
 export class CreateStepDto {
-  @ApiProperty({ enum: GameType })
+  @ApiPropertyOptional({ enum: StepKind, default: StepKind.GAME })
+  @IsEnum(StepKind)
+  @IsOptional()
+  kind?: StepKind;
+
+  @ApiPropertyOptional({ enum: GameType, description: "Requis pour une étape de jeu (kind=GAME)" })
   @IsEnum(GameType)
-  @IsNotEmpty()
-  gameType!: GameType;
+  @IsOptional()
+  gameType?: GameType;
 
   @ApiProperty()
   @IsInt()
   @IsNotEmpty()
   order!: number;
 
-  @ApiProperty()
+  @ApiPropertyOptional()
   @IsString()
   @IsOptional()
   mascotteImage?: string;
 
-  @ApiProperty()
+  @ApiPropertyOptional()
   @IsObject()
   @IsOptional()
   content?: Record<string, any>;
@@ -34,4 +43,11 @@ export class CreateStepDto {
   @IsString()
   @IsNotEmpty()
   moduleId!: string;
+
+  @ApiPropertyOptional({ type: [GameDataInputDto], description: "Données de jeu initiales (optionnel)" })
+  @IsArray()
+  @IsOptional()
+  @ValidateNested({ each: true })
+  @Type(() => GameDataInputDto)
+  gameData?: GameDataInputDto[];
 }

@@ -4,6 +4,7 @@ import { PhraseATrou } from "./_components/PhraseATrou";
 import { KanbanGame } from "./_components/KanbanGame";
 import { ScenarioGame } from "./_components/ScenarioGame";
 import { QuizGame } from "./_components/QuizGame";
+import { ContentPanel } from "./_components/ContentPanel";
 
 async function getStep(stepId: string) {
   try {
@@ -27,6 +28,8 @@ export default async function StepPage({
   const step = await getStep(stepId);
 
   if (!step) notFound();
+
+  if (step.kind === "CONTENT") return <ContentPanel step={step} />;
 
   if (step.gameType === "KANBAN") return <KanbanGame step={step} />;
   if (step.gameType === "SCENARIO") return <ScenarioGame step={step} />;

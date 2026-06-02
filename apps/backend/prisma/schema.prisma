@@ -26,6 +26,12 @@ enum GameType {
   SCENARIO
 }
 
+// Distingue une étape de jeu (comptée, cercle Rive) d'une sous-étape de contenu (intercalée, non comptée)
+enum StepKind {
+  GAME
+  CONTENT
+}
+
 enum QuestionType {
   MCQ
   TRUE_FALSE
@@ -136,7 +142,8 @@ model ModuleSession {
 
 model Step {
   id            String   @id @default(cuid())
-  gameType      GameType
+  kind          StepKind @default(GAME)
+  gameType      GameType?
   order         Int      @default(0)
   mascotteImage String?
   content       Json?

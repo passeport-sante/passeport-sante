@@ -31,6 +31,9 @@ services:
       PORT: 5000
       JWT_SECRET: ${JWT_SECRET:-changeme_in_production}
       NODE_PATH: /app/apps/backend/node_modules
+      CHOKIDAR_USEPOLLING: "true"
+      CHOKIDAR_INTERVAL: "1000"
+      TSC_WATCHFILE: "DynamicPriorityPolling"
     ports:
       - "5000:5000"
     volumes:
