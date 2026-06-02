@@ -1,4 +1,4 @@
-const API = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:5000";
+const API = process.env.NEXT_PUBLIC_API_URL ?? "${process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:5000"}";
 
 export async function createGuestStudent(sessionId: string): Promise<string> {
   const res = await fetch(`${API}/api/guest-studend`, {

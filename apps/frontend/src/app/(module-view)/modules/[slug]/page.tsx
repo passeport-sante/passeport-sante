@@ -16,7 +16,7 @@ type ModuleDetail = {
 
 async function getModule(slug: string): Promise<ModuleDetail | null> {
   try {
-    const base = process.env.API_INTERNAL_URL ?? "http://localhost:5000";
+    const base = process.env.API_INTERNAL_URL ?? "${process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:5000"}";
     const res = await fetch(`${base}/api/modules/slug/${slug}`, {
       cache: "no-store",
     });

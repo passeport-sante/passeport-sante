@@ -4,7 +4,7 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
 
-const API = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:5000";
+const API = process.env.NEXT_PUBLIC_API_URL ?? "${process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:5000"}";
 
 export default function SessionEntryPage() {
   const router = useRouter();

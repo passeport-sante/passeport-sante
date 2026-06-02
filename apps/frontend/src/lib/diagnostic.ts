@@ -1,5 +1,5 @@
-const API_PUBLIC   = process.env.NEXT_PUBLIC_API_URL  ?? "http://localhost:5000";
-const API_INTERNAL = process.env.API_INTERNAL_URL     ?? "http://localhost:5000";
+const API_PUBLIC   = process.env.NEXT_PUBLIC_API_URL  ?? "${process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:5000"}";
+const API_INTERNAL = process.env.API_INTERNAL_URL     ?? "${process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:5000"}";
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 

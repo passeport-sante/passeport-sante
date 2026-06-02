@@ -3,7 +3,7 @@ import { BubbleCard, type Category } from "@/components/modules/bubble-card";
 // ---- Fetch depuis le backend ----
 async function getModulesByCategory(): Promise<Category[]> {
   try {
-    const baseUrl = process.env.API_INTERNAL_URL ?? "http://localhost:5000";
+    const baseUrl = process.env.API_INTERNAL_URL ?? "${process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:5000"}";
     const res = await fetch(`${baseUrl}/api/modules?grouped=true`, {
       cache: "no-store",
     });

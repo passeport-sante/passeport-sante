@@ -13,7 +13,7 @@ import {
 } from "@/lib/modules-admin";
 import { decodeJwt, getToken } from "@/lib/auth";
 
-const API = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:5000";
+const API = process.env.NEXT_PUBLIC_API_URL ?? "${process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:5000"}";
 
 export default function NewModulePage() {
   const router = useRouter();
