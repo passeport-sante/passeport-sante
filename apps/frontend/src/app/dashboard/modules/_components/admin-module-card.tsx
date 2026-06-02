@@ -39,12 +39,12 @@ export function AdminModuleCard({ module, onDuplicate, onToggleActive, onDelete 
   return (
     <Link
       href={`/dashboard/modules/${module.id}/edit`}
-      className={`group relative flex flex-col gap-4 p-5 bg-white rounded-xl border border-gray-200 hover:border-gray-300 hover:shadow-[0_4px_12px_-4px_rgba(0,0,0,0.05)] transition-all overflow-hidden ${
-        module.isActive ? "" : "opacity-60"
-      }`}
+      className={`group relative flex flex-col gap-4 p-5 bg-white rounded-xl border border-gray-200 hover:border-gray-300 hover:shadow-[0_4px_12px_-4px_rgba(0,0,0,0.05)] transition-all ${
+        menuOpen ? "z-20" : ""
+      } ${module.isActive ? "" : "opacity-60"}`}
     >
       {/* Accent latéral à la couleur du module */}
-      <span className="absolute left-0 top-0 bottom-0 w-[3px]" style={{ background: color }} />
+      <span className="absolute left-0 top-0 bottom-0 w-[3px] rounded-l-xl" style={{ background: color }} />
 
       {/* Header — mascotte + titre + menu */}
       <div className="flex items-start gap-3">
@@ -99,7 +99,7 @@ export function AdminModuleCard({ module, onDuplicate, onToggleActive, onDelete 
 
           {menuOpen && (
             <div
-              className="absolute right-0 top-full mt-1 z-10 bg-white rounded-lg shadow-md border border-gray-200 py-1 min-w-[170px]"
+              className="absolute right-0 top-full mt-1 z-30 bg-white rounded-lg shadow-md border border-gray-200 py-1 min-w-[170px]"
               onClick={(e) => e.preventDefault()}
             >
               <MenuItem
