@@ -6,7 +6,7 @@ import Link from "next/link";
 import Image from "next/image";
 import { User, Shield } from "lucide-react";
 
-const API = process.env.NEXT_PUBLIC_API_URL ?? "${process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:5000"}";
+const API = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:5000";
 
 type NavItem = { href: string; label: string; exact: boolean; adminOnly?: boolean };
 
