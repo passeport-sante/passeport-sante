@@ -65,7 +65,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
   if (!ready) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-white">
-        <div className="w-6 h-6 border-2 border-gray-300 border-t-blue-600 rounded-full animate-spin" />
+        <div className="w-8 h-8 border-4 border-[#2A8970] border-t-transparent rounded-full animate-spin" />
       </div>
     );
   }
@@ -80,8 +80,9 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
 
   return (
     <div className="min-h-screen bg-[#F0F4F8]">
-      <header className="bg-white border-b border-gray-200 sticky top-0 z-50">
-        <div className="brand-container py-3 flex items-center justify-between">
+      {/* Navbar — même style que l'accueil */}
+      <header className="bg-white shadow-sm sticky top-0 z-50">
+        <div className="brand-container py-4 flex items-center justify-between">
           {/* Logo */}
           <Link href="/" className="shrink-0 flex items-center gap-3">
             <Image
@@ -89,32 +90,32 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
               alt="Logo"
               width={120}
               height={38}
-              className="h-8 w-auto object-contain"
+              className="h-9 w-auto object-contain"
             />
-            <span className="text-[15px] font-bold tracking-wide">
+            <span className="text-lg font-black tracking-wide">
               <span className="text-blue-600">PASSEPORT</span>{" "}
               <span className="text-brand-green">SANTÉ</span>
             </span>
           </Link>
 
           {/* Navigation centrale */}
-          <nav className="flex items-center bg-gray-100 rounded-lg p-0.5 gap-0.5">
+          <nav className="flex items-center bg-gray-100 rounded-full p-1 gap-1">
             {visibleNav.map(({ href, label, exact, adminOnly }) => {
               const active = isActive(href, exact);
               return (
                 <Link
                   key={href}
                   href={href}
-                  className={`px-3.5 py-1.5 rounded-md text-[13px] font-medium transition-colors flex items-center gap-1.5 ${
+                  className={`px-5 py-2 rounded-full text-sm font-semibold transition-all flex items-center gap-1.5 ${
                     active
-                      ? "bg-white text-blue-600 shadow-sm"
-                      : "text-gray-600 hover:text-gray-900"
+                      ? "bg-white text-[#1B6B8A] shadow-sm"
+                      : "text-gray-500 hover:text-gray-700"
                   }`}
                 >
                   {adminOnly && (
                     <Shield
-                      size={12}
-                      className={active ? "text-blue-600" : "text-gray-400"}
+                      size={13}
+                      className={active ? "text-[#1B6B8A]" : "text-amber-500"}
                       strokeWidth={2.5}
                     />
                   )}
@@ -128,28 +129,30 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
           <div className="shrink-0 flex items-center gap-3">
             {user && (
               <div className="text-right leading-tight">
-                <p className="text-[13px] font-semibold text-[#1A1A1A]">
-                  {user.name}
-                </p>
-                <p className="text-[11px] text-gray-500 flex items-center justify-end gap-1">
-                  {isAdmin && (
-                    <Shield size={9} className="text-blue-600" strokeWidth={2.5} />
-                  )}
+                <p className="text-sm font-semibold text-[#1A1A1A]">
                   {isAdmin ? "Administrateur" : "Enseignant"}
                 </p>
+                <p className="text-xs text-gray-400">{user.name}</p>
               </div>
             )}
-            <div className="w-9 h-9 rounded-full bg-gray-100 flex items-center justify-center border border-gray-200">
+            <div
+              className={`w-10 h-10 rounded-full flex items-center justify-center border-2 ${
+                isAdmin
+                  ? "bg-amber-50 border-amber-300/50"
+                  : "bg-[#EBF4F8] border-[#1B6B8A]/20"
+              }`}
+            >
               {isAdmin ? (
-                <Shield size={16} className="text-gray-600" strokeWidth={2.5} />
+                <Shield size={18} className="text-amber-600" strokeWidth={2.5} />
               ) : (
-                <User size={17} className="text-gray-600" />
+                <User size={20} className="text-[#1B6B8A]" />
               )}
             </div>
           </div>
         </div>
       </header>
 
+      {/* Contenu */}
       <main>{children}</main>
     </div>
   );

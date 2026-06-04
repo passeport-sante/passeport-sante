@@ -18,9 +18,6 @@ import { DeleteModuleModal } from "./_components/delete-module-modal";
 type StatusFilter = "all" | "active" | "inactive";
 type SortKey = "recent" | "alpha" | "steps";
 
-const SELECT_CLASS =
-  "h-9 text-[13px] bg-white border border-gray-200 rounded-lg px-3 pr-8 focus:outline-none focus:border-gray-400 text-gray-700 appearance-none cursor-pointer";
-
 export default function AdminModulesPage() {
   const [modules, setModules] = useState<AdminModule[]>([]);
   const [categories, setCategories] = useState<CategoryLite[]>([]);
@@ -66,6 +63,7 @@ export default function AdminModulesPage() {
     try {
       await updateModule(m.id, { isActive: !m.isActive });
     } catch (err) {
+      // revert
       setModules((prev) =>
         prev.map((x) => (x.id === m.id ? { ...x, isActive: m.isActive } : x)),
       );
@@ -105,113 +103,113 @@ export default function AdminModulesPage() {
     return list;
   }, [modules, query, categoryId, status, sort]);
 
-  const hasFilters = !!query || categoryId !== "all" || status !== "all";
+  const counts = useMemo(
+    () => ({
+      total: modules.length,
+      active: modules.filter((m) => m.isActive).length,
+      inactive: modules.filter((m) => !m.isActive).length,
+    }),
+    [modules],
+  );
 
   return (
-    <div className="px-8 py-10 max-w-[1200px] mx-auto space-y-8 min-h-screen">
+    <div className="p-8 space-y-6 min-h-screen">
       {/* Header */}
-      <div className="flex items-end justify-between gap-4">
+      <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-[22px] font-semibold text-[#1A1A1A] tracking-tight">
-            Modules
-          </h1>
-          <p className="text-sm text-gray-500 mt-1">
-            {modules.length} module{modules.length > 1 ? "s" : ""}
-            {modules.length > 0 && (
-              <>
-                <span className="mx-1.5 text-gray-300">·</span>
-                {modules.filter((m) => m.isActive).length} actif
-                {modules.filter((m) => m.isActive).length > 1 ? "s" : ""}
-              </>
-            )}
+          <h1 className="text-2xl font-black text-[#1A1A1A]">Modules</h1>
+          <p className="text-gray-400 text-sm mt-1">
+            Créez et personnalisez les contenus pédagogiques
           </p>
         </div>
         <Link
           href="/dashboard/modules/new"
-          className="inline-flex items-center gap-1.5 h-9 px-3.5 bg-blue-600 text-white text-[13px] font-medium rounded-lg hover:bg-blue-700 transition-colors"
+          className="flex items-center gap-2 px-5 py-2.5 text-white text-sm font-semibold rounded-xl hover:opacity-90 transition-opacity"
+          style={{ background: "linear-gradient(135deg, #1B6B8A, #2A8970)" }}
         >
-          <Plus size={15} strokeWidth={2.5} />
+          <Plus size={17} />
           Nouveau module
         </Link>
       </div>
 
+      {/* Stats row */}
+      <div className="grid grid-cols-3 rounded-xl border border-gray-200 bg-white divide-x divide-gray-100">
+        <StatTile label="Modules" value={counts.total} icon={<Layers size={16} />} />
+        <StatTile label="Actifs" value={counts.active} accent="emerald" />
+        <StatTile label="Inactifs" value={counts.inactive} accent="gray" />
+      </div>
+
       {/* Toolbar */}
-      <div className="flex flex-wrap items-center gap-2">
+      <div className="bg-white rounded-xl border border-gray-200 p-3 flex flex-wrap items-center gap-2 sticky top-[72px] z-30">
         {/* Search */}
-        <div className="relative flex-1 min-w-[220px]">
+        <div className="relative flex-1 min-w-[200px]">
           <Search
-            size={14}
+            size={15}
             className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400"
           />
           <input
             type="search"
             value={query}
             onChange={(e) => setQuery(e.target.value)}
-            placeholder="Rechercher..."
-            className="w-full h-9 pl-9 pr-3 rounded-lg bg-white border border-gray-200 text-[13px] focus:outline-none focus:border-gray-400 placeholder:text-gray-400"
+            placeholder="Rechercher un module..."
+            className="w-full pl-9 pr-3 py-2 rounded-xl bg-gray-50 border border-gray-100 text-sm focus:outline-none focus:ring-2 focus:ring-[#1B6B8A]/30 focus:border-transparent"
           />
         </div>
 
-        <SelectChevron>
-          <select
-            value={categoryId}
-            onChange={(e) => setCategoryId(e.target.value)}
-            className={SELECT_CLASS}
-          >
-            <option value="all">Toutes catégories</option>
-            {categories.map((c) => (
-              <option key={c.id} value={c.id}>
-                {c.name}
-              </option>
-            ))}
-          </select>
-        </SelectChevron>
+        {/* Category chips */}
+        <div className="flex items-center gap-1 flex-wrap">
+          <FilterChip
+            active={categoryId === "all"}
+            onClick={() => setCategoryId("all")}
+            label="Toutes catégories"
+          />
+          {categories.map((c) => (
+            <FilterChip
+              key={c.id}
+              active={categoryId === c.id}
+              onClick={() => setCategoryId(c.id)}
+              label={c.name}
+              dotColor={c.color ?? undefined}
+            />
+          ))}
+        </div>
 
-        <SelectChevron>
-          <select
-            value={status}
-            onChange={(e) => setStatus(e.target.value as StatusFilter)}
-            className={SELECT_CLASS}
-          >
-            <option value="all">Tous statuts</option>
-            <option value="active">Actifs</option>
-            <option value="inactive">Inactifs</option>
-          </select>
-        </SelectChevron>
+        {/* Status */}
+        <select
+          value={status}
+          onChange={(e) => setStatus(e.target.value as StatusFilter)}
+          className="text-sm bg-gray-50 border border-gray-100 rounded-xl px-3 py-2 focus:outline-none focus:ring-2 focus:ring-[#1B6B8A]/30"
+        >
+          <option value="all">Tous statuts</option>
+          <option value="active">Actifs</option>
+          <option value="inactive">Inactifs</option>
+        </select>
 
-        <SelectChevron>
-          <select
-            value={sort}
-            onChange={(e) => setSort(e.target.value as SortKey)}
-            className={SELECT_CLASS}
-          >
-            <option value="recent">Récents</option>
-            <option value="alpha">A → Z</option>
-            <option value="steps">Plus d&apos;étapes</option>
-          </select>
-        </SelectChevron>
+        {/* Sort */}
+        <select
+          value={sort}
+          onChange={(e) => setSort(e.target.value as SortKey)}
+          className="text-sm bg-gray-50 border border-gray-100 rounded-xl px-3 py-2 focus:outline-none focus:ring-2 focus:ring-[#1B6B8A]/30"
+        >
+          <option value="recent">Récents</option>
+          <option value="alpha">A → Z</option>
+          <option value="steps">Plus d&apos;étapes</option>
+        </select>
       </div>
 
       {/* Content */}
       {loading ? (
         <div className="flex items-center justify-center py-24">
-          <div className="w-6 h-6 border-2 border-gray-300 border-t-[#1A1A1A] rounded-full animate-spin" />
+          <div className="w-8 h-8 border-4 border-[#2A8970] border-t-transparent rounded-full animate-spin" />
         </div>
       ) : error ? (
-        <div className="border border-red-200 rounded-lg p-4 text-sm text-red-700 bg-red-50">
+        <div className="bg-red-50 border border-red-200 rounded-xl p-6 text-sm text-red-700">
           {error}
         </div>
       ) : filtered.length === 0 ? (
-        <EmptyState
-          onReset={() => {
-            setQuery("");
-            setCategoryId("all");
-            setStatus("all");
-          }}
-          hasFilters={hasFilters}
-        />
+        <EmptyState onReset={() => { setQuery(""); setCategoryId("all"); setStatus("all"); }} hasFilters={!!query || categoryId !== "all" || status !== "all"} />
       ) : (
-        <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-3">
+        <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-4">
           {filtered.map((m) => (
             <AdminModuleCard
               key={m.id}
@@ -235,60 +233,96 @@ export default function AdminModulesPage() {
 
 // ── Sous-composants ─────────────────────────────────────────────────────────
 
-function SelectChevron({ children }: { children: React.ReactNode }) {
+function StatTile({
+  label,
+  value,
+  accent,
+  icon,
+}: {
+  label: string;
+  value: number;
+  accent?: "emerald" | "gray";
+  icon?: React.ReactNode;
+}) {
+  const color =
+    accent === "emerald"
+      ? "text-emerald-600"
+      : accent === "gray"
+      ? "text-gray-500"
+      : "text-[#1B6B8A]";
   return (
-    <div className="relative">
-      {children}
-      <svg
-        className="pointer-events-none absolute right-2.5 top-1/2 -translate-y-1/2 text-gray-400"
-        width="10"
-        height="10"
-        viewBox="0 0 12 12"
-        fill="none"
-      >
-        <path d="M3 4.5L6 7.5L9 4.5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
-      </svg>
+    <div className="p-4 flex items-center gap-3">
+      {icon && <div className={`${color}`}>{icon}</div>}
+      <div>
+        <p className="text-xs text-gray-400 font-medium">{label}</p>
+        <p className={`text-xl font-black ${color}`}>{value}</p>
+      </div>
     </div>
   );
 }
 
-function EmptyState({
-  onReset,
-  hasFilters,
+function FilterChip({
+  active,
+  onClick,
+  label,
+  dotColor,
 }: {
-  onReset: () => void;
-  hasFilters: boolean;
+  active: boolean;
+  onClick: () => void;
+  label: string;
+  dotColor?: string;
 }) {
   return (
-    <div className="border border-gray-200 rounded-xl py-16 text-center bg-white">
-      <div className="w-10 h-10 rounded-lg bg-gray-100 flex items-center justify-center mx-auto mb-4">
-        <Layers size={18} className="text-gray-400" />
+    <button
+      onClick={onClick}
+      className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold transition-all ${
+        active
+          ? "bg-[#1B6B8A] text-white shadow-sm"
+          : "bg-gray-50 text-gray-600 hover:bg-gray-100 border border-gray-100"
+      }`}
+    >
+      {dotColor && (
+        <span
+          className="w-1.5 h-1.5 rounded-full"
+          style={{ background: dotColor }}
+        />
+      )}
+      {label}
+    </button>
+  );
+}
+
+function EmptyState({ onReset, hasFilters }: { onReset: () => void; hasFilters: boolean }) {
+  return (
+    <div className="bg-white rounded-xl border border-dashed border-gray-200 p-12 text-center">
+      <div className="w-12 h-12 rounded-xl bg-[#EBF4F8] flex items-center justify-center mx-auto mb-4">
+        <Layers size={20} className="text-[#1B6B8A]" />
       </div>
-      <p className="text-sm font-medium text-[#1A1A1A]">
-        {hasFilters ? "Aucun résultat" : "Aucun module"}
+      <p className="text-base font-semibold text-[#1A1A1A]">
+        {hasFilters ? "Aucun module ne correspond" : "Aucun module pour le moment"}
       </p>
-      <p className="text-[13px] text-gray-500 mt-1">
+      <p className="text-sm text-gray-400 mt-1">
         {hasFilters
-          ? "Essayez d'ajuster votre recherche ou vos filtres."
+          ? "Essayez d'ajuster vos filtres ou votre recherche."
           : "Créez votre premier module pour commencer."}
       </p>
-      <div className="mt-5 inline-flex items-center gap-2">
-        {hasFilters ? (
+      <div className="mt-5 flex items-center justify-center gap-2">
+        {hasFilters && (
           <button
             onClick={onReset}
-            className="h-8 px-3 bg-white border border-gray-200 text-gray-700 text-[13px] font-medium rounded-lg hover:bg-gray-50"
+            className="px-4 py-2 bg-gray-100 text-gray-600 text-sm font-semibold rounded-xl hover:bg-gray-200"
           >
             Réinitialiser
           </button>
-        ) : (
-          <Link
-            href="/dashboard/modules/new"
-            className="inline-flex items-center gap-1.5 h-8 px-3 bg-[#1A1A1A] text-white text-[13px] font-medium rounded-lg hover:bg-black"
-          >
-            <Plus size={14} strokeWidth={2.5} />
-            Nouveau module
-          </Link>
         )}
+        <Link
+          href="/dashboard/modules/new"
+          className="inline-flex items-center gap-2 px-5 py-2 text-white text-sm font-semibold rounded-xl"
+          style={{ background: "linear-gradient(135deg, #1B6B8A, #2A8970)" }}
+        >
+          <Plus size={15} />
+          Nouveau module
+        </Link>
       </div>
     </div>
   );

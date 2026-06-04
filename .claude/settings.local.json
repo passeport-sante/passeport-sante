@@ -19,7 +19,11 @@
       "Bash(rtk docker *)",
       "Bash(findstr prevention *)",
       "Bash(findstr /i \"step error modules compiled GET 404\")",
-      "Bash(curl -s -X POST http://localhost:5000/api/auth/login -H \"Content-Type: application/json\" -d '{\"email\":\"admin@prevention.com\",\"password\":\"Admin123!\"}')"
+      "Bash(curl -s -X POST http://localhost:5000/api/auth/login -H \"Content-Type: application/json\" -d '{\"email\":\"admin@prevention.com\",\"password\":\"Admin123!\"}')",
+      "Bash(rtk git *)",
+      "Bash(git ls-tree *)",
+      "Bash(findstr /R \"step game sortable\")",
+      "Bash(findstr /R /C:\"^  [-+]import\" /C:\"^  [-+].*useState\" /C:\"^  [-+].*fetch\" /C:\"^  [-+].*async\" /C:\"insertions\")"
     ]
   }
 }

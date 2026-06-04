@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { Users, Copy, Check, Stethoscope } from "lucide-react";
+import { Users, Copy, Check, ExternalLink } from "lucide-react";
 import { useState } from "react";
 import type { SessionSummary } from "@/lib/dashboard";
 import { TOTAL_DIAGNOSTIC_QUESTIONS } from "@/lib/dashboard";
@@ -17,102 +17,91 @@ export function SessionCard({ session, onClose }: Props) {
   const students = session._count.guestStudents;
   const responses = session._count.diagnosticResponses;
   const progress =
-    students > 0
-      ? Math.min(100, Math.round((responses / (students * TOTAL_DIAGNOSTIC_QUESTIONS)) * 100))
-      : 0;
+    students > 0 ? Math.min(100, Math.round((responses / (students * TOTAL_DIAGNOSTIC_QUESTIONS)) * 100)) : 0;
 
-  function copyCode(e: React.MouseEvent) {
-    e.preventDefault();
-    e.stopPropagation();
+  function copyCode() {
     navigator.clipboard.writeText(session.accessCode);
     setCopied(true);
     setTimeout(() => setCopied(false), 2000);
   }
 
   return (
-    <Link
-      href={`/dashboard/sessions/${session.id}`}
-      className="group relative flex flex-col gap-3.5 p-5 bg-white rounded-xl border border-gray-200 hover:border-gray-300 hover:shadow-[0_4px_12px_-4px_rgba(0,0,0,0.05)] transition-all overflow-hidden"
-    >
-      {/* Accent latéral diagnostic */}
-      <span className="absolute left-0 top-0 bottom-0 w-[3px] bg-blue-600" />
-
+    <div className="bg-white rounded-xl border border-gray-200 p-6 flex flex-col gap-4">
       {/* Header */}
-      <div className="flex items-start gap-3">
-        <div className="w-9 h-9 rounded-lg bg-blue-50 flex items-center justify-center shrink-0">
-          <Stethoscope size={15} className="text-blue-600" />
-        </div>
-        <div className="min-w-0 flex-1">
-          <h3 className="text-[15px] font-semibold text-[#1A1A1A] truncate">{session.className}</h3>
-          <p className="text-[11px] text-gray-500 mt-0.5">
-            <span className="font-medium text-blue-700">Diagnostic</span>
-            <span className="mx-1.5 text-gray-300">·</span>
+      <div className="flex items-start justify-between gap-3">
+        <div className="flex-1 min-w-0">
+          <h3 className="font-bold text-[#1A1A1A] text-lg truncate">{session.className}</h3>
+          <p className="text-gray-400 text-xs mt-0.5">
             {new Date(session.createdAt).toLocaleDateString("fr-FR", {
               day: "numeric",
-              month: "short",
+              month: "long",
+              year: "numeric",
             })}
           </p>
         </div>
-        <span className="inline-flex items-center gap-1.5 text-[11px] font-medium text-emerald-700 pt-1">
-          <span className="relative flex items-center justify-center">
-            <span className="absolute w-2 h-2 rounded-full bg-emerald-500/40 animate-ping" />
-            <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
-          </span>
+        <span className="shrink-0 inline-flex items-center gap-1.5 px-3 py-1 bg-emerald-50 text-emerald-600 text-xs font-semibold rounded-full border border-emerald-200">
+          <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
           Active
         </span>
       </div>
 
       {/* Code */}
-      <div className="flex items-center gap-2 bg-gray-50 border border-gray-100 rounded-lg px-3 py-2">
-        <span className="text-[11px] text-gray-500">Code</span>
-        <span className="font-mono font-semibold text-[#1A1A1A] tracking-wider text-[13px] flex-1">
+      <div className="flex items-center gap-2 bg-gray-50 rounded-xl px-4 py-2.5">
+        <span className="text-gray-400 text-xs">Code :</span>
+        <span className="font-mono font-bold text-[#1B6B8A] tracking-widest text-sm flex-1">
           {session.accessCode}
         </span>
-        <button
-          onClick={copyCode}
-          className="text-gray-400 hover:text-blue-600 transition-colors"
-          aria-label="Copier le code"
-        >
-          {copied ? <Check size={14} className="text-emerald-500" /> : <Copy size={14} />}
+        <button onClick={copyCode} className="text-gray-400 hover:text-[#1B6B8A] transition-colors">
+          {copied ? <Check size={15} className="text-emerald-500" /> : <Copy size={15} />}
         </button>
       </div>
 
-      {/* Stats + Progress */}
-      <div className="space-y-2">
-        <div className="flex items-center justify-between text-[12px] text-gray-500">
-          <span className="flex items-center gap-1.5">
-            <Users size={12} />
-            <span className="font-semibold text-[#1A1A1A]">{students}</span>
-            élève{students > 1 ? "s" : ""}
-            <span className="text-gray-300 mx-1">·</span>
-            <span className="font-semibold text-[#1A1A1A]">{responses}</span> réponses
-          </span>
-          <span className="font-bold text-blue-600 text-[13px] tabular-nums">{progress}%</span>
+      {/* Stats */}
+      <div className="flex items-center gap-4 text-sm">
+        <div className="flex items-center gap-1.5 text-gray-500">
+          <Users size={15} />
+          <span className="font-semibold text-[#1A1A1A]">{students}</span>
+          <span>élève{students > 1 ? "s" : ""}</span>
         </div>
-        <div className="h-1.5 bg-gray-100 rounded-full overflow-hidden">
+        <div className="h-4 w-px bg-gray-200" />
+        <div className="text-gray-500">
+          <span className="font-semibold text-[#1A1A1A]">{responses}</span> réponses
+        </div>
+      </div>
+
+      {/* Progress */}
+      <div className="space-y-1.5">
+        <div className="flex justify-between text-xs text-gray-400">
+          <span>Progression</span>
+          <span className="font-semibold text-[#2A8970]">{progress}%</span>
+        </div>
+        <div className="h-2 bg-gray-100 rounded-full overflow-hidden">
           <div
-            className="h-full rounded-full bg-blue-600 transition-all duration-500"
-            style={{ width: `${progress}%` }}
+            className="h-full rounded-full transition-all duration-500"
+            style={{
+              width: `${progress}%`,
+              background: "linear-gradient(90deg, #1B6B8A, #2A8970)",
+            }}
           />
         </div>
       </div>
 
       {/* Actions */}
       <div className="flex gap-2 pt-1">
-        <span className="flex-1 inline-flex items-center justify-center h-8 text-[13px] font-medium text-gray-700 bg-gray-50 border border-gray-200 rounded-lg group-hover:bg-blue-50 group-hover:text-blue-700 group-hover:border-blue-200 transition-colors">
+        <Link
+          href={`/dashboard/sessions/${session.id}`}
+          className="flex-1 flex items-center justify-center gap-1.5 px-4 py-2.5 bg-[#1B6B8A] text-white text-sm font-semibold rounded-xl hover:opacity-90 transition-opacity"
+        >
+          <ExternalLink size={14} />
           Voir les résultats
-        </span>
+        </Link>
         <button
-          onClick={(e) => {
-            e.preventDefault();
-            e.stopPropagation();
-            onClose(session.id);
-          }}
-          className="h-8 px-3 text-[13px] font-medium text-gray-700 bg-white border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors"
+          onClick={() => onClose(session.id)}
+          className="px-4 py-2.5 bg-gray-100 text-gray-600 text-sm font-semibold rounded-xl hover:bg-gray-200 transition-colors"
         >
           Clôturer
         </button>
       </div>
-    </Link>
+    </div>
   );
 }
