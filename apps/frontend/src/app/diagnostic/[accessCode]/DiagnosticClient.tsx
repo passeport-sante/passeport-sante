@@ -2,6 +2,8 @@
 
 import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
+import { PDFDownloadLink } from "@react-pdf/renderer";
+import { Download, Loader2 } from "lucide-react";
 import { ProgressCard }       from "@/components/diagnostic/progress-card";
 import { NextButton }         from "@/components/diagnostic/next-button";
 import { QuestionRenderer }   from "@/components/diagnostic/question-renderer";
@@ -12,6 +14,7 @@ import {
   type DiagnosticSession,
   type Question,
 } from "@/lib/diagnostic";
+import { DiagnosticCertificatePdf } from "./DiagnosticCertificatePdf";
 
 type Props = {
   session: DiagnosticSession;
@@ -27,7 +30,7 @@ export default function DiagnosticClient({ session }: Props) {
   const [loading, setLoading]     = useState(true);
   const [error, setError]         = useState("");
   const [done, setDone]           = useState(false);
-  const [countdown, setCountdown] = useState(3);
+  const [pdfMounted, setPdfMounted] = useState(false);
   const [startTime, setStartTime] = useState<number>(Date.now());
   const initDone = useRef(false);
 
@@ -55,18 +58,9 @@ export default function DiagnosticClient({ session }: Props) {
     init();
   }, [session.id]);
 
-  // ── Countdown ──────────────────────────────────────────────────────────────
+  // ── PDF mount guard (react-pdf needs browser APIs) ─────────────────────────
 
-  useEffect(() => {
-    if (!done) return;
-    const interval = setInterval(() => {
-      setCountdown((c) => {
-        if (c <= 1) { clearInterval(interval); router.push("/"); }
-        return c - 1;
-      });
-    }, 1000);
-    return () => clearInterval(interval);
-  }, [done, router]);
+  useEffect(() => { if (done) setPdfMounted(true); }, [done]);
 
   // ── Handlers ───────────────────────────────────────────────────────────────
 
@@ -123,16 +117,62 @@ export default function DiagnosticClient({ session }: Props) {
     </div>
   );
 
-  if (done) return (
-    <div className="min-h-screen flex items-center justify-center px-6">
-      <div className="bg-[#0F3A5C]/80 backdrop-blur-sm rounded-3xl p-12 text-center text-white max-w-sm" style={{ boxShadow: "0 0 60px rgba(78,175,90,0.25)" }}>
-        <div className="text-5xl mb-4">🎉</div>
-        <h2 className="text-3xl font-black mb-3">Bravo !</h2>
-        <p className="text-white/70">Tu as répondu à toutes les questions.</p>
-        <p className="text-white/40 text-sm mt-4">Redirection dans {countdown}s…</p>
+  if (done) {
+    const today = new Date().toLocaleDateString("fr-FR", {
+      day: "numeric",
+      month: "long",
+      year: "numeric",
+    });
+
+    return (
+      <div className="min-h-screen flex items-center justify-center px-6">
+        <div
+          className="bg-[#0F3A5C]/80 backdrop-blur-sm rounded-3xl p-12 text-center text-white max-w-sm flex flex-col items-center"
+          style={{ boxShadow: "0 0 60px rgba(78,175,90,0.25)" }}
+        >
+          <div className="text-5xl mb-4">🎉</div>
+          <h2 className="text-3xl font-black mb-3">Bravo !</h2>
+          <p className="text-white/70">Tu as répondu à toutes les questions.</p>
+
+          <div className="flex flex-col gap-3 mt-8 w-full">
+            {pdfMounted ? (
+              <PDFDownloadLink
+                document={
+                  <DiagnosticCertificatePdf
+                    className={session.className}
+                    date={today}
+                    questionCount={questions.length}
+                  />
+                }
+                fileName={`diagnostic-sante-${session.className.replace(/\s+/g, "-").toLowerCase()}.pdf`}
+              >
+                {({ loading: pdfLoading }) => (
+                  <button className="w-full flex items-center justify-center gap-2 px-6 py-3 bg-white text-[#0F3A5C] font-bold rounded-2xl hover:bg-white/90 transition-opacity">
+                    {pdfLoading
+                      ? <><Loader2 size={16} className="animate-spin" /> Génération…</>
+                      : <><Download size={16} /> Télécharger mon attestation</>
+                    }
+                  </button>
+                )}
+              </PDFDownloadLink>
+            ) : (
+              <div className="w-full flex items-center justify-center gap-2 px-6 py-3 bg-white/20 text-white/50 font-bold rounded-2xl">
+                <Loader2 size={16} className="animate-spin" />
+                Préparation du PDF…
+              </div>
+            )}
+
+            <button
+              onClick={() => router.push("/")}
+              className="text-white/60 hover:text-white text-sm underline transition-colors"
+            >
+              Retour à l&apos;accueil
+            </button>
+          </div>
+        </div>
       </div>
-    </div>
-  );
+    );
+  }
 
   // ── Rendu principal ────────────────────────────────────────────────────────
 

@@ -4,9 +4,11 @@ import { useState, useEffect, useRef } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
 import Link from "next/link";
 import Image from "next/image";
-import { ArrowLeft, ChevronRight } from "lucide-react";
+import { ArrowLeft, ChevronRight, Download, Loader2 } from "lucide-react";
+import { PDFDownloadLink } from "@react-pdf/renderer";
 import { GameProgress } from "@/components/rive/GameProgress";
 import { createGuestStudent, setGuestStudentId, getGuestStudentId } from "@/lib/modules";
+import { ModuleCertificatePdf } from "./ModuleCertificatePdf";
 
 interface ModuleData {
   id: string;
@@ -90,6 +92,7 @@ export function ModuleImmersiveClient({ module }: Props) {
   const [showNextBtn, setShowNextBtn] = useState(false);
   const [showCompleteBtn, setShowCompleteBtn] = useState(false);
   const [showCompleteOverlay, setShowCompleteOverlay] = useState(false);
+  const [pdfMounted, setPdfMounted] = useState(false);
 
   const searchParams = useSearchParams();
   const router = useRouter();
@@ -133,6 +136,8 @@ export function ModuleImmersiveClient({ module }: Props) {
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
+
+  useEffect(() => { if (showCompleteOverlay) setPdfMounted(true); }, [showCompleteOverlay]);
 
   function handleNextStep() {
     if (!unlockedLevel) return;
@@ -342,6 +347,44 @@ export function ModuleImmersiveClient({ module }: Props) {
               J&apos;espère que tu as appris plein de choses et que tu t&apos;es
               bien amusé !
             </p>
+
+            {/* PDF download */}
+            {pdfMounted ? (
+              <PDFDownloadLink
+                document={
+                  <ModuleCertificatePdf
+                    moduleTitle={module.title}
+                    categoryName={module.category?.name ?? null}
+                    color={primaryColor}
+                    date={new Date().toLocaleDateString("fr-FR", {
+                      day: "numeric",
+                      month: "long",
+                      year: "numeric",
+                    })}
+                  />
+                }
+                fileName={`attestation-${module.slug}.pdf`}
+              >
+                {({ loading: pdfLoading }) => (
+                  <button
+                    className="mt-2 flex items-center justify-center gap-2 px-8 py-3 rounded-2xl font-bold text-sm border-2 transition-all hover:scale-105 active:scale-95"
+                    style={{ borderColor: primaryColor, color: primaryColor, background: "rgba(255,255,255,0.9)" }}
+                  >
+                    {pdfLoading
+                      ? <><Loader2 size={15} className="animate-spin" /> Génération…</>
+                      : <><Download size={15} /> Télécharger mon attestation</>
+                    }
+                  </button>
+                )}
+              </PDFDownloadLink>
+            ) : (
+              <div
+                className="mt-2 flex items-center justify-center gap-2 px-8 py-3 rounded-2xl font-bold text-sm border-2 opacity-50"
+                style={{ borderColor: primaryColor, color: primaryColor, background: "rgba(255,255,255,0.9)" }}
+              >
+                <Loader2 size={15} className="animate-spin" /> Préparation…
+              </div>
+            )}
 
             <Link
               href="/modules"
