@@ -187,13 +187,11 @@ export default function DiagnosticClient({ session }: Props) {
 
   return (
     <div className="min-h-screen flex flex-col p-8">
-      {!isClassify && (
-        <div className="absolute top-8 left-8 z-10">
-          <ProgressCard current={index + 1} total={questions.length} exitHref="/diagnostic" />
-        </div>
-      )}
+      <div className="absolute top-8 left-8 z-10">
+        <ProgressCard current={index + 1} total={questions.length} exitHref="/diagnostic" />
+      </div>
 
-      <div className="flex-1 flex items-center justify-center">
+      <div className="flex-1 flex items-center justify-center overflow-y-auto min-h-0 py-20">
         <QuestionRenderer
           question={question}
           answer={answer}

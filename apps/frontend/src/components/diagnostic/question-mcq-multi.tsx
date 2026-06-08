@@ -10,7 +10,7 @@ type Props = {
 };
 
 export function QuestionMcqMulti({ question, options, selected, onToggle }: Props) {
-  const cols = options.length <= 4 ? 2 : 3;
+  const cols = options.length >= 6 && options.length % 3 !== 2 ? 3 : 2;
 
   return (
     <div className="flex flex-col items-center gap-6 w-full max-w-2xl">
@@ -30,7 +30,7 @@ export function QuestionMcqMulti({ question, options, selected, onToggle }: Prop
       >
         {options.map((opt, i) => {
           const isSelected = selected.includes(opt.id);
-          const isLastOdd = i === options.length - 1 && options.length % cols !== 0;
+          const isLastOdd = i === options.length - 1 && options.length % cols === 1;
           return (
             <button
               key={opt.id}

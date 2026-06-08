@@ -10,7 +10,7 @@ type Props = {
 };
 
 export function QuestionMcq({ question, options, selected, onSelect }: Props) {
-  const cols = options.length <= 2 ? 2 : options.length <= 4 ? 2 : 3;
+  const cols = options.length >= 6 && options.length % 3 !== 2 ? 3 : 2;
 
   return (
     <div className="flex flex-col items-center gap-6 w-full max-w-2xl">
@@ -29,7 +29,7 @@ export function QuestionMcq({ question, options, selected, onSelect }: Props) {
       >
         {options.map((opt, i) => {
           const isSelected = selected === opt.id;
-          const isLastOdd = i === options.length - 1 && options.length % cols !== 0;
+          const isLastOdd = i === options.length - 1 && options.length % cols === 1;
 
           return (
             <button
