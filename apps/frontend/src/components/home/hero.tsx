@@ -2,6 +2,7 @@ import Link from "next/link";
 import { ArrowRight } from "lucide-react";
 import type { CSSProperties } from "react";
 import { PhoneSvg } from "./phone-svg";
+import { PhoneVideo } from "./phone-video";
 import { TaSanteSvg } from "./ta-sante-svg";
 
 const INK = "#0F1B2D";
@@ -126,12 +127,13 @@ export function Hero() {
 
         {/* ─── Zone INFÉRIEURE : 3 colonnes ───────────────────── */}
         <div className="flex flex-1 items-start gap-8 pb-10 pt-4">
-          {/* Colonne 1 : téléphone (SVG, vide pour l'instant) */}
+          {/* Colonne 1 : téléphone avec vidéo mascotte */}
           <div className="flex-shrink-0">
             <PhoneSvg
               className="w-[280px] lg:w-[320px] h-auto"
               stroke="#1F6F8B"
               accent="#1F6F8B"
+              screen={<PhoneVideo />}
             />
           </div>
 
