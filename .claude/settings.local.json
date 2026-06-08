@@ -23,7 +23,11 @@
       "Bash(rtk git *)",
       "Bash(git ls-tree *)",
       "Bash(findstr /R \"step game sortable\")",
-      "Bash(findstr /R /C:\"^  [-+]import\" /C:\"^  [-+].*useState\" /C:\"^  [-+].*fetch\" /C:\"^  [-+].*async\" /C:\"insertions\")"
+      "Bash(findstr /R /C:\"^  [-+]import\" /C:\"^  [-+].*useState\" /C:\"^  [-+].*fetch\" /C:\"^  [-+].*async\" /C:\"insertions\")",
+      "Bash(npm list *)",
+      "PowerShell(npm install nodemailer @types/nodemailer --workspace=apps/frontend)",
+      "PowerShell(npm install nodemailer @types/nodemailer -w web)",
+      "PowerShell(docker compose up --build -d frontend 2>&1)"
     ]
   }
 }

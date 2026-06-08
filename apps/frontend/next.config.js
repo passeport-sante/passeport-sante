@@ -7,6 +7,7 @@ const __dirname = fileURLToPath(new URL(".", import.meta.url));
 const nextConfig = {
   reactStrictMode: false,
   turbopack: {},
+  serverExternalPackages: ["nodemailer"],
   transpilePackages: ["@react-pdf/renderer", "@rive-app/react-canvas"],
   webpack: (config, { dev, isServer }) => {
     if (dev && !isServer) {
@@ -19,6 +20,13 @@ const nextConfig = {
       ...(config.resolve.modules ?? ["node_modules"]),
       path.resolve(__dirname, "../../node_modules"),
     ];
+
+    if (isServer) {
+      config.externals = [
+        ...(Array.isArray(config.externals) ? config.externals : []),
+        "nodemailer",
+      ];
+    }
 
     return config;
   },

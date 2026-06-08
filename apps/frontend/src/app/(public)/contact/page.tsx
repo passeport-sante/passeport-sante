@@ -6,10 +6,36 @@ import { Send, Mail, User, MessageSquare } from "lucide-react";
 
 export default function Contact() {
   const [sent, setSent] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
-  function handleSubmit(e: React.FormEvent) {
+  async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
-    setSent(true);
+    setError(null);
+    setLoading(true);
+
+    const form = e.currentTarget;
+    const data = {
+      name: (form.elements.namedItem("name") as HTMLInputElement).value,
+      email: (form.elements.namedItem("email") as HTMLInputElement).value,
+      message: (form.elements.namedItem("message") as HTMLTextAreaElement)
+        .value,
+    };
+
+    try {
+      const res = await fetch("/api/contact", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(data),
+      });
+
+      if (!res.ok) throw new Error("Erreur lors de l'envoi");
+      setSent(true);
+    } catch {
+      setError("Une erreur est survenue. Réessaie dans quelques instants.");
+    } finally {
+      setLoading(false);
+    }
   }
 
   return (
@@ -59,6 +85,7 @@ export default function Contact() {
                   </label>
                   <input
                     id="name"
+                    name="name"
                     type="text"
                     required
                     placeholder="Ton prénom"
@@ -77,6 +104,7 @@ export default function Contact() {
                   </label>
                   <input
                     id="email"
+                    name="email"
                     type="email"
                     required
                     placeholder="ton@email.com"
@@ -103,12 +131,17 @@ export default function Contact() {
                   />
                 </div>
 
+                {error && (
+                  <p className="text-sm text-red-500 text-center">{error}</p>
+                )}
+
                 <button
                   type="submit"
-                  className="w-full flex items-center justify-center gap-3 py-4 bg-brand-dark-green text-white font-bold rounded-full text-sm shadow-lg hover:opacity-90 transition-opacity"
+                  disabled={loading}
+                  className="w-full flex items-center justify-center gap-3 py-4 bg-brand-dark-green text-white font-bold rounded-full text-sm shadow-lg hover:opacity-90 transition-opacity disabled:opacity-60"
                 >
-                  Envoyer le message
-                  <Send size={16} />
+                  {loading ? "Envoi en cours…" : "Envoyer le message"}
+                  {!loading && <Send size={16} />}
                 </button>
               </form>
             )}
@@ -134,7 +167,7 @@ export default function Contact() {
                     Email
                   </p>
                   <p className="text-sm font-semibold text-gray-800">
-                    contact@passeport-sante.fr
+                    contact@lepasseportsante.fr
                   </p>
                 </div>
               </div>
