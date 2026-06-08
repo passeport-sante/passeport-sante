@@ -18,6 +18,8 @@ export class UserService {
   findAll() {
     return this.prisma.user.findMany({
       omit: { password: true },
+      include: { organization: { select: { id: true, name: true } } },
+      orderBy: { createdAt: "desc" },
     });
   }
 

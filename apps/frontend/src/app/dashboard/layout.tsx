@@ -15,6 +15,7 @@ const NAV: NavItem[] = [
   { href: "/dashboard/sessions/terminated", label: "Sessions Terminées", exact: false },
   { href: "/dashboard/stats", label: "Statistiques école", exact: false },
   { href: "/dashboard/modules", label: "Modules", exact: false, adminOnly: true },
+  { href: "/dashboard/comptes", label: "Comptes", exact: false, adminOnly: true },
 ];
 
 type UserProfile = {
@@ -57,7 +58,10 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
   // Garde-fou : un éducateur qui tape l'URL /dashboard/modules/* est renvoyé sur le dashboard
   useEffect(() => {
     if (!user) return;
-    if (pathname.startsWith("/dashboard/modules") && user.role !== "ADMIN") {
+    if (
+      (pathname.startsWith("/dashboard/modules") || pathname.startsWith("/dashboard/comptes")) &&
+      user.role !== "ADMIN"
+    ) {
       router.replace("/dashboard");
     }
   }, [user, pathname, router]);
