@@ -26,17 +26,6 @@ interface Props {
 
 const MAX_LEVEL = 5;
 
-const RIVE_FILES: Record<string, string> = {
-  vaccination: "/assets/rive/progressbar_vaccination.riv",
-  sommeil: "/assets/rive/progressbar_sommeil.riv",
-  "bien-manger": "/assets/rive/progressbar_alimentation.riv",
-  cyberharcelement: "/assets/rive/progressbar_addiction.riv",
-  "hygiene-bucco": "/assets/rive/progressbar_sexualite.riv",
-};
-
-function getRiveFile(slug: string): string {
-  return RIVE_FILES[slug] ?? "/assets/rive/progressbar_vaccination.riv";
-}
 
 
 const CANVAS_WIDTH = 1200;
@@ -158,6 +147,10 @@ export function ModuleImmersiveClient({ module }: Props) {
   const bubbleLeft = getBubbleLeft(displayedRiveLevel);
   const triangleLeft = getBubbleTriangleLeft(displayedRiveLevel);
 
+  const MASCOTTE_SIZE = 150;
+  const mascottePos = getStepCanvasPos(displayedRiveLevel - 1);
+  const mascotteTop = Math.max(10, mascottePos.y - MASCOTTE_SIZE - 10);
+
   return (
     <div
       className="h-screen flex flex-col overflow-hidden"
@@ -243,10 +236,33 @@ export function ModuleImmersiveClient({ module }: Props) {
           {riveLevel !== null && (
             <GameProgress
               level={displayedRiveLevel}
-              src={getRiveFile(module.slug)}
+              src="/assets/rive/progressbar_default_enchenced.riv"
+              stepColor={module.colorPrimary ?? undefined}
               width={CANVAS_WIDTH}
               height={CANVAS_HEIGHT}
             />
+          )}
+
+          {/* Mascotte HTML overlay positionnée sur le step actuel */}
+          {mascotteSrc && riveLevel !== null && (
+            <div
+              className="absolute pointer-events-none"
+              style={{
+                left: mascottePos.x,
+                top: mascotteTop,
+                transform: "translateX(-50%)",
+                zIndex: 5,
+                transition: "left 0.6s cubic-bezier(0.34,1.56,0.64,1), top 0.6s cubic-bezier(0.34,1.56,0.64,1)",
+              }}
+            >
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img
+                src={mascotteSrc}
+                alt="mascotte"
+                style={{ height: MASCOTTE_SIZE, width: "auto", maxWidth: "none", display: "block" }}
+                className="drop-shadow-lg"
+              />
+            </div>
           )}
 
           {/* Zones cliquables — uniquement les étapes de jeu (les sous-étapes de contenu n'ont pas de cercle) */}

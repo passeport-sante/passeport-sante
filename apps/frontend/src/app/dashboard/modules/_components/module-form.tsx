@@ -1,8 +1,9 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useState } from "react";
 import Image from "next/image";
-import { Check, Loader2, Sparkles } from "lucide-react";
+import { BarChart3, Check, Loader2, Sparkles } from "lucide-react";
+import { GameProgress } from "@/components/rive/GameProgress";
 import {
   AVAILABLE_MASCOTTES,
   COLOR_PRESETS,
@@ -322,6 +323,7 @@ export function ModuleForm({
       {/* Colonne aperçu (2/5), sticky */}
       <div className="lg:col-span-2">
         <div className="lg:sticky lg:top-[160px] space-y-3">
+          {/* Aperçu carte module */}
           <div className="flex items-center gap-2 text-xs font-semibold text-gray-500 uppercase tracking-wider">
             <Sparkles size={13} className="text-amber-500" />
             Aperçu en direct
@@ -329,6 +331,35 @@ export function ModuleForm({
           <ModuleCardPreview values={values} />
           <p className="text-xs text-gray-400 leading-relaxed">
             Voici ce que verront vos éducateurs et élèves dans le catalogue.
+          </p>
+
+          {/* Aperçu barre de progression */}
+          <div className="flex items-center gap-2 text-xs font-semibold text-gray-500 uppercase tracking-wider pt-4 mt-2 border-t border-gray-100">
+            <BarChart3 size={13} className="text-[#1B6B8A]" />
+            Barre de progression
+          </div>
+          <div className="rounded-2xl border border-gray-100 bg-white overflow-hidden relative">
+            <GameProgress
+              level={1}
+              src="/assets/rive/progressbar_default_enchenced.riv"
+              stepColor={values.colorPrimary}
+              width={340}
+              height={145}
+            />
+            {values.mascotte && (
+              <div className="absolute bottom-2 left-2 w-12 h-12 rounded-xl bg-white shadow-sm border border-gray-100 flex items-center justify-center">
+                <Image
+                  src={`/assets/mascotte/${values.mascotte}`}
+                  alt="mascotte"
+                  width={40}
+                  height={40}
+                  className="object-contain"
+                />
+              </div>
+            )}
+          </div>
+          <p className="text-xs text-gray-400 leading-relaxed">
+            Mascotte et couleur des steps appliquées en temps réel.
           </p>
         </div>
       </div>
@@ -478,3 +509,51 @@ function ModuleCardPreview({ values }: { values: ModuleFormValues }) {
     </div>
   );
 }
+
+function lightenHex(hex: string, t = 0.35): string {
+  const h = hex.replace("#", "");
+  const r = parseInt(h.slice(0, 2), 16);
+  const g = parseInt(h.slice(2, 4), 16);
+  const b = parseInt(h.slice(4, 6), 16);
+  const lr = Math.round(r + (255 - r) * t).toString(16).padStart(2, "0");
+  const lg = Math.round(g + (255 - g) * t).toString(16).padStart(2, "0");
+  const lb = Math.round(b + (255 - b) * t).toString(16).padStart(2, "0");
+  return `#${lr}${lg}${lb}`;
+}
+
+function ProgressStepsPreview({ color, mascotte }: { color: string; mascotte: string }) {
+  const light = lightenHex(color);
+  return (
+    <div className="rounded-2xl border border-gray-100 bg-white p-4 flex flex-col items-center gap-4">
+      <div className="flex items-center gap-0">
+        {[1, 2, 3, 4, 5].map((i) => (
+          <div key={i} className="flex items-center">
+            <div
+              className="w-10 h-10 rounded-full shadow-sm flex items-center justify-center text-white text-xs font-bold"
+              style={{
+                background: i === 1
+                  ? `radial-gradient(circle at 38% 35%, ${light}, ${color})`
+                  : "#d1d5db",
+              }}
+            >
+              {i === 1 ? <Check size={14} strokeWidth={3} /> : i}
+            </div>
+            {i < 5 && (
+              <div className="w-8 h-1 rounded-full" style={{ background: "#e5e7eb" }} />
+            )}
+          </div>
+        ))}
+      </div>
+      {mascotte && (
+        <Image
+          src={`/assets/mascotte/${mascotte}`}
+          alt="mascotte"
+          width={72}
+          height={72}
+          className="object-contain"
+        />
+      )}
+    </div>
+  );
+}
+

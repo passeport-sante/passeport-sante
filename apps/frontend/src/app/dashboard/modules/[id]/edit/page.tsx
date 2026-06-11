@@ -32,6 +32,7 @@ export default function EditModulePage({ params }: PageProps) {
   const [categories, setCategories] = useState<CategoryLite[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [savedColor, setSavedColor] = useState<string | null>(null);
 
   async function refresh() {
     try {
@@ -64,6 +65,8 @@ export default function EditModulePage({ params }: PageProps) {
   async function handleSubmit(payload: UpdateModulePayload) {
     const updated = await updateModule(id, payload);
     setModule(updated);
+    setSavedColor(updated.colorPrimary ?? null);
+    setTimeout(() => setSavedColor(null), 4000);
   }
 
   async function handleToggleActive() {
@@ -101,6 +104,13 @@ export default function EditModulePage({ params }: PageProps) {
 
   return (
     <div className={`p-8 ${tab === "steps" ? "max-w-[1400px]" : "max-w-6xl"}`}>
+      {/* Toast de confirmation sauvegarde */}
+      {savedColor !== null && (
+        <div className="fixed top-5 right-5 z-50 flex items-center gap-3 px-5 py-3 rounded-2xl bg-emerald-600 text-white text-sm font-bold shadow-xl animate-in slide-in-from-top-2">
+          <span className="w-3 h-3 rounded-full inline-block" style={{ background: savedColor }} />
+          Sauvegardé ! colorPrimary = {savedColor}
+        </div>
+      )}
       {/* Header */}
       <div className="flex items-start justify-between gap-4 mb-6">
         <div className="flex items-center gap-3">
