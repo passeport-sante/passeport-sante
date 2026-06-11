@@ -15,7 +15,7 @@ export function ModuleSessionCard({ session, onClose }: Props) {
   const [copiedUrl, setCopiedUrl] = useState(false);
 
   const students = session._count.guestStudents;
-  const color = session.module.colorPrimary ?? "#1D4ED8";
+  const color = session.module?.colorPrimary ?? "#1D4ED8";
 
   function copyCode() {
     navigator.clipboard.writeText(session.accessCode);
