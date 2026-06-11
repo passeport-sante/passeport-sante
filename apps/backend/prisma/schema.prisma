@@ -57,11 +57,12 @@ model Organization {
 }
 
 model User {
-  id       String   @id @default(cuid())
-  email    String   @unique
-  name     String
-  password String
-  role     UserRole @default(TRAINER)
+  id          String   @id @default(cuid())
+  email       String   @unique
+  name        String
+  password    String
+  role        UserRole @default(TRAINER)
+  isSuspended Boolean  @default(false)
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -128,8 +129,8 @@ model ModuleSession {
   createdAt  DateTime @default(now())
   updatedAt  DateTime @updatedAt
 
-  moduleId String
-  module   Module @relation(fields: [moduleId], references: [id])
+  moduleId String?
+  module   Module? @relation(fields: [moduleId], references: [id], onDelete: SetNull)
 
   createdByUserId String
   createdByUser   User   @relation(fields: [createdByUserId], references: [id])

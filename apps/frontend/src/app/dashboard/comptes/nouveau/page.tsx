@@ -2,11 +2,12 @@
 
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import { ChevronLeft, Eye, EyeOff, Building2, Plus, Shield, User } from "lucide-react";
+import { ChevronLeft, Eye, EyeOff, Building2, Plus, Shield, User, RefreshCw } from "lucide-react";
 import {
   fetchOrganizations,
   createOrganization,
   createAccount,
+  generatePassword,
   type Organization,
   type UserRole,
 } from "@/lib/admin-users";
@@ -90,7 +91,7 @@ export default function NouveauComptePage() {
                 }`}
               >
                 {r === "ADMIN" ? <Shield size={16} className="text-amber-500" /> : <User size={16} />}
-                {r === "TRAINER" ? "Formateur" : "Administrateur"}
+                {r === "TRAINER" ? "Établissement" : "Administrateur"}
               </button>
             ))}
           </div>
@@ -120,7 +121,16 @@ export default function NouveauComptePage() {
 
         {/* ── Mot de passe ── */}
         <div className="space-y-2">
-          <label htmlFor="password" className="text-sm font-bold text-gray-700">Mot de passe</label>
+          <div className="flex items-center justify-between">
+            <label htmlFor="password" className="text-sm font-bold text-gray-700">Mot de passe</label>
+            <button
+              type="button"
+              onClick={() => { setPassword(generatePassword()); setShowPwd(true); }}
+              className="flex items-center gap-1.5 text-xs font-semibold text-[#1B6B8A] hover:text-[#2A8970] transition-colors"
+            >
+              <RefreshCw size={12} /> Générer
+            </button>
+          </div>
           <div className="relative">
             <input
               id="password" type={showPwd ? "text" : "password"} required value={password}
@@ -135,6 +145,7 @@ export default function NouveauComptePage() {
               {showPwd ? <EyeOff size={16} /> : <Eye size={16} />}
             </button>
           </div>
+          <p className="text-xs text-gray-400">Min. 8 caractères, 1 majuscule, 1 chiffre, 1 caractère spécial</p>
         </div>
 
         {/* ── Établissement ── */}

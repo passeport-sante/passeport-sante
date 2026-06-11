@@ -140,22 +140,24 @@ export class ModulesService {
     });
   }
 
-  // Supprime un module et tout son contenu propre (steps + gameData) en transaction.
-  // Bloque si des sessions référencent le module : on conserve les données élèves.
+  // Supprime un module et son contenu (steps, gameData, responses, stats).
+  // Les sessions fermées liées sont conservées — leur moduleId passe à null (onDelete: SetNull).
+  // Bloque uniquement si des sessions actives existent.
   async remove(id: string) {
     const module = await this.prisma.module.findUnique({
       where: { id },
-      select: { id: true, _count: { select: { moduleSessions: true } } },
+      select: { id: true, _count: { select: { moduleSessions: { where: { isActive: true } } } } },
     });
     if (!module) throw new NotFoundException('Module introuvable');
 
     if (module._count.moduleSessions > 0) {
       throw new ConflictException(
-        'Ce module est référencé par des sessions. Désactivez-le au lieu de le supprimer.',
+        'Ce module est référencé par des sessions actives. Clôturez-les avant de supprimer.',
       );
     }
 
     return this.prisma.$transaction(async (tx) => {
+      // Les sessions existantes (fermées) sont préservées — moduleId devient null via onDelete: SetNull
       const steps = await tx.step.findMany({
         where: { moduleId: id },
         select: { id: true },

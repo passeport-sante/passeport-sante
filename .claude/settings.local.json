@@ -27,7 +27,14 @@
       "Bash(npm list *)",
       "PowerShell(npm install nodemailer @types/nodemailer --workspace=apps/frontend)",
       "PowerShell(npm install nodemailer @types/nodemailer -w web)",
-      "PowerShell(docker compose up --build -d frontend 2>&1)"
+      "PowerShell(docker compose up --build -d frontend 2>&1)",
+      "Bash(rtk prisma *)",
+      "PowerShell(docker exec prevention_backend node ./node_modules/prisma/build/index.js migrate dev --name add-user-suspended 2>&1)",
+      "PowerShell(docker exec prevention_backend find / -name \"prisma\" -type f 2>$null)",
+      "PowerShell(docker exec -w /app/apps/backend prevention_backend /app/apps/backend/node_modules/.bin/prisma migrate dev --name add-user-suspended 2>&1)",
+      "PowerShell(docker compose -f \"c:\\\\Users\\\\cleme\\\\Desktop\\\\Workspace\\\\Codes\\\\prevention-platform\\\\docker-compose.yml\" restart prevention_backend 2>&1)",
+      "PowerShell(docker restart prevention_backend 2>&1)",
+      "PowerShell(docker exec -w /app/apps/backend prevention_backend /app/apps/backend/node_modules/.bin/prisma migrate dev --name make-module-session-moduleid-nullable 2>&1)"
     ]
   }
 }

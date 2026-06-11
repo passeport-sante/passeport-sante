@@ -1,18 +1,25 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { fetchSessions } from "@/lib/dashboard";
-import type { SessionSummary } from "@/lib/dashboard";
+import { fetchSessions, fetchModuleSessions } from "@/lib/dashboard";
+import type { SessionSummary, ModuleSessionSummary } from "@/lib/dashboard";
 import { SessionsTable } from "../../_components/sessions-table";
 
 export default function TerminatedSessionsPage() {
   const [terminated, setTerminated] = useState<SessionSummary[]>([]);
+  const [terminatedModules, setTerminatedModules] = useState<ModuleSessionSummary[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     const token = localStorage.getItem("access_token") ?? "";
-    fetchSessions(token)
-      .then((all) => setTerminated(all.filter((s) => !s.isActive)))
+    Promise.all([
+      fetchSessions(token),
+      fetchModuleSessions(token),
+    ])
+      .then(([diag, mod]) => {
+        setTerminated(diag.filter((s) => !s.isActive));
+        setTerminatedModules(mod.filter((s) => !s.isActive));
+      })
       .finally(() => setLoading(false));
   }, []);
 
@@ -28,7 +35,7 @@ export default function TerminatedSessionsPage() {
           <div className="w-8 h-8 border-4 border-[#2A8970] border-t-transparent rounded-full animate-spin" />
         </div>
       ) : (
-        <SessionsTable sessions={terminated} />
+        <SessionsTable sessions={terminated} moduleSessions={terminatedModules} />
       )}
     </div>
   );

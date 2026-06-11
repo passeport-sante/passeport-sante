@@ -49,7 +49,7 @@ export type ModuleSessionSummary = {
   accessUrl: string;
   isActive: boolean;
   createdAt: string;
-  module: { id: string; title: string; colorPrimary: string | null };
+  module: { id: string; title: string; colorPrimary: string | null } | null;
   _count: { guestStudents: number };
 };
 
@@ -65,6 +65,7 @@ export type ModuleGuestStudent = {
 export type ModuleStepMeta = {
   id: string;
   order: number;
+  kind: string;
   gameType: string;
   content: { title?: string } | null;
 };
@@ -81,7 +82,7 @@ export type ModuleSessionDetail = {
     slug: string;
     colorPrimary: string | null;
     steps: ModuleStepMeta[];
-  };
+  } | null;
   _count: { guestStudents: number };
   guestStudents: ModuleGuestStudent[];
 };
@@ -308,7 +309,8 @@ export async function closeModuleSession(id: string, token: string): Promise<voi
 }
 
 export function computeModuleStepStats(detail: ModuleSessionDetail): StepStats[] {
-  return detail.module.steps.map((step) => {
+  if (!detail.module) return [];
+  return detail.module.steps.filter((step) => step.kind === "GAME").map((step) => {
     const allResponses: { isCorrect: boolean | null }[] = [];
     for (const gs of detail.guestStudents) {
       allResponses.push(

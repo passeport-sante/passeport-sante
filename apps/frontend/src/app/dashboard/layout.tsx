@@ -1,10 +1,10 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useRouter, usePathname } from "next/navigation";
 import Link from "next/link";
 import Image from "next/image";
-import { User, Shield } from "lucide-react";
+import { User, Shield, LogOut, ExternalLink, ChevronDown } from "lucide-react";
 
 const API = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:5000";
 
@@ -34,6 +34,8 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
   const pathname = usePathname();
   const [ready, setReady] = useState(false);
   const [user, setUser] = useState<UserProfile | null>(null);
+  const [menuOpen, setMenuOpen] = useState(false);
+  const menuRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     const token = localStorage.getItem("access_token");
@@ -41,9 +43,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
       router.replace("/sign-in");
       return;
     }
-
     setReady(true);
-
     try {
       const { sub } = decodeJwt(token);
       fetch(`${API}/api/user/${sub}`, {
@@ -55,7 +55,6 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
     } catch {}
   }, [router]);
 
-  // Garde-fou : un éducateur qui tape l'URL /dashboard/modules/* est renvoyé sur le dashboard
   useEffect(() => {
     if (!user) return;
     if (
@@ -65,6 +64,23 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
       router.replace("/dashboard");
     }
   }, [user, pathname, router]);
+
+  // Close user menu on outside click
+  useEffect(() => {
+    if (!menuOpen) return;
+    function handleOutside(e: MouseEvent) {
+      if (menuRef.current && !menuRef.current.contains(e.target as Node)) {
+        setMenuOpen(false);
+      }
+    }
+    document.addEventListener("mousedown", handleOutside);
+    return () => document.removeEventListener("mousedown", handleOutside);
+  }, [menuOpen]);
+
+  function handleSignOut() {
+    localStorage.removeItem("access_token");
+    router.push("/sign-in");
+  }
 
   if (!ready) {
     return (
@@ -84,11 +100,11 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
 
   return (
     <div className="min-h-screen bg-[#F0F4F8]">
-      {/* Navbar — même style que l'accueil */}
       <header className="bg-white shadow-sm sticky top-0 z-50">
         <div className="brand-container py-4 flex items-center justify-between">
+
           {/* Logo */}
-          <Link href="/" className="shrink-0 flex items-center gap-3">
+          <Link href="/dashboard" className="shrink-0 flex items-center gap-3">
             <Image
               src="/assets/logo/logo-passeport.png"
               alt="Logo"
@@ -129,34 +145,70 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
             })}
           </nav>
 
-          {/* User */}
-          <div className="shrink-0 flex items-center gap-3">
-            {user && (
-              <div className="text-right leading-tight">
-                <p className="text-sm font-semibold text-[#1A1A1A]">
-                  {isAdmin ? "Administrateur" : "Enseignant"}
-                </p>
-                <p className="text-xs text-gray-400">{user.name}</p>
+          {/* User menu */}
+          <div className="shrink-0 relative" ref={menuRef}>
+            <button
+              onClick={() => setMenuOpen((o) => !o)}
+              className="flex items-center gap-2.5 pl-2 pr-3 py-1.5 rounded-full hover:bg-gray-50 border border-transparent hover:border-gray-200 transition-all"
+            >
+              <div
+                className={`w-8 h-8 rounded-full flex items-center justify-center border-2 ${
+                  isAdmin
+                    ? "bg-amber-50 border-amber-300/50"
+                    : "bg-[#EBF4F8] border-[#1B6B8A]/20"
+                }`}
+              >
+                {isAdmin ? (
+                  <Shield size={15} className="text-amber-600" strokeWidth={2.5} />
+                ) : (
+                  <User size={16} className="text-[#1B6B8A]" />
+                )}
+              </div>
+              {user && (
+                <div className="text-left leading-tight">
+                  <p className="text-xs font-bold text-[#1A1A1A]">{user.name}</p>
+                  <p className="text-[10px] text-gray-400">{isAdmin ? "Administrateur" : "Établissement"}</p>
+                </div>
+              )}
+              <ChevronDown
+                size={13}
+                className={`text-gray-400 transition-transform ${menuOpen ? "rotate-180" : ""}`}
+              />
+            </button>
+
+            {menuOpen && (
+              <div className="absolute right-0 top-full mt-2 w-52 bg-white rounded-2xl shadow-lg border border-gray-100 py-2 z-[200]">
+                {user?.organization && (
+                  <>
+                    <p className="px-4 pt-1 pb-2 text-[10px] font-bold text-gray-400 uppercase tracking-wider">
+                      {user.organization.name}
+                    </p>
+                    <div className="mx-3 mb-2 border-t border-gray-100" />
+                  </>
+                )}
+                <Link
+                  href="/"
+                  onClick={() => setMenuOpen(false)}
+                  className="flex items-center gap-2.5 px-4 py-2.5 text-sm text-gray-600 hover:bg-gray-50 transition-colors"
+                >
+                  <ExternalLink size={14} className="text-gray-400" />
+                  Retour au site
+                </Link>
+                <div className="mx-3 my-1 border-t border-gray-100" />
+                <button
+                  onClick={handleSignOut}
+                  className="w-full flex items-center gap-2.5 px-4 py-2.5 text-sm text-red-500 hover:bg-red-50 transition-colors"
+                >
+                  <LogOut size={14} />
+                  Se déconnecter
+                </button>
               </div>
             )}
-            <div
-              className={`w-10 h-10 rounded-full flex items-center justify-center border-2 ${
-                isAdmin
-                  ? "bg-amber-50 border-amber-300/50"
-                  : "bg-[#EBF4F8] border-[#1B6B8A]/20"
-              }`}
-            >
-              {isAdmin ? (
-                <Shield size={18} className="text-amber-600" strokeWidth={2.5} />
-              ) : (
-                <User size={20} className="text-[#1B6B8A]" />
-              )}
-            </div>
           </div>
+
         </div>
       </header>
 
-      {/* Contenu */}
       <main>{children}</main>
     </div>
   );

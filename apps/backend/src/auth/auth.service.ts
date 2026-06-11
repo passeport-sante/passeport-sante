@@ -12,7 +12,7 @@ export class AuthService {
 
   async validateUser(email: string, password: string): Promise<any> {
     const user = await this.prisma.user.findUnique({ where: { email } });
-    if (user && (await bcrypt.compare(password, user.password))) {
+    if (user && !user.isSuspended && (await bcrypt.compare(password, user.password))) {
       const { password: _password, ...result } = user;
       return result;
     }

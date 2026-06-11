@@ -13,6 +13,7 @@ export type AccountUser = {
   name: string;
   email: string;
   role: UserRole;
+  isSuspended: boolean;
   createdAt: string;
   organization: { id: string; name: string } | null;
 };
@@ -30,6 +31,26 @@ export type CreateAccountPayload = {
   role: UserRole;
   organizationId: string;
 };
+
+// ── Password generator ────────────────────────────────────────────────────────
+
+export function generatePassword(): string {
+  const upper = "ABCDEFGHJKLMNPQRSTUVWXYZ";
+  const lower = "abcdefghjkmnpqrstuvwxyz";
+  const digits = "23456789";
+  const specials = "!@#$%&*";
+  const all = upper + lower + digits + specials;
+
+  const pick = (s: string) => s[Math.floor(Math.random() * s.length)]!;
+  const required = [pick(upper), pick(digits), pick(specials)];
+  const rest = Array.from({ length: 5 }, () => pick(all));
+  const chars = [...required, ...rest];
+  for (let i = chars.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [chars[i], chars[j]] = [chars[j]!, chars[i]!];
+  }
+  return chars.join("");
+}
 
 // ── Users ─────────────────────────────────────────────────────────────────────
 
@@ -57,6 +78,32 @@ export async function createAccount(
 
 export async function deleteAccount(token: string, id: string): Promise<void> {
   await fetch(`${API}/api/user/${id}`, { method: "DELETE", headers: auth(token) });
+}
+
+export async function resetUserPassword(
+  token: string,
+  id: string,
+  newPassword: string,
+): Promise<void> {
+  const res = await fetch(`${API}/api/user/${id}`, {
+    method: "PATCH",
+    headers: auth(token),
+    body: JSON.stringify({ password: newPassword }),
+  });
+  if (!res.ok) throw new Error("Erreur lors de la réinitialisation");
+}
+
+export async function setSuspended(
+  token: string,
+  id: string,
+  isSuspended: boolean,
+): Promise<void> {
+  const res = await fetch(`${API}/api/user/${id}`, {
+    method: "PATCH",
+    headers: auth(token),
+    body: JSON.stringify({ isSuspended }),
+  });
+  if (!res.ok) throw new Error("Erreur lors de la mise à jour");
 }
 
 // ── Organizations ─────────────────────────────────────────────────────────────

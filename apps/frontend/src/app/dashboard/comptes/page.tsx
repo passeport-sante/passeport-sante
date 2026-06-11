@@ -1,9 +1,16 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
+import { createPortal } from "react-dom";
 import Link from "next/link";
-import { Plus, Trash2, Shield, User, Building2, Search } from "lucide-react";
-import { fetchAllUsers, deleteAccount, type AccountUser } from "@/lib/admin-users";
+import {
+  Plus, Trash2, Shield, User, Building2, Search,
+  MoreVertical, KeyRound, Ban, CheckCircle2, Copy, Check,
+} from "lucide-react";
+import {
+  fetchAllUsers, deleteAccount, resetUserPassword, setSuspended,
+  generatePassword, type AccountUser,
+} from "@/lib/admin-users";
 
 function RoleBadge({ role }: { role: "ADMIN" | "TRAINER" }) {
   return role === "ADMIN" ? (
@@ -12,7 +19,7 @@ function RoleBadge({ role }: { role: "ADMIN" | "TRAINER" }) {
     </span>
   ) : (
     <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-semibold bg-blue-100 text-[#1B6B8A]">
-      <User size={11} /> Formateur
+      <User size={11} /> Établissement
     </span>
   );
 }
@@ -27,13 +34,36 @@ function Initials({ name }: { name: string }) {
   );
 }
 
+function Modal({ children }: { children: React.ReactNode }) {
+  return createPortal(
+    <div
+      className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center p-4"
+      style={{ zIndex: 9999 }}
+    >
+      {children}
+    </div>,
+    document.body,
+  );
+}
+
 export default function ComptesPage() {
   const [users, setUsers] = useState<AccountUser[]>([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");
   const [confirmDelete, setConfirmDelete] = useState<AccountUser | null>(null);
+  const [menuOpen, setMenuOpen] = useState<string | null>(null);
+  const [menuPos, setMenuPos] = useState<{ top: number; right: number } | null>(null);
+  const portalMenuRef = useRef<HTMLDivElement>(null);
+  const buttonRefs = useRef<Map<string, HTMLButtonElement | null>>(new Map());
+
+  const [resetModal, setResetModal] = useState<{ user: AccountUser; newPassword: string } | null>(null);
+  const [copied, setCopied] = useState(false);
+  const [actionLoading, setActionLoading] = useState(false);
+  const [mounted, setMounted] = useState(false);
 
   const token = typeof window !== "undefined" ? (localStorage.getItem("access_token") ?? "") : "";
+
+  useEffect(() => { setMounted(true); }, []);
 
   async function load() {
     try {
@@ -43,13 +73,71 @@ export default function ComptesPage() {
       setLoading(false);
     }
   }
-
   useEffect(() => { load(); }, []);
+
+  // Fermer le dropdown quand on clique en dehors
+  useEffect(() => {
+    if (!menuOpen) return;
+    function handleOutside(e: MouseEvent) {
+      const portalEl = portalMenuRef.current;
+      const buttonEl = buttonRefs.current.get(menuOpen!);
+      if (
+        portalEl && !portalEl.contains(e.target as Node) &&
+        buttonEl && !buttonEl.contains(e.target as Node)
+      ) {
+        setMenuOpen(null);
+      }
+    }
+    document.addEventListener("mousedown", handleOutside);
+    return () => document.removeEventListener("mousedown", handleOutside);
+  }, [menuOpen]);
+
+  function handleToggleMenu(userId: string, e: React.MouseEvent<HTMLButtonElement>) {
+    if (menuOpen === userId) {
+      setMenuOpen(null);
+      return;
+    }
+    const rect = e.currentTarget.getBoundingClientRect();
+    setMenuPos({ top: rect.bottom + 6, right: window.innerWidth - rect.right });
+    setMenuOpen(userId);
+  }
 
   async function handleDelete(user: AccountUser) {
     await deleteAccount(token, user.id);
     setUsers((prev) => prev.filter((u) => u.id !== user.id));
     setConfirmDelete(null);
+  }
+
+  async function handleResetPassword(user: AccountUser) {
+    setMenuOpen(null);
+    const pwd = generatePassword();
+    setActionLoading(true);
+    try {
+      await resetUserPassword(token, user.id, pwd);
+      setResetModal({ user, newPassword: pwd });
+    } finally {
+      setActionLoading(false);
+    }
+  }
+
+  async function handleToggleSuspend(user: AccountUser) {
+    setMenuOpen(null);
+    setActionLoading(true);
+    try {
+      await setSuspended(token, user.id, !user.isSuspended);
+      setUsers((prev) =>
+        prev.map((u) => u.id === user.id ? { ...u, isSuspended: !u.isSuspended } : u),
+      );
+    } finally {
+      setActionLoading(false);
+    }
+  }
+
+  function copyPassword(pwd: string) {
+    navigator.clipboard.writeText(pwd).then(() => {
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
+    });
   }
 
   const filtered = users.filter(
@@ -62,15 +150,18 @@ export default function ComptesPage() {
   const admins = users.filter((u) => u.role === "ADMIN").length;
   const trainers = users.filter((u) => u.role === "TRAINER").length;
 
+  const menuUser = users.find((u) => u.id === menuOpen) ?? null;
+
   return (
     <div className="brand-container py-10 space-y-8">
-      {/* ── En-tête ── */}
+
+      {/* En-tête */}
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-2xl font-black text-gray-900">Gestion des comptes</h1>
           <p className="text-sm text-gray-500 mt-1">
             {users.length} compte{users.length > 1 ? "s" : ""} —{" "}
-            {admins} admin{admins > 1 ? "s" : ""}, {trainers} formateur{trainers > 1 ? "s" : ""}
+            {admins} admin{admins > 1 ? "s" : ""}, {trainers} établissement{trainers > 1 ? "s" : ""}
           </p>
         </div>
         <Link
@@ -82,7 +173,7 @@ export default function ComptesPage() {
         </Link>
       </div>
 
-      {/* ── Recherche ── */}
+      {/* Recherche */}
       <div className="relative max-w-sm">
         <Search size={15} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
         <input
@@ -94,7 +185,7 @@ export default function ComptesPage() {
         />
       </div>
 
-      {/* ── Table ── */}
+      {/* Table */}
       <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
         {loading ? (
           <div className="flex items-center justify-center py-16">
@@ -114,13 +205,17 @@ export default function ComptesPage() {
                 <th className="text-left px-4 py-3 text-xs font-bold text-gray-500 uppercase tracking-wider">
                   <span className="flex items-center gap-1.5"><Building2 size={13} /> Établissement</span>
                 </th>
+                <th className="text-left px-4 py-3 text-xs font-bold text-gray-500 uppercase tracking-wider">Statut</th>
                 <th className="text-left px-4 py-3 text-xs font-bold text-gray-500 uppercase tracking-wider">Créé le</th>
                 <th className="px-4 py-3" />
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-50">
               {filtered.map((u) => (
-                <tr key={u.id} className="hover:bg-gray-50/50 transition-colors">
+                <tr
+                  key={u.id}
+                  className={`hover:bg-gray-50/50 transition-colors ${u.isSuspended ? "opacity-60" : ""}`}
+                >
                   <td className="px-6 py-4">
                     <div className="flex items-center gap-3">
                       <Initials name={u.name} />
@@ -130,11 +225,20 @@ export default function ComptesPage() {
                       </div>
                     </div>
                   </td>
-                  <td className="px-4 py-4">
-                    <RoleBadge role={u.role} />
-                  </td>
+                  <td className="px-4 py-4"><RoleBadge role={u.role} /></td>
                   <td className="px-4 py-4 text-gray-600">
                     {u.organization?.name ?? <span className="text-gray-300 italic">—</span>}
+                  </td>
+                  <td className="px-4 py-4">
+                    {u.isSuspended ? (
+                      <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-semibold bg-red-100 text-red-600">
+                        <Ban size={10} /> Suspendu
+                      </span>
+                    ) : (
+                      <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-semibold bg-emerald-50 text-emerald-600">
+                        <CheckCircle2 size={10} /> Actif
+                      </span>
+                    )}
                   </td>
                   <td className="px-4 py-4 text-gray-400 text-xs">
                     {new Date(u.createdAt).toLocaleDateString("fr-FR", {
@@ -143,10 +247,16 @@ export default function ComptesPage() {
                   </td>
                   <td className="px-4 py-4 text-right">
                     <button
-                      onClick={() => setConfirmDelete(u)}
-                      className="p-2 rounded-lg text-gray-400 hover:text-red-500 hover:bg-red-50 transition-colors"
+                      ref={(el) => { buttonRefs.current.set(u.id, el); }}
+                      onClick={(e) => handleToggleMenu(u.id, e)}
+                      className={`p-2 rounded-lg transition-colors ${
+                        menuOpen === u.id
+                          ? "bg-gray-100 text-gray-700"
+                          : "text-gray-400 hover:text-gray-700 hover:bg-gray-100"
+                      }`}
+                      disabled={actionLoading}
                     >
-                      <Trash2 size={15} />
+                      <MoreVertical size={15} />
                     </button>
                   </td>
                 </tr>
@@ -156,10 +266,84 @@ export default function ComptesPage() {
         )}
       </div>
 
+      {/* ── Dropdown menu via Portal (échappe le overflow-hidden de la table) ── */}
+      {mounted && menuOpen && menuPos && menuUser && createPortal(
+        <div
+          ref={portalMenuRef}
+          style={{ position: "fixed", top: menuPos.top, right: menuPos.right, zIndex: 9998 }}
+          className="w-56 bg-white rounded-xl shadow-xl border border-gray-100 py-1"
+        >
+          <button
+            onClick={() => handleResetPassword(menuUser)}
+            className="w-full flex items-center gap-2.5 px-4 py-2.5 text-sm text-gray-700 hover:bg-gray-50 transition-colors"
+          >
+            <KeyRound size={14} className="text-[#1B6B8A]" />
+            Réinitialiser le mot de passe
+          </button>
+          <button
+            onClick={() => handleToggleSuspend(menuUser)}
+            className={`w-full flex items-center gap-2.5 px-4 py-2.5 text-sm transition-colors ${
+              menuUser.isSuspended
+                ? "text-emerald-600 hover:bg-emerald-50"
+                : "text-orange-600 hover:bg-orange-50"
+            }`}
+          >
+            <Ban size={14} />
+            {menuUser.isSuspended ? "Réactiver le compte" : "Suspendre temporairement"}
+          </button>
+          <div className="my-1 border-t border-gray-100" />
+          <button
+            onClick={() => { setMenuOpen(null); setConfirmDelete(menuUser); }}
+            className="w-full flex items-center gap-2.5 px-4 py-2.5 text-sm text-red-500 hover:bg-red-50 transition-colors"
+          >
+            <Trash2 size={14} />
+            Supprimer le compte
+          </button>
+        </div>,
+        document.body,
+      )}
+
+      {/* ── Modal mot de passe réinitialisé ── */}
+      {mounted && resetModal && (
+        <Modal>
+          <div className="bg-white rounded-2xl shadow-2xl p-8 max-w-sm w-full space-y-5">
+            <div className="flex items-center gap-3">
+              <div className="w-11 h-11 rounded-xl bg-[#EBF4F8] flex items-center justify-center shrink-0">
+                <KeyRound size={20} className="text-[#1B6B8A]" />
+              </div>
+              <div>
+                <h2 className="text-base font-black text-gray-900">Mot de passe réinitialisé</h2>
+                <p className="text-xs text-gray-400">{resetModal.user.name}</p>
+              </div>
+            </div>
+            <p className="text-sm text-gray-500">
+              Transmettez ce mot de passe à l&apos;utilisateur. Il ne sera plus affiché après fermeture.
+            </p>
+            <div className="flex items-center gap-2 bg-gray-50 rounded-xl border border-gray-200 px-4 py-3">
+              <span className="flex-1 font-mono text-sm font-bold text-[#1A1A1A] tracking-wider break-all">
+                {resetModal.newPassword}
+              </span>
+              <button
+                onClick={() => copyPassword(resetModal.newPassword)}
+                className="p-1.5 rounded-lg hover:bg-gray-200 text-gray-500 hover:text-gray-700 transition-colors shrink-0"
+              >
+                {copied ? <Check size={15} className="text-emerald-500" /> : <Copy size={15} />}
+              </button>
+            </div>
+            <button
+              onClick={() => { setResetModal(null); setCopied(false); }}
+              className="w-full py-2.5 bg-[#1B6B8A] text-white text-sm font-bold rounded-full hover:opacity-90 transition-opacity"
+            >
+              Fermer
+            </button>
+          </div>
+        </Modal>
+      )}
+
       {/* ── Modal confirmation suppression ── */}
-      {confirmDelete && (
-        <div className="fixed inset-0 bg-black/40 backdrop-blur-sm flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-2xl shadow-xl p-8 max-w-sm w-full text-center space-y-4">
+      {mounted && confirmDelete && (
+        <Modal>
+          <div className="bg-white rounded-2xl shadow-2xl p-8 max-w-sm w-full text-center space-y-4">
             <div className="w-12 h-12 rounded-full bg-red-100 flex items-center justify-center mx-auto">
               <Trash2 size={20} className="text-red-500" />
             </div>
@@ -182,8 +366,9 @@ export default function ComptesPage() {
               </button>
             </div>
           </div>
-        </div>
+        </Modal>
       )}
+
     </div>
   );
 }

@@ -65,7 +65,7 @@ export function SessionsTable({ sessions, moduleSessions = [] }: Props) {
           })}
 
           {moduleSessions.map((s, i) => {
-            const color = s.module.colorPrimary ?? "#1B6B8A";
+            const color = s.module?.colorPrimary ?? "#6B7280";
             const isLast = i === moduleSessions.length - 1;
             return (
               <tr
@@ -74,7 +74,11 @@ export function SessionsTable({ sessions, moduleSessions = [] }: Props) {
               >
                 <td className="px-6 py-4">
                   <p className="font-semibold text-[#1A1A1A]">{s.className}</p>
-                  <p className="text-xs font-medium mt-0.5" style={{ color }}>{s.module.title}</p>
+                  {s.module ? (
+                    <p className="text-xs font-medium mt-0.5" style={{ color }}>{s.module.title}</p>
+                  ) : (
+                    <p className="text-xs font-medium mt-0.5 text-gray-400 italic">Module supprimé</p>
+                  )}
                 </td>
                 <td className="px-6 py-4">
                   <span

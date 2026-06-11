@@ -42,7 +42,7 @@ export class ModuleSessionService {
             slug: true,
             colorPrimary: true,
             steps: {
-              select: { id: true, order: true, gameType: true, content: true },
+              select: { id: true, order: true, kind: true, gameType: true, content: true },
               orderBy: { order: "asc" },
             },
           },
