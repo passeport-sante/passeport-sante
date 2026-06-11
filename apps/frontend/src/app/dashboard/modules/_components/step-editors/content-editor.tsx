@@ -2,7 +2,7 @@
 
 import { useEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
-import { Check, ExternalLink, Loader2, Save } from "lucide-react";
+import { Check, ExternalLink, ImageUp, Loader2, Save } from "lucide-react";
 import { Field, INPUT_CLASS, TEXTAREA_CLASS } from "./editor-shell";
 import {
   CONTENT_TYPE_META,
@@ -29,9 +29,32 @@ export function ContentEditor({ step, color, onSave }: Props) {
   const [videoUrl, setVideoUrl] = useState(step.content?.videoUrl ?? "");
   const [caption, setCaption] = useState(step.content?.caption ?? "");
 
+  const [uploading, setUploading] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
   const [saving, setSaving] = useState(false);
   const [justSaved, setJustSaved] = useState(false);
   const savedTimerRef = useRef<NodeJS.Timeout | null>(null);
+
+  async function handleFileUpload(file: File) {
+    setUploading(true);
+    try {
+      const fd = new FormData();
+      fd.append("file", file);
+      fd.append("upload_preset", process.env.NEXT_PUBLIC_CLOUDINARY_UPLOAD_PRESET!);
+      const res = await fetch(
+        `https://api.cloudinary.com/v1_1/${process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME}/image/upload`,
+        { method: "POST", body: fd },
+      );
+      if (!res.ok) throw new Error("Échec de l'upload Cloudinary");
+      const data = await res.json();
+      setImageUrl(data.secure_url);
+    } catch (err) {
+      alert(err instanceof Error ? err.message : "Échec de l'upload");
+    } finally {
+      setUploading(false);
+    }
+  }
 
   const validationError = useMemo(() => {
     if (contentType === "INFO" && !body.trim()) return "Saisissez le texte de l'information";
@@ -152,14 +175,37 @@ export function ContentEditor({ step, color, onSave }: Props) {
 
         {contentType === "IMAGE" && (
           <>
-            <Field label="URL de l'image" hint="Lien https ou chemin d'un asset dans /public">
-              <input
-                type="text"
-                value={imageUrl}
-                onChange={(e) => setImageUrl(e.target.value)}
-                placeholder="https://… ou /assets/…"
-                className={INPUT_CLASS}
-              />
+            <Field label="URL de l'image" hint="Colle un lien ou uploade depuis ton appareil">
+              <div className="flex gap-2">
+                <input
+                  type="text"
+                  value={imageUrl}
+                  onChange={(e) => setImageUrl(e.target.value)}
+                  placeholder="https://… ou /assets/…"
+                  className={INPUT_CLASS + " flex-1"}
+                  disabled={uploading}
+                />
+                <button
+                  type="button"
+                  onClick={() => fileInputRef.current?.click()}
+                  disabled={uploading}
+                  className="shrink-0 inline-flex items-center gap-1.5 px-3 py-2 text-sm font-medium text-gray-600 bg-gray-100 hover:bg-gray-200 rounded-xl border border-gray-200 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  {uploading ? <Loader2 size={14} className="animate-spin" /> : <ImageUp size={14} />}
+                  {uploading ? "Upload…" : "Uploader"}
+                </button>
+                <input
+                  ref={fileInputRef}
+                  type="file"
+                  accept="image/*"
+                  className="hidden"
+                  onChange={(e) => {
+                    const file = e.target.files?.[0];
+                    if (file) handleFileUpload(file);
+                    e.target.value = "";
+                  }}
+                />
+              </div>
             </Field>
             <Field label="Légende" hint="Facultative">
               <input
