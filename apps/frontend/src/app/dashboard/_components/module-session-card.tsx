@@ -43,7 +43,7 @@ export function ModuleSessionCard({ session, onClose }: Props) {
           <div className="min-w-0">
             <h3 className="font-bold text-[#1A1A1A] text-base truncate">{session.className}</h3>
             <p className="text-xs font-medium truncate" style={{ color }}>
-              {session.module.title}
+              {session.module?.title}
             </p>
           </div>
         </div>
