@@ -45,7 +45,7 @@ export function PhraseATrou({ step }: { step: StepData }) {
   const options = gameData?.questionData?.options ?? [];
   const correctBlanks = gameData?.correctAnswer?.blanks ?? [];
 
-  const parts = phrase.split("___");
+  const parts = phrase.split(/_{2,}/);
   const blankCount = parts.length - 1;
   const isLastItem = currentIndex === total - 1;
 
@@ -80,7 +80,9 @@ export function PhraseATrou({ step }: { step: StepData }) {
   }
 
   function handleSubmit() {
-    const correct = correctBlanks.every((w, i) => w === filled[i]);
+    const sortedFilled = [...filled].filter((f): f is string => f !== null).sort();
+    const sortedCorrect = [...correctBlanks].sort();
+    const correct = sortedFilled.length === sortedCorrect.length && sortedFilled.every((w, i) => w === sortedCorrect[i]);
     const guestStudentId = getGuestStudentId(step.module.slug);
     if (guestStudentId) {
       submitQuizResponse({
@@ -101,7 +103,7 @@ export function PhraseATrou({ step }: { step: StepData }) {
     } else if (!isLastItem) {
       const nextGD = allGameData[currentIndex + 1];
       const nextPhrase = nextGD?.questionData?.phrase ?? "";
-      const nextBlankCount = nextPhrase.split("___").length - 1;
+      const nextBlankCount = nextPhrase.split(/_{2,}/).length - 1;
       setFilled(Array(nextBlankCount).fill(null));
       setCurrentIndex((i) => i + 1);
     } else {

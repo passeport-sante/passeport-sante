@@ -25,10 +25,11 @@ const CONTENT_ICONS: Record<ContentType, React.ReactNode> = {
 const GAME_ORDER: GameType[] = ["KANBAN", "QUIZ", "PUZZLE", "PHRASE_A_TROU", "SCENARIO"];
 const CONTENT_ORDER: ContentType[] = ["INFO", "IMAGE", "VIDEO"];
 
-// Choix renvoyé : soit une étape de jeu, soit une sous-étape de contenu
+// Choix renvoyé : étape de jeu (comptée), sous-étape de contenu, ou sous-étape de jeu (non comptée)
 export type StepPick =
   | { kind: "GAME"; gameType: GameType }
-  | { kind: "CONTENT"; contentType: ContentType };
+  | { kind: "CONTENT"; contentType: ContentType }
+  | { kind: "GAME_SUBSTEP"; gameType: GameType };
 
 interface Props {
   open: boolean;
@@ -89,6 +90,38 @@ export function GameTypePicker({ open, onCancel, onSelect }: Props) {
                     <p className="text-xs text-gray-600 mt-1 leading-relaxed">
                       {meta.description}
                     </p>
+                  </div>
+                </button>
+              );
+            })}
+          </div>
+        </div>
+
+        {/* Sous-étapes de jeu (non comptées) */}
+        <div className="space-y-3">
+          <p className="text-xs font-bold uppercase tracking-wide text-gray-400">
+            Sous-étape de jeu{" "}
+            <span className="font-medium normal-case text-gray-400">(non comptée dans la progression)</span>
+          </p>
+          <div className="grid grid-cols-2 gap-3">
+            {GAME_ORDER.map((gt) => {
+              const meta = GAME_TYPE_META[gt];
+              return (
+                <button
+                  key={gt}
+                  onClick={() => onSelect({ kind: "GAME_SUBSTEP", gameType: gt })}
+                  className="flex items-start gap-3 p-4 rounded-2xl border-2 border-dashed border-gray-200 hover:border-gray-300 text-left transition-all hover:shadow-sm group"
+                  style={{ background: `${meta.bg}` }}
+                >
+                  <div
+                    className="w-11 h-11 rounded-xl flex items-center justify-center text-white shrink-0 opacity-70 group-hover:opacity-100 transition-opacity"
+                    style={{ background: meta.color }}
+                  >
+                    {GAME_ICONS[gt]}
+                  </div>
+                  <div className="min-w-0">
+                    <p className="font-bold text-sm" style={{ color: meta.color }}>{meta.label}</p>
+                    <p className="text-[11px] text-gray-500 mt-0.5">Bonus / non compté</p>
                   </div>
                 </button>
               );

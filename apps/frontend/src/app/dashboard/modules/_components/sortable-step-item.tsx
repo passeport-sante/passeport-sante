@@ -39,7 +39,8 @@ export function SortableStepItem({
   onSelect,
   onDelete,
 }: Props) {
-  const isContent = kind === "CONTENT";
+  const isGameSubstep = kind === "CONTENT" && !!gameType;
+  const isContent = kind === "CONTENT" && !gameType;
   const meta = isContent
     ? CONTENT_TYPE_META[contentType ?? "INFO"]
     : GAME_TYPE_META[gameType ?? "QUIZ"];
@@ -68,8 +69,8 @@ export function SortableStepItem({
       className={`group relative flex items-center gap-2 p-3 rounded-xl border-2 cursor-pointer transition-all ${
         selected
           ? "bg-white shadow-sm"
-          : isContent
-            ? "bg-gray-50/60 hover:bg-gray-50 border-transparent"
+          : isContent || isGameSubstep
+            ? "bg-gray-50/60 hover:bg-gray-50 border-transparent border-dashed"
             : "bg-white hover:bg-gray-50 border-transparent"
       }`}
     >
@@ -84,7 +85,7 @@ export function SortableStepItem({
         <GripVertical size={16} />
       </button>
 
-      {/* Numéro d'étape (jeux) ou puce de sous-étape (contenu) */}
+      {/* Numéro / icône selon le type */}
       {isContent ? (
         <span
           className="w-6 h-6 rounded-lg flex items-center justify-center shrink-0"
@@ -92,6 +93,14 @@ export function SortableStepItem({
           title="Sous-étape de contenu"
         >
           {CONTENT_ICONS[contentType ?? "INFO"]}
+        </span>
+      ) : isGameSubstep ? (
+        <span
+          className="w-6 h-6 rounded-lg flex items-center justify-center text-[10px] font-black shrink-0 border border-dashed"
+          style={{ borderColor: meta.color, color: meta.color }}
+          title="Sous-étape de jeu (bonus)"
+        >
+          B
         </span>
       ) : (
         <span
@@ -108,10 +117,12 @@ export function SortableStepItem({
         style={
           isContent
             ? { background: `${meta.color}20`, color: meta.color }
-            : { background: meta.color, color: "white" }
+            : isGameSubstep
+              ? { background: `${meta.color}20`, color: meta.color, border: `1px dashed ${meta.color}` }
+              : { background: meta.color, color: "white" }
         }
       >
-        {isContent ? "SOUS-ÉTAPE" : meta.short.toUpperCase()}
+        {isContent ? "SOUS-ÉTAPE" : isGameSubstep ? "BONUS" : meta.short.toUpperCase()}
       </span>
 
       {/* Titre */}

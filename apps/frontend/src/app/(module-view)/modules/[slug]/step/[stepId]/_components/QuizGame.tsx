@@ -56,6 +56,7 @@ export function QuizGame({ step }: { step: StepData }) {
   const primaryColor = step.module.colorPrimary ?? "#16A34A";
   const bottomColor = step.module.colorSecondary ?? "#052e16";
   const { level: gameLevel, total: totalGameLevels } = gameProgress(step.module.steps, step.order);
+  const hasNextStep = step.module.steps.some((s) => s.order > step.order);
 
   const currentQuestion = questions[currentIndex];
   const isLastQuestion = currentIndex === questions.length - 1;
@@ -247,7 +248,7 @@ export function QuizGame({ step }: { step: StepData }) {
                 className="px-10 py-3.5 rounded-2xl text-white font-black text-base hover:opacity-90"
                 style={{ background: "rgba(255,255,255,0.2)", border: "2px solid rgba(255,255,255,0.4)" }}
               >
-                Terminer le module →
+                {hasNextStep ? "Étape suivante →" : "Terminer le module →"}
               </button>
             ) : (
               <button

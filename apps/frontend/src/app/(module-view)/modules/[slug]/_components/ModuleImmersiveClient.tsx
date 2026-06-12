@@ -212,7 +212,7 @@ export function ModuleImmersiveClient({ module }: Props) {
             style={{
               background: "rgba(255,255,255,0.92)",
               backdropFilter: "blur(8px)",
-              top: 20,
+              top: Math.max(10, mascotteTop - 130),
               left: bubbleLeft,
               width: BUBBLE_WIDTH,
             }}

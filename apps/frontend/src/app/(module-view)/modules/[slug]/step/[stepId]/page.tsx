@@ -29,7 +29,7 @@ export default async function StepPage({
 
   if (!step) notFound();
 
-  if (step.kind === "CONTENT") return <ContentPanel step={step} />;
+  if (step.kind === "CONTENT" && !step.gameType) return <ContentPanel step={step} />;
 
   if (step.gameType === "KANBAN") return <KanbanGame step={step} />;
   if (step.gameType === "SCENARIO") return <ScenarioGame step={step} />;

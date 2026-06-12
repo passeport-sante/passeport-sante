@@ -18,10 +18,6 @@ interface Props {
 }
 
 export function StepEditor(props: Props) {
-  if (props.step.kind === "CONTENT") {
-    return <ContentEditor {...props} />;
-  }
-
   switch (props.step.gameType) {
     case "KANBAN":
       return <KanbanEditor {...props} />;
@@ -33,11 +29,7 @@ export function StepEditor(props: Props) {
       return <PhraseEditor {...props} />;
     case "PUZZLE":
       return <PuzzleEditor {...props} />;
-    default:
-      return (
-        <div className="bg-white rounded-2xl p-6 text-sm text-gray-500">
-          Type d&apos;étape inconnu : {props.step.gameType}
-        </div>
-      );
   }
+
+  return <ContentEditor {...props} />;
 }

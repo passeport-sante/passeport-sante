@@ -28,8 +28,13 @@ const MODULE_PUBLIC_FIELDS = {
 export class ModulesService {
   constructor(private prisma: PrismaService) {}
 
-  create(dto: CreateModuleDto) {
-    return this.prisma.module.create({ data: dto });
+  async create(dto: CreateModuleDto) {
+    try {
+      return await this.prisma.module.create({ data: dto });
+    } catch (e: any) {
+      if (e?.code === 'P2002') throw new ConflictException('Un module avec ce slug existe déjà');
+      throw e;
+    }
   }
 
   findAll() {

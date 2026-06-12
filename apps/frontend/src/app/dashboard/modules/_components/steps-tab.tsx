@@ -50,7 +50,7 @@ interface Props {
   onChange: () => Promise<void> | void;
 }
 
-export function StepsTab({ moduleId, colorPrimary, steps: initialSteps, onChange }: Props) {
+export function StepsTab({ moduleId, colorPrimary, steps: initialSteps = [], onChange }: Props) {
   const [steps, setSteps] = useState<StepLite[]>(initialSteps);
   const [selectedId, setSelectedId] = useState<string | null>(initialSteps[0]?.id ?? null);
   const [current, setCurrent] = useState<AdminStep | null>(null);
@@ -115,6 +115,10 @@ export function StepsTab({ moduleId, colorPrimary, steps: initialSteps, onChange
 
   async function handleAddStep(pick: StepPick) {
     setShowPicker(false);
+    if (pick.kind === "GAME" && gameStepCount >= 5) {
+      alert("Un module ne peut pas dépasser 5 mini-jeux.");
+      return;
+    }
     const nextOrder = (steps.at(-1)?.order ?? 0) + 1;
     try {
       const created =
@@ -127,12 +131,21 @@ export function StepsTab({ moduleId, colorPrimary, steps: initialSteps, onChange
               content: defaultContentFor(pick.gameType),
               gameData: defaultGameDataFor(pick.gameType),
             })
-          : await createStep({
-              moduleId,
-              kind: "CONTENT",
-              order: nextOrder,
-              content: defaultContentForType(pick.contentType),
-            });
+          : pick.kind === "GAME_SUBSTEP"
+            ? await createStep({
+                moduleId,
+                kind: "CONTENT",
+                gameType: pick.gameType,
+                order: nextOrder,
+                content: defaultContentFor(pick.gameType),
+                gameData: defaultGameDataFor(pick.gameType),
+              })
+            : await createStep({
+                moduleId,
+                kind: "CONTENT",
+                order: nextOrder,
+                content: defaultContentForType(pick.contentType),
+              });
       await onChange();
       setSelectedId(created.id);
     } catch (err) {
@@ -193,7 +206,7 @@ export function StepsTab({ moduleId, colorPrimary, steps: initialSteps, onChange
           <h3 className="text-sm font-bold text-[#1A1A1A] flex items-center gap-2">
             <Layers size={15} className="text-gray-400" />
             Étapes du module
-            <span className="text-xs font-semibold text-gray-400">({gameStepCount} jeu{gameStepCount > 1 ? "x" : ""})</span>
+            <span className="text-xs font-semibold text-gray-400">({gameStepCount}/5 jeu{gameStepCount > 1 ? "x" : ""})</span>
           </h3>
           <button
             onClick={() => setShowPicker(true)}

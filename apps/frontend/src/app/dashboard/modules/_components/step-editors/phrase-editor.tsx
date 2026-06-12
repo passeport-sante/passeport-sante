@@ -33,11 +33,11 @@ function phraseFromGameData(gd: AdminGameData): Phrase {
 }
 
 function emptyPhrase(): Phrase {
-  return { phrase: "Complète cette ___.", options: ["phrase"], blanks: ["phrase"] };
+  return { phrase: "Complète cette __.", options: ["phrase"], blanks: ["phrase"] };
 }
 
 function countBlanks(phrase: string): number {
-  return (phrase.match(/___/g) ?? []).length;
+  return (phrase.match(/_{2,}/g) ?? []).length;
 }
 
 export function PhraseEditor({ step, color, onSave }: Props) {
@@ -51,7 +51,7 @@ export function PhraseEditor({ step, color, onSave }: Props) {
     if (phrases.length === 0) return "Ajoutez au moins une phrase";
     for (const [idx, p] of phrases.entries()) {
       const n = countBlanks(p.phrase);
-      if (n === 0) return `Phrase ${idx + 1} : utilisez ___ pour marquer les trous`;
+      if (n === 0) return `Phrase ${idx + 1} : utilisez __ pour marquer les trous`;
       if (p.blanks.length !== n) return `Phrase ${idx + 1} : ${n} trou(s) mais ${p.blanks.length} bonne(s) réponse(s)`;
       if (p.blanks.some((b) => !b.trim())) return `Phrase ${idx + 1} : toutes les bonnes réponses doivent être remplies`;
       if (p.options.length < n) return `Phrase ${idx + 1} : au moins ${n} option(s)`;
@@ -87,7 +87,9 @@ export function PhraseEditor({ step, color, onSave }: Props) {
   function removePhrase(idx: number) {
     setPhrases((ps) => ps.filter((_, i) => i !== idx));
   }
-  function syncBlanks(idx: number, phrase: string) {
+  function syncBlanks(idx: number, raw: string) {
+    // Normalise 3+ underscores → 2 pour uniformiser le marqueur
+    const phrase = raw.replace(/_{3,}/g, "__");
     const n = countBlanks(phrase);
     setPhrases((ps) =>
       ps.map((p, i) => {
@@ -146,12 +148,12 @@ export function PhraseEditor({ step, color, onSave }: Props) {
 
               <div className="space-y-1.5">
                 <label className="text-[11px] font-bold uppercase tracking-wider text-gray-500">
-                  Phrase avec ___ pour les trous
+                  Phrase avec __ pour les trous
                 </label>
                 <textarea
                   value={p.phrase}
                   onChange={(e) => syncBlanks(idx, e.target.value)}
-                  placeholder="Le vaccin contre le ___ est recommandé entre ___ et ___ ans."
+                  placeholder="Le vaccin contre le __ est recommandé entre __ et __ ans."
                   className={TEXTAREA_CLASS}
                   rows={2}
                 />
