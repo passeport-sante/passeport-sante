@@ -46,7 +46,7 @@ export function TaSanteSvg({ className, style }: TaSanteSvgProps) {
             result="outside"
           />
           {/* 3. On blur ce halo extérieur */}
-          <feGaussianBlur in="outside" stdDeviation="14" result="blurred" />
+          <feGaussianBlur in="outside" stdDeviation="14" result="blurred" />  
           {/* 4. Offset Y=4 */}
           <feOffset in="blurred" dx="0" dy="4" result="offset" />
           {/* 5. On clip pour ne garder que la partie qui retombe dans le texte */}

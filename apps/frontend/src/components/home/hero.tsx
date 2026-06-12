@@ -116,9 +116,7 @@ export function Hero() {
               left: "calc(44% + 8px)",
               transform: "rotate(-8deg)",
               transformOrigin: "left center",
-              width: "37vw",
-              filter:
-                "drop-shadow(0 0 12px rgba(76, 87, 175, 0.55)) drop-shadow(0 0 32px rgba(84, 76, 175, 0.4)) drop-shadow(0 0 64px rgba(21, 12, 118, 0.25))",
+              width: "37vw"
             }}
           >
             <TaSanteSvg className="w-full h-auto" />
