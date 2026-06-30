@@ -1,4 +1,4 @@
-import { Injectable } from "@nestjs/common";
+import { Injectable, NotFoundException } from "@nestjs/common";
 import { ConfigService } from "@nestjs/config";
 import { PrismaService } from "@/prisma/prisma.service";
 import { CreateDiagnosticSessionDto } from "./dto/create-diagnostic.dto";
@@ -11,18 +11,21 @@ export class DiagnosticSessionService {
     private config: ConfigService,
   ) {}
 
-  async create(dto: CreateDiagnosticSessionDto) {
+  // organizationId/createdByUserId proviennent du token de l'utilisateur authentifié,
+  // jamais du body envoyé par le client (sinon une session pourrait être rattachée à un autre établissement).
+  async create(dto: CreateDiagnosticSessionDto, organizationId: string, createdByUserId: string) {
     const accessCode = this.generateCode();
     const baseUrl = this.config.get<string>('FRONTEND_URL') ?? 'http://localhost:3000';
     const accessUrl = `${baseUrl}/diagnostic/${accessCode}`;
 
     return this.prisma.diagnosticSession.create({
-      data: { ...dto, accessCode, accessUrl },
+      data: { ...dto, organizationId, createdByUserId, accessCode, accessUrl },
     });
   }
 
-  findAll() {
+  findAll(organizationId: string) {
     return this.prisma.diagnosticSession.findMany({
+      where: { organizationId },
       include: {
         _count: { select: { guestStudents: true, diagnosticResponses: true } },
         createdByUser: { select: { id: true, name: true } },
@@ -31,9 +34,9 @@ export class DiagnosticSessionService {
     });
   }
 
-  findOne(id: string) {
-    return this.prisma.diagnosticSession.findUnique({
-      where: { id },
+  findOne(id: string, organizationId: string) {
+    return this.prisma.diagnosticSession.findFirst({
+      where: { id, organizationId },
       include: {
         createdByUser: { select: { id: true, name: true, email: true } },
         _count: { select: { guestStudents: true, diagnosticResponses: true } },
@@ -64,12 +67,20 @@ export class DiagnosticSessionService {
     return this.prisma.diagnosticSession.findUnique({ where: { accessCode } });
   }
 
-  update(id: string, dto: UpdateDiagnosticSessionDto) {
-    return this.prisma.diagnosticSession.update({ where: { id }, data: dto });
+  async update(id: string, organizationId: string, dto: UpdateDiagnosticSessionDto) {
+    // organizationId/createdByUserId ne sont jamais modifiables via l'update, même si présents dans le body
+    const { organizationId: _orgId, createdByUserId: _ownerId, ...data } = dto;
+    const { count } = await this.prisma.diagnosticSession.updateMany({
+      where: { id, organizationId },
+      data,
+    });
+    if (count === 0) throw new NotFoundException('Session introuvable');
+    return this.prisma.diagnosticSession.findUnique({ where: { id } });
   }
 
-  remove(id: string) {
-    return this.prisma.diagnosticSession.delete({ where: { id } });
+  async remove(id: string, organizationId: string) {
+    const { count } = await this.prisma.diagnosticSession.deleteMany({ where: { id, organizationId } });
+    if (count === 0) throw new NotFoundException('Session introuvable');
   }
 
   private generateCode(): string {

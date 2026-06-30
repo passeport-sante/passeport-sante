@@ -138,6 +138,16 @@ export async function deleteModule(id: string): Promise<void> {
   }
 }
 
+// Vérifie si un slug est déjà utilisé par un autre module (pour validation live à la création/édition)
+export async function isSlugTaken(slug: string): Promise<boolean> {
+  const res = await fetch(`${API}/api/modules/slug/${encodeURIComponent(slug)}`, {
+    cache: "no-store",
+  });
+  if (!res.ok) return false;
+  const data = await res.json().catch(() => null);
+  return !!data;
+}
+
 export async function fetchCategories(): Promise<CategoryLite[]> {
   // L'endpoint /api/modules?grouped=true renvoie déjà les catégories avec leurs modules.
   // On extrait juste les méta des catégories ici.

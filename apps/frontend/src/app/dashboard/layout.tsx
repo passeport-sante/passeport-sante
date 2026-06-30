@@ -8,12 +8,25 @@ import { User, Shield, LogOut, ExternalLink, ChevronDown } from "lucide-react";
 
 const API = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:5000";
 
-type NavItem = { href: string; label: string; exact: boolean; adminOnly?: boolean };
+type NavItem = { href: string; label: string; exact: boolean; adminOnly?: boolean; group?: string[] };
 
-const NAV: NavItem[] = [
+// Les 3 pages liées aux sessions (regroupées sous un seul onglet "Sessions" pour les admins)
+const SESSION_GROUP = ["/dashboard", "/dashboard/sessions/terminated", "/dashboard/stats"];
+
+const SESSION_TABS = [
+  { href: "/dashboard", label: "Vue générale" },
+  { href: "/dashboard/sessions/terminated", label: "Sessions terminées" },
+  { href: "/dashboard/stats", label: "Statistiques école" },
+];
+
+const NAV_TRAINER: NavItem[] = [
   { href: "/dashboard", label: "Vue Générale", exact: true },
   { href: "/dashboard/sessions/terminated", label: "Sessions Terminées", exact: false },
   { href: "/dashboard/stats", label: "Statistiques école", exact: false },
+];
+
+const NAV_ADMIN: NavItem[] = [
+  { href: "/dashboard", label: "Sessions", exact: false, group: SESSION_GROUP },
   { href: "/dashboard/modules", label: "Modules", exact: false, adminOnly: true },
   { href: "/dashboard/comptes", label: "Comptes", exact: false, adminOnly: true },
 ];
@@ -90,13 +103,14 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
     );
   }
 
-  function isActive(href: string, exact: boolean) {
-    if (exact) return pathname === href;
-    return pathname.startsWith(href);
+  function isActive(item: NavItem) {
+    if (item.group) return item.group.includes(pathname);
+    if (item.exact) return pathname === item.href;
+    return pathname.startsWith(item.href);
   }
 
-  const visibleNav = NAV.filter((item) => !item.adminOnly || user?.role === "ADMIN");
   const isAdmin = user?.role === "ADMIN";
+  const visibleNav = isAdmin ? NAV_ADMIN : NAV_TRAINER;
 
   return (
     <div className="min-h-screen bg-[#F0F4F8]">
@@ -120,8 +134,9 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
 
           {/* Navigation centrale */}
           <nav className="flex items-center bg-gray-100 rounded-full p-1 gap-1">
-            {visibleNav.map(({ href, label, exact, adminOnly }) => {
-              const active = isActive(href, exact);
+            {visibleNav.map((item) => {
+              const { href, label, adminOnly } = item;
+              const active = isActive(item);
               return (
                 <Link
                   key={href}
@@ -208,6 +223,29 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
 
         </div>
       </header>
+
+      {isAdmin && SESSION_GROUP.includes(pathname) && (
+        <div className="bg-white border-b border-gray-100">
+          <div className="brand-container flex items-center gap-1 py-2">
+            {SESSION_TABS.map((tab) => {
+              const tabActive = pathname === tab.href;
+              return (
+                <Link
+                  key={tab.href}
+                  href={tab.href}
+                  className={`px-4 py-1.5 rounded-lg text-sm font-semibold transition-colors ${
+                    tabActive
+                      ? "bg-[#EBF4F8] text-[#1B6B8A]"
+                      : "text-gray-500 hover:text-gray-700"
+                  }`}
+                >
+                  {tab.label}
+                </Link>
+              );
+            })}
+          </div>
+        </div>
+      )}
 
       <main>{children}</main>
     </div>

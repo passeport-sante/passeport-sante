@@ -34,7 +34,7 @@ export function Navbar() {
             className="h-11 w-auto object-contain"
           />
           <span className="text-xl font-black tracking-wide">
-            <span className="text-blue-600">PASSEPORT</span>{" "}
+            <span className="text-brand-blue">PASSEPORT</span>{" "}
             <span className="text-brand-green">SANTÉ</span>
           </span>
         </Link>
@@ -47,7 +47,7 @@ export function Navbar() {
                 href={href}
                 className={`font-semibold text-lg transition-colors pb-0.5 ${
                   isActive
-                    ? "text-blue-600 border-b-2 border-blue-600"
+                    ? "text-brand-blue border-b-2 border-brand-blue"
                     : "text-gray-900 hover:text-gray-600"
                 }`}
               >
@@ -73,7 +73,7 @@ export function Navbar() {
               }}
               className={`transition-colors ${
                 mounted && pathname === "/sign-in"
-                  ? "text-blue-600"
+                  ? "text-brand-blue"
                   : "text-gray-900 hover:text-gray-600"
               }`}
             >
@@ -92,7 +92,7 @@ export function Navbar() {
               href="/sign-in"
               className={`transition-colors ${
                 mounted && pathname === "/sign-in"
-                  ? "text-blue-600"
+                  ? "text-brand-blue"
                   : "text-gray-900 hover:text-gray-600"
               }`}
             >

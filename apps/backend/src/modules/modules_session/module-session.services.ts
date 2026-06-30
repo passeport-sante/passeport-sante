@@ -1,4 +1,4 @@
-import { Injectable } from "@nestjs/common";
+import { Injectable, NotFoundException } from "@nestjs/common";
 import { ConfigService } from "@nestjs/config";
 import { PrismaService } from "@/prisma/prisma.service";
 import { CreateModuleSessionDto } from "./dto/create-module.dto";
@@ -11,18 +11,21 @@ export class ModuleSessionService {
     private config: ConfigService,
   ) {}
 
-  create(dto: CreateModuleSessionDto) {
+  // organizationId/createdByUserId proviennent du token de l'utilisateur authentifié,
+  // jamais du body envoyé par le client (sinon une session pourrait être rattachée à un autre établissement).
+  create(dto: CreateModuleSessionDto, organizationId: string, createdByUserId: string) {
     const accessCode = this.generateCode();
     const baseUrl = this.config.get<string>("FRONTEND_URL") ?? "http://localhost:3000";
     const accessUrl = `${baseUrl}/session/${accessCode}`;
 
     return this.prisma.moduleSession.create({
-      data: { ...dto, accessCode, accessUrl },
+      data: { ...dto, organizationId, createdByUserId, accessCode, accessUrl },
     });
   }
 
-  findAll() {
+  findAll(organizationId: string) {
     return this.prisma.moduleSession.findMany({
+      where: { organizationId },
       include: {
         _count: { select: { guestStudents: true } },
         module: { select: { id: true, title: true, colorPrimary: true } },
@@ -31,9 +34,9 @@ export class ModuleSessionService {
     });
   }
 
-  findOne(id: string) {
-    return this.prisma.moduleSession.findUnique({
-      where: { id },
+  findOne(id: string, organizationId: string) {
+    return this.prisma.moduleSession.findFirst({
+      where: { id, organizationId },
       include: {
         module: {
           select: {
@@ -69,12 +72,20 @@ export class ModuleSessionService {
     });
   }
 
-  update(id: string, dto: UpdateModuleSessionDto) {
-    return this.prisma.moduleSession.update({ where: { id }, data: dto });
+  async update(id: string, organizationId: string, dto: UpdateModuleSessionDto) {
+    // organizationId/createdByUserId ne sont jamais modifiables via l'update, même si présents dans le body
+    const { organizationId: _orgId, createdByUserId: _ownerId, ...data } = dto;
+    const { count } = await this.prisma.moduleSession.updateMany({
+      where: { id, organizationId },
+      data,
+    });
+    if (count === 0) throw new NotFoundException("Session introuvable");
+    return this.prisma.moduleSession.findUnique({ where: { id } });
   }
 
-  remove(id: string) {
-    return this.prisma.moduleSession.delete({ where: { id } });
+  async remove(id: string, organizationId: string) {
+    const { count } = await this.prisma.moduleSession.deleteMany({ where: { id, organizationId } });
+    if (count === 0) throw new NotFoundException("Session introuvable");
   }
 
   private generateCode(): string {

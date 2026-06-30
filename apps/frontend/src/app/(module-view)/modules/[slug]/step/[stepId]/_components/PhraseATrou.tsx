@@ -50,6 +50,11 @@ export function PhraseATrou({ step }: { step: StepData }) {
   const isLastItem = currentIndex === total - 1;
 
   const [filled, setFilled] = useState<(string | null)[]>(() => Array(blankCount).fill(null));
+  // Résultat trou-par-trou de la dernière validation, visible tant que l'utilisateur n'a rien retouché
+  const [verified, setVerified] = useState(false);
+  const [lastResult, setLastResult] = useState<boolean[]>([]);
+  // Le temps de laisser voir le vert/orange/rouge avant que la modal n'arrive
+  const [revealing, setRevealing] = useState(false);
 
   const usedOptions = filled.filter(Boolean) as string[];
   const nextBlankIndex = filled.findIndex((f) => f === null);
@@ -57,7 +62,8 @@ export function PhraseATrou({ step }: { step: StepData }) {
   const filledCount = filled.filter(Boolean).length;
 
   function handleOptionClick(word: string) {
-    if (overlay?.show) return;
+    if (overlay?.show || revealing) return;
+    setVerified(false);
     if (usedOptions.includes(word)) {
       setFilled((prev) => prev.map((f) => (f === word ? null : f)));
       return;
@@ -71,7 +77,8 @@ export function PhraseATrou({ step }: { step: StepData }) {
   }
 
   function handleBlankClick(index: number) {
-    if (overlay?.show) return;
+    if (overlay?.show || revealing) return;
+    setVerified(false);
     setFilled((prev) => {
       const next = [...prev];
       next[index] = null;
@@ -80,9 +87,9 @@ export function PhraseATrou({ step }: { step: StepData }) {
   }
 
   function handleSubmit() {
-    const sortedFilled = [...filled].filter((f): f is string => f !== null).sort();
-    const sortedCorrect = [...correctBlanks].sort();
-    const correct = sortedFilled.length === sortedCorrect.length && sortedFilled.every((w, i) => w === sortedCorrect[i]);
+    if (revealing) return;
+    const results = filled.map((f, i) => f === correctBlanks[i]);
+    const correct = results.every(Boolean);
     const guestStudentId = getGuestStudentId(step.module.slug);
     if (guestStudentId) {
       submitQuizResponse({
@@ -92,23 +99,50 @@ export function PhraseATrou({ step }: { step: StepData }) {
         userAnswer: { blanks: filled.filter((b): b is string => b !== null).join(','), phraseIndex: currentIndex.toString() },        isCorrect: correct,
       }).catch(() => {});
     }
-    setOverlay({ show: true, isCorrect: correct });
+    setLastResult(results);
+    setVerified(true);
+    setRevealing(true);
+    // On laisse le temps de voir la couleur de chaque trou avant d'afficher la modal
+    setTimeout(() => {
+      setRevealing(false);
+      setOverlay({ show: true, isCorrect: correct });
+    }, 1200);
   }
 
   function handleOverlayClose() {
     const isCorrect = overlay?.isCorrect ?? false;
     setOverlay(null);
     if (!isCorrect) {
-      setFilled(Array(blankCount).fill(null));
+      // On garde les trous déjà corrects (et leur surlignage vert), on ne vide que ceux qui sont faux
+      setFilled((prev) => prev.map((f, i) => (f === correctBlanks[i] ? f : null)));
     } else if (!isLastItem) {
       const nextGD = allGameData[currentIndex + 1];
       const nextPhrase = nextGD?.questionData?.phrase ?? "";
       const nextBlankCount = nextPhrase.split(/_{2,}/).length - 1;
       setFilled(Array(nextBlankCount).fill(null));
+      setVerified(false);
       setCurrentIndex((i) => i + 1);
     } else {
       goToNextStep(router, step.module.slug, step.module.steps, step.order);
     }
+  }
+
+  function blankStyle(i: number) {
+    if (!verified) {
+      return filled[i]
+        ? { borderColor: primaryColor, background: primaryColor, color: "#fff", transform: "scale(1.02)" }
+        : { borderColor: "rgba(0,0,0,0.15)", background: "rgba(0,0,0,0.03)", color: "#9ca3af" };
+    }
+    if (lastResult[i]) {
+      return { borderColor: "#16A34A", background: "#16A34A", color: "#fff" };
+    }
+    // Bon mot, mais pas dans cette case
+    if (filled[i] && correctBlanks.includes(filled[i] as string)) {
+      return { borderColor: "#F59E0B", background: "#F59E0B", color: "#fff" };
+    }
+    return filled[i]
+      ? { borderColor: "#DC2626", background: "#DC2626", color: "#fff" }
+      : { borderColor: "#DC2626", background: "rgba(220,38,38,0.08)", color: "#DC2626" };
   }
 
   return (
@@ -183,11 +217,7 @@ export function PhraseATrou({ step }: { step: StepData }) {
                   <button
                     onClick={() => handleBlankClick(i)}
                     className="inline-flex items-center justify-center min-w-[130px] h-10 rounded-xl border-2 px-3 font-black text-sm transition-all mx-1.5"
-                    style={
-                      filled[i]
-                        ? { borderColor: primaryColor, background: primaryColor, color: "#fff", transform: "scale(1.02)" }
-                        : { borderColor: "rgba(0,0,0,0.15)", background: "rgba(0,0,0,0.03)", color: "#9ca3af" }
-                    }
+                    style={blankStyle(i)}
                   >
                     {filled[i] ?? "_ _ _"}
                   </button>
@@ -231,7 +261,7 @@ export function PhraseATrou({ step }: { step: StepData }) {
 
         <button
           onClick={handleSubmit}
-          disabled={!allFilled}
+          disabled={!allFilled || revealing}
           className="px-10 py-3.5 rounded-2xl text-white font-black text-base transition-all"
           style={{
             background: allFilled ? "rgba(255,255,255,0.25)" : "rgba(255,255,255,0.1)",
@@ -250,7 +280,7 @@ export function PhraseATrou({ step }: { step: StepData }) {
         explanation={
           overlay?.isCorrect
             ? "Tu as complété la phrase correctement. Bon travail !"
-            : "L'ordre ou les mots ne correspondent pas. Lis bien la phrase depuis le début et réessaie !"
+            : "Les trous en rouge sont incorrects, les trous en vert sont bons et restent en place. Réessaie pour les corriger !"
         }
         mascotte={step.module.mascotte}
         primaryColor={primaryColor}

@@ -11,7 +11,8 @@ export class AuthService {
   ) {}
 
   async validateUser(email: string, password: string): Promise<any> {
-    const user = await this.prisma.user.findUnique({ where: { email } });
+    const normalizedEmail = email.trim().toLowerCase();
+    const user = await this.prisma.user.findUnique({ where: { email: normalizedEmail } });
     if (user && !user.isSuspended && (await bcrypt.compare(password, user.password))) {
       const { password: _password, ...result } = user;
       return result;
@@ -25,6 +26,7 @@ export class AuthService {
         sub: user.id,
         email: user.email,
         role: user.role,
+        organizationId: user.organizationId,
       }),
     };
   }

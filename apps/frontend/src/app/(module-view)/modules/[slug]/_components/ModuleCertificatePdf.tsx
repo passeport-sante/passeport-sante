@@ -1,4 +1,4 @@
-import { Document, Page, Text, View, StyleSheet } from "@react-pdf/renderer";
+import { Document, Page, Text, View, StyleSheet, Svg, Path } from "@react-pdf/renderer";
 
 const s = StyleSheet.create({
   page: { fontFamily: "Helvetica", backgroundColor: "#FFFFFF" },
@@ -37,7 +37,6 @@ const s = StyleSheet.create({
     justifyContent: "center",
     marginBottom: 28,
   },
-  badgeStar: { fontSize: 28, fontFamily: "Helvetica-Bold" },
 
   categoryLabel: {
     fontSize: 9,
@@ -73,7 +72,7 @@ const s = StyleSheet.create({
   completionPct: { fontSize: 32, fontFamily: "Helvetica-Bold" },
   completionLabel: { fontSize: 10, color: "#6B7280", marginTop: 2 },
 
-  infoRow: { flexDirection: "row", marginTop: 32 },
+  infoRow: { flexDirection: "row", marginTop: 32, width: "100%" },
   infoCard: {
     flex: 1,
     backgroundColor: "#F8FAFC",
@@ -130,7 +129,12 @@ export function ModuleCertificatePdf({ moduleTitle, categoryName, color, date }:
         <View style={s.body}>
           {/* Badge */}
           <View style={[s.badge, { backgroundColor: lightBg, borderColor: color }]}>
-            <Text style={[s.badgeStar, { color }]}>★</Text>
+            <Svg width={28} height={28} viewBox="0 0 24 24">
+              <Path
+                d="M12 2.5l2.95 6.46 7.05.78-5.26 4.88 1.45 6.94L12 17.9l-6.19 3.66 1.45-6.94L2 9.74l7.05-.78L12 2.5z"
+                fill={color}
+              />
+            </Svg>
           </View>
 
           <Text style={s.categoryLabel}>Certificat de réussite</Text>

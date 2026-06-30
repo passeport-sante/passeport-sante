@@ -8,6 +8,7 @@ import {
   AVAILABLE_MASCOTTES,
   COLOR_PRESETS,
   SLUG_REGEX,
+  isSlugTaken,
   slugify,
   type AdminModuleDetail,
   type CategoryLite,
@@ -81,6 +82,7 @@ export function ModuleForm({
   const [slugTouched, setSlugTouched] = useState(!!initial);
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [slugStatus, setSlugStatus] = useState<"idle" | "checking" | "available" | "taken">("idle");
 
   // Auto-slug à partir du titre tant que l'utilisateur n'a pas édité le slug manuellement
   useEffect(() => {
@@ -90,7 +92,22 @@ export function ModuleForm({
 
   const slugValid = SLUG_REGEX.test(values.slug);
   const titleValid = values.title.trim().length >= 2;
-  const formValid = titleValid && slugValid;
+  const formValid = titleValid && slugValid && slugStatus !== "taken" && slugStatus !== "checking";
+
+  // Vérifie en direct (avec un léger délai) si le slug est déjà pris par un autre module
+  useEffect(() => {
+    if (!slugValid || values.slug === initial?.slug) {
+      setSlugStatus("idle");
+      return;
+    }
+    setSlugStatus("checking");
+    const timer = setTimeout(() => {
+      isSlugTaken(values.slug)
+        .then((taken) => setSlugStatus(taken ? "taken" : "available"))
+        .catch(() => setSlugStatus("idle"));
+    }, 400);
+    return () => clearTimeout(timer);
+  }, [values.slug, slugValid, initial?.slug]);
 
   function update<K extends keyof ModuleFormValues>(key: K, val: ModuleFormValues[K]) {
     setValues((v) => ({ ...v, [key]: val }));
@@ -152,8 +169,20 @@ export function ModuleForm({
 
           <Field
             label="Slug (URL)"
-            hint="Identifiant unique en kebab-case. Auto-généré à partir du titre."
-            error={!slugValid && values.slug.length > 0 ? "Format invalide — utilisez uniquement des lettres minuscules, chiffres et tirets" : undefined}
+            hint={
+              slugValid && slugStatus === "checking"
+                ? "Vérification de la disponibilité…"
+                : slugValid && slugStatus === "available"
+                ? "✓ Ce slug est disponible"
+                : "Identifiant unique en kebab-case. Auto-généré à partir du titre."
+            }
+            error={
+              !slugValid && values.slug.length > 0
+                ? "Format invalide — utilisez uniquement des lettres minuscules, chiffres et tirets"
+                : slugStatus === "taken"
+                ? "Ce slug est déjà utilisé par un autre module"
+                : undefined
+            }
           >
             <div className="flex items-center gap-2">
               <span className="text-xs text-gray-400 font-mono">/modules/</span>
@@ -162,7 +191,7 @@ export function ModuleForm({
                 value={values.slug}
                 onChange={(e) => { setSlugTouched(true); update("slug", slugify(e.target.value)); }}
                 placeholder="vaccination"
-                className={`${INPUT_CLASS} flex-1 font-mono`}
+                className={`${INPUT_CLASS} flex-1 font-mono ${slugStatus === "taken" ? "ring-2 ring-red-300" : ""}`}
                 required
               />
             </div>
