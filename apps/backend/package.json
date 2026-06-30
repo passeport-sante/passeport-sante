@@ -27,11 +27,11 @@
     "docker:seed": "docker exec -w /app/apps/backend prevention_backend npx ts-node prisma/seed.ts"
   },
   "dependencies": {
-    "@nestjs/common": "^10.2.10",
+    "@nestjs/common": "^11.0.0",
     "@nestjs/config": "^4.0.3",
     "@nestjs/core": "^11.1.17",
     "@nestjs/jwt": "^11.0.0",
-    "@nestjs/passport": "^10.0.0",
+    "@nestjs/passport": "^11.0.0",
     "@nestjs/platform-express": "^11.1.17",
     "@nestjs/swagger": "^11.2.6",
     "@prisma/client": "^6.19.2",
