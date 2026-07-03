@@ -40,6 +40,10 @@ export function KanbanGame({ step }: { step: StepData }) {
   );
   const [overlay, setOverlay] = useState<{ show: boolean; isCorrect: boolean } | null>(null);
   const [dragOver, setDragOver] = useState<string | null>(null); // "pool" | category name
+  // Affiche le vert/rouge par étiquette après validation, tant que l'utilisateur n'a rien redéplacé
+  const [verified, setVerified] = useState(false);
+  // Laisse le temps de voir les couleurs avant que la modale n'apparaisse
+  const [revealing, setRevealing] = useState(false);
 
   const primaryColor = step.module.colorPrimary ?? "#16A34A";
   const bottomColor = step.module.colorSecondary ?? "#052e16";
@@ -68,16 +72,20 @@ export function KanbanGame({ step }: { step: StepData }) {
 
   function onDropCategory(e: React.DragEvent, category: string) {
     e.preventDefault();
+    if (revealing) return;
     const item = e.dataTransfer.getData("text/plain");
     if (!item) return;
+    setVerified(false);
     setAssignments((prev) => ({ ...prev, [item]: category }));
     setDragOver(null);
   }
 
   function onDropPool(e: React.DragEvent) {
     e.preventDefault();
+    if (revealing) return;
     const item = e.dataTransfer.getData("text/plain");
     if (!item) return;
+    setVerified(false);
     setAssignments((prev) => ({ ...prev, [item]: null }));
     setDragOver(null);
   }
@@ -85,6 +93,7 @@ export function KanbanGame({ step }: { step: StepData }) {
   // ── Submit ───────────────────────────────────────────────────────────────────
 
   function handleSubmit() {
+    if (revealing) return;
     const correct = items.every((item) => assignments[item] === correctAnswer[item]);
     const guestStudentId = getGuestStudentId(step.module.slug);
     if (guestStudentId) {
@@ -96,14 +105,25 @@ export function KanbanGame({ step }: { step: StepData }) {
         isCorrect: correct,
       }).catch(() => {});
     }
-    setOverlay({ show: true, isCorrect: correct });
+    setVerified(true);
+    setRevealing(true);
+    // On laisse voir la couleur de chaque étiquette avant d'afficher la modale
+    setTimeout(() => {
+      setRevealing(false);
+      setOverlay({ show: true, isCorrect: correct });
+    }, 1200);
   }
 
   function handleOverlayClose() {
     const isCorrect = overlay?.isCorrect ?? false;
     setOverlay(null);
     if (!isCorrect) {
-      setAssignments(Object.fromEntries(items.map((item) => [item, null])));
+      // On renvoie au pool uniquement les étiquettes mal placées ; les bonnes restent (surlignées en vert)
+      setAssignments((prev) =>
+        Object.fromEntries(
+          items.map((item) => [item, prev[item] === correctAnswer[item] ? prev[item]! : null]),
+        ),
+      );
     } else {
       goToNextStep(router, step.module.slug, step.module.steps, step.order);
     }
@@ -212,18 +232,26 @@ export function KanbanGame({ step }: { step: StepData }) {
                   {category}
                 </p>
                 <div className="flex flex-col gap-2">
-                  {categoryItems.map((item) => (
-                    <div
-                      key={item}
-                      draggable
-                      onDragStart={(e) => onDragStart(e, item)}
-                      className="w-full px-4 py-2.5 rounded-xl font-semibold text-sm cursor-grab active:cursor-grabbing select-none flex items-center justify-between transition-transform active:scale-95"
-                      style={{ background: "rgba(255,255,255,0.92)", color: "#1a1a1a" }}
-                    >
-                      <span>{item}</span>
-                      <span className="text-xs opacity-30 ml-2">⠿</span>
-                    </div>
-                  ))}
+                  {categoryItems.map((item) => {
+                    const isRight = assignments[item] === correctAnswer[item];
+                    const resultStyle = verified
+                      ? isRight
+                        ? { background: "#16A34A", color: "#fff" }
+                        : { background: "#DC2626", color: "#fff" }
+                      : { background: "rgba(255,255,255,0.92)", color: "#1a1a1a" };
+                    return (
+                      <div
+                        key={item}
+                        draggable={!revealing}
+                        onDragStart={(e) => onDragStart(e, item)}
+                        className="w-full px-4 py-2.5 rounded-xl font-semibold text-sm cursor-grab active:cursor-grabbing select-none flex items-center justify-between transition-transform active:scale-95"
+                        style={resultStyle}
+                      >
+                        <span>{item}</span>
+                        <span className="text-xs opacity-30 ml-2">⠿</span>
+                      </div>
+                    );
+                  })}
                 </div>
               </div>
             );
@@ -232,13 +260,13 @@ export function KanbanGame({ step }: { step: StepData }) {
 
         <button
           onClick={handleSubmit}
-          disabled={!allAssigned}
+          disabled={!allAssigned || revealing}
           className="px-10 py-3.5 rounded-2xl text-white font-black text-base transition-all"
           style={{
             background: allAssigned ? "rgba(255,255,255,0.25)" : "rgba(255,255,255,0.1)",
             backdropFilter: "blur(8px)",
             border: `2px solid ${allAssigned ? "rgba(255,255,255,0.6)" : "rgba(255,255,255,0.2)"}`,
-            opacity: allAssigned ? 1 : 0.5,
+            opacity: allAssigned && !revealing ? 1 : 0.5,
           }}
         >
           Valider mon tri
@@ -251,7 +279,7 @@ export function KanbanGame({ step }: { step: StepData }) {
         explanation={
           overlay?.isCorrect
             ? "Tu as parfaitement classé tous les éléments. Continue comme ça !"
-            : "Certains éléments ne sont pas dans la bonne catégorie. Relis bien chaque colonne et réessaie !"
+            : "Les étiquettes en rouge sont mal classées, celles en vert sont bonnes et restent en place. Réessaie pour corriger !"
         }
         mascotte={step.module.mascotte}
         primaryColor={primaryColor}
