@@ -18,7 +18,7 @@ const s = StyleSheet.create({
     marginBottom: 28,
   },
   brandRow: { flexDirection: "row", alignItems: "center" },
-  brandBlue: { fontSize: 14, fontFamily: "Helvetica-Bold", color: "#2563EB" },
+  brandBlue: { fontSize: 14, fontFamily: "Helvetica-Bold", color: "#175D95" },
   brandGreen: { fontSize: 14, fontFamily: "Helvetica-Bold", color: "#2A8970" },
   headerRight: { alignItems: "flex-end" },
   pill: { paddingHorizontal: 10, paddingVertical: 3, borderRadius: 20 },

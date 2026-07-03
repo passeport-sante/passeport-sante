@@ -34,38 +34,42 @@ const STEP_X_ARTBOARD = [95, 228.5, 370, 502, 640];
 const STEP_Y_ARTBOARD = [218, 145, 218, 145, 218];
 const ARTBOARD_HEIGHT = 320;
 const ARTBOARD_WIDTH = 750;
-const BUBBLE_WIDTH = 320;
 
 // Rive renders the artboard with uniform "contain" scale — width is the limiting axis.
 const RIVE_SCALE = CANVAS_WIDTH / ARTBOARD_WIDTH; // 1.6
 // Vertical offset from letterboxing (artboard rendered shorter than canvas height)
 const RIVE_Y_OFFSET = (CANVAS_HEIGHT - ARTBOARD_HEIGHT * RIVE_SCALE) / 2;
-// Horizontal offset to reach the mascot/circle center from the artboard X anchor
-const MASCOT_CENTER_X_OFFSET = 40;
 
-function mascotCenterX(level: number): number {
-  return (
-    (STEP_X_ARTBOARD[level - 1] ?? 75.5) * RIVE_SCALE + MASCOT_CENTER_X_OFFSET
-  );
-}
-
-function getBubbleLeft(level: number): number {
-  const cx = mascotCenterX(level);
-  const left = cx - BUBBLE_WIDTH / 2;
-  return Math.max(10, Math.min(CANVAS_WIDTH - BUBBLE_WIDTH - 10, left));
-}
-
-function getBubbleTriangleLeft(level: number): number {
-  const cx = mascotCenterX(level);
-  const pos = cx - getBubbleLeft(level) - 8;
-  return Math.max(16, Math.min(BUBBLE_WIDTH - 32, pos));
-}
+// Mascotte & bulle de dialogue
+const MASCOTTE_SIZE = 185;         // hauteur de la mascotte (agrandie)
+const MASCOTTE_HALF_W = 62;        // demi-largeur visuelle approx. (image portrait)
+const BUBBLE_WIDTH = 300;
+const BUBBLE_HEIGHT_EST = 150;     // estimation pour le placement vertical
+const BUBBLE_GAP = 22;             // écart entre la mascotte et la bulle
 
 function getStepCanvasPos(index: number) {
   return {
     x: (STEP_X_ARTBOARD[index] ?? 0) * RIVE_SCALE,
     y: (STEP_Y_ARTBOARD[index] ?? 0) * RIVE_SCALE + RIVE_Y_OFFSET,
   };
+}
+
+// La bulle est placée SUR LE CÔTÉ de la mascotte (le canvas est large mais court,
+// impossible d'empiler mascotte + bulle verticalement sans chevauchement selon l'étape).
+// À droite si la place le permet, sinon à gauche ; centrée verticalement sur la mascotte.
+function getBubbleLayout(mascotteX: number, mascotteCenterY: number) {
+  const rightLeft = mascotteX + MASCOTTE_HALF_W + BUBBLE_GAP;
+  const placeRight = rightLeft + BUBBLE_WIDTH <= CANVAS_WIDTH - 10;
+  const left = placeRight
+    ? rightLeft
+    : mascotteX - MASCOTTE_HALF_W - BUBBLE_GAP - BUBBLE_WIDTH;
+  const top = Math.max(
+    8,
+    Math.min(CANVAS_HEIGHT - 8 - BUBBLE_HEIGHT_EST, mascotteCenterY - BUBBLE_HEIGHT_EST / 2),
+  );
+  // Position verticale du triangle, relative au haut de la bulle, pointant vers la mascotte
+  const triangleTop = Math.max(16, Math.min(BUBBLE_HEIGHT_EST - 28, mascotteCenterY - top - 8));
+  return { left, top, placeRight, triangleTop };
 }
 
 function resolveMascotte(raw: string | null): string | null {
@@ -144,12 +148,10 @@ export function ModuleImmersiveClient({ module }: Props) {
   const displayedUnlocked = unlockedLevel ?? 1;
   const pct = Math.round(((displayedUnlocked - 1) / (MAX_LEVEL - 1)) * 100);
 
-  const bubbleLeft = getBubbleLeft(displayedRiveLevel);
-  const triangleLeft = getBubbleTriangleLeft(displayedRiveLevel);
-
-  const MASCOTTE_SIZE = 150;
   const mascottePos = getStepCanvasPos(displayedRiveLevel - 1);
   const mascotteTop = Math.max(10, mascottePos.y - MASCOTTE_SIZE - 10);
+  const mascotteCenterY = mascotteTop + MASCOTTE_SIZE / 2;
+  const bubble = getBubbleLayout(mascottePos.x, mascotteCenterY);
 
   return (
     <div
@@ -206,14 +208,14 @@ export function ModuleImmersiveClient({ module }: Props) {
           className="relative"
           style={{ width: CANVAS_WIDTH, height: CANVAS_HEIGHT }}
         >
-          {/* Bulle de dialogue */}
+          {/* Bulle de dialogue — placée sur le côté de la mascotte */}
           <div
-            className="absolute z-10 rounded-2xl px-7 py-5 shadow-xl transition-all duration-500"
+            className="absolute z-10 rounded-2xl px-6 py-4 shadow-xl transition-all duration-500"
             style={{
               background: "rgba(255,255,255,0.92)",
               backdropFilter: "blur(8px)",
-              top: Math.max(10, mascotteTop - 130),
-              left: bubbleLeft,
+              top: bubble.top,
+              left: bubble.left,
               width: BUBBLE_WIDTH,
             }}
           >
@@ -221,13 +223,24 @@ export function ModuleImmersiveClient({ module }: Props) {
               Bienvenue dans mon module ! Je vais t&apos;apprendre énormément de
               chose utile pour toi !
             </p>
+            {/* Triangle pointant horizontalement vers la mascotte */}
             <div
-              className="absolute -bottom-2.5 w-0 h-0"
+              className="absolute w-0 h-0"
               style={{
-                left: triangleLeft,
-                borderLeft: "10px solid transparent",
-                borderRight: "10px solid transparent",
-                borderTop: "10px solid rgba(255,255,255,0.92)",
+                top: bubble.triangleTop,
+                ...(bubble.placeRight
+                  ? {
+                      left: -10,
+                      borderTop: "10px solid transparent",
+                      borderBottom: "10px solid transparent",
+                      borderRight: "10px solid rgba(255,255,255,0.92)",
+                    }
+                  : {
+                      right: -10,
+                      borderTop: "10px solid transparent",
+                      borderBottom: "10px solid transparent",
+                      borderLeft: "10px solid rgba(255,255,255,0.92)",
+                    }),
               }}
             />
           </div>

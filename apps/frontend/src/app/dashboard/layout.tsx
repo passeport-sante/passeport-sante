@@ -117,8 +117,8 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
       <header className="bg-white shadow-sm sticky top-0 z-50">
         <div className="brand-container py-4 flex items-center justify-between">
 
-          {/* Logo */}
-          <Link href="/dashboard" className="shrink-0 flex items-center gap-3">
+          {/* Logo — retour au site racine */}
+          <Link href="/" className="shrink-0 flex items-center gap-3">
             <Image
               src="/assets/logo/logo-passeport.png"
               alt="Logo"
@@ -127,7 +127,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
               className="h-9 w-auto object-contain"
             />
             <span className="text-lg font-black tracking-wide">
-              <span className="text-blue-600">PASSEPORT</span>{" "}
+              <span className="text-brand-blue">PASSEPORT</span>{" "}
               <span className="text-brand-green">SANTÉ</span>
             </span>
           </Link>

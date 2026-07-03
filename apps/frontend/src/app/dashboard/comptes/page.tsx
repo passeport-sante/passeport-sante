@@ -5,11 +5,11 @@ import { createPortal } from "react-dom";
 import Link from "next/link";
 import {
   Plus, Trash2, Shield, User, Building2, Search,
-  MoreVertical, KeyRound, Ban, CheckCircle2, Copy, Check,
+  MoreVertical, KeyRound, Ban, CheckCircle2, Copy, Check, MailCheck, MailX,
 } from "lucide-react";
 import {
   fetchAllUsers, deleteAccount, resetUserPassword, setSuspended,
-  generatePassword, type AccountUser,
+  type AccountUser,
 } from "@/lib/admin-users";
 
 function RoleBadge({ role }: { role: "ADMIN" | "TRAINER" }) {
@@ -56,7 +56,7 @@ export default function ComptesPage() {
   const portalMenuRef = useRef<HTMLDivElement>(null);
   const buttonRefs = useRef<Map<string, HTMLButtonElement | null>>(new Map());
 
-  const [resetModal, setResetModal] = useState<{ user: AccountUser; newPassword: string } | null>(null);
+  const [resetModal, setResetModal] = useState<{ user: AccountUser; newPassword: string; emailSent: boolean } | null>(null);
   const [copied, setCopied] = useState(false);
   const [actionLoading, setActionLoading] = useState(false);
   const [mounted, setMounted] = useState(false);
@@ -110,11 +110,10 @@ export default function ComptesPage() {
 
   async function handleResetPassword(user: AccountUser) {
     setMenuOpen(null);
-    const pwd = generatePassword();
     setActionLoading(true);
     try {
-      await resetUserPassword(token, user.id, pwd);
-      setResetModal({ user, newPassword: pwd });
+      const { password, emailSent } = await resetUserPassword(token, user.id);
+      setResetModal({ user, newPassword: password, emailSent });
     } finally {
       setActionLoading(false);
     }
@@ -316,8 +315,24 @@ export default function ComptesPage() {
                 <p className="text-xs text-gray-400">{resetModal.user.name}</p>
               </div>
             </div>
+            {resetModal.emailSent ? (
+              <div className="flex items-start gap-2.5 bg-emerald-50 border border-emerald-100 rounded-xl px-4 py-3">
+                <MailCheck size={16} className="text-emerald-600 shrink-0 mt-0.5" />
+                <p className="text-sm text-emerald-700">
+                  Un email contenant le nouveau mot de passe a été envoyé à{" "}
+                  <strong className="break-all">{resetModal.user.email}</strong>.
+                </p>
+              </div>
+            ) : (
+              <div className="flex items-start gap-2.5 bg-amber-50 border border-amber-100 rounded-xl px-4 py-3">
+                <MailX size={16} className="text-amber-600 shrink-0 mt-0.5" />
+                <p className="text-sm text-amber-700">
+                  L&apos;email n&apos;a pas pu être envoyé. Transmettez le mot de passe manuellement à l&apos;utilisateur.
+                </p>
+              </div>
+            )}
             <p className="text-sm text-gray-500">
-              Transmettez ce mot de passe à l&apos;utilisateur. Il ne sera plus affiché après fermeture.
+              Le mot de passe ne sera plus affiché après fermeture.
             </p>
             <div className="flex items-center gap-2 bg-gray-50 rounded-xl border border-gray-200 px-4 py-3">
               <span className="flex-1 font-mono text-sm font-bold text-[#1A1A1A] tracking-wider break-all">

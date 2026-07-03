@@ -80,17 +80,19 @@ export async function deleteAccount(token: string, id: string): Promise<void> {
   await fetch(`${API}/api/user/${id}`, { method: "DELETE", headers: auth(token) });
 }
 
+// Le mot de passe est généré côté serveur, stocké haché, et envoyé par email
+// au destinataire. On récupère le mot de passe en clair (affiché une fois dans
+// la modale) et le statut d'envoi de l'email.
 export async function resetUserPassword(
   token: string,
   id: string,
-  newPassword: string,
-): Promise<void> {
-  const res = await fetch(`${API}/api/user/${id}`, {
-    method: "PATCH",
+): Promise<{ password: string; emailSent: boolean }> {
+  const res = await fetch(`${API}/api/user/${id}/reset-password`, {
+    method: "POST",
     headers: auth(token),
-    body: JSON.stringify({ password: newPassword }),
   });
   if (!res.ok) throw new Error("Erreur lors de la réinitialisation");
+  return res.json();
 }
 
 export async function setSuspended(

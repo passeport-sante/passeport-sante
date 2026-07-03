@@ -38,6 +38,12 @@ export class UserController {
   }
 
   @UseGuards(JwtAuthGuard)
+  @Post(":id/reset-password")
+  resetPassword(@Param("id") id: string) {
+    return this.userService.resetPassword(id);
+  }
+
+  @UseGuards(JwtAuthGuard)
   @Patch(":id")
   update(@Param("id") id: string, @Body() updateUserDto: UpdateUserDto) {
     return this.userService.update(id, updateUserDto);

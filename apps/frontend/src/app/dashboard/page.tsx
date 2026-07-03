@@ -113,7 +113,7 @@ export default function DashboardPage() {
             <h2 className="text-lg font-bold text-[#1A1A1A] mb-4">
               Sessions modules
               {moduleActive.length > 0 && (
-                <span className="ml-2 px-2 py-0.5 bg-blue-100 text-blue-600 text-xs font-semibold rounded-full">
+                <span className="ml-2 px-2 py-0.5 bg-blue-100 text-brand-blue text-xs font-semibold rounded-full">
                   {moduleActive.length}
                 </span>
               )}
