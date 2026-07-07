@@ -19,6 +19,7 @@ export default function NouveauComptePage() {
   const [orgs, setOrgs] = useState<Organization[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [emailWarning, setEmailWarning] = useState(false);
   const [showPwd, setShowPwd] = useState(false);
 
   // Form state
@@ -52,8 +53,14 @@ export default function NouveauComptePage() {
 
       if (!finalOrgId) { setError("Sélectionne ou crée un établissement"); setLoading(false); return; }
 
-      await createAccount(token, { name, email, password, role, organizationId: finalOrgId });
-      router.push("/dashboard/comptes");
+      const { emailSent } = await createAccount(token, { name, email, password, role, organizationId: finalOrgId });
+      if (emailSent) {
+        router.push("/dashboard/comptes");
+      } else {
+        // Compte bien créé mais email non parti : on reste sur la page pour que
+        // l'admin puisse transmettre le mot de passe manuellement (encore affiché).
+        setEmailWarning(true);
+      }
     } catch (err) {
       setError(err instanceof Error ? err.message : "Une erreur est survenue");
     } finally {
@@ -201,13 +208,30 @@ export default function NouveauComptePage() {
           <p className="text-sm text-red-500 bg-red-50 px-4 py-3 rounded-2xl">{error}</p>
         )}
 
-        {/* ── Submit ── */}
-        <button
-          type="submit" disabled={loading}
-          className="w-full flex items-center justify-center gap-2 py-4 bg-[#1B6B8A] text-white font-bold rounded-full text-sm shadow-lg hover:opacity-90 transition-opacity disabled:opacity-60"
-        >
-          {loading ? "Création en cours…" : "Créer le compte"}
-        </button>
+        {/* ── Avertissement email non envoyé ── */}
+        {emailWarning ? (
+          <div className="space-y-3">
+            <div className="text-sm text-amber-700 bg-amber-50 border border-amber-100 px-4 py-3 rounded-2xl">
+              Le compte a bien été créé, mais l&apos;email de bienvenue n&apos;a pas pu être
+              envoyé. Transmets le mot de passe ci-dessus manuellement à l&apos;utilisateur.
+            </div>
+            <button
+              type="button"
+              onClick={() => router.push("/dashboard/comptes")}
+              className="w-full py-4 bg-[#1B6B8A] text-white font-bold rounded-full text-sm shadow-lg hover:opacity-90 transition-opacity"
+            >
+              Retour à la liste des comptes
+            </button>
+          </div>
+        ) : (
+          /* ── Submit ── */
+          <button
+            type="submit" disabled={loading}
+            className="w-full flex items-center justify-center gap-2 py-4 bg-[#1B6B8A] text-white font-bold rounded-full text-sm shadow-lg hover:opacity-90 transition-opacity disabled:opacity-60"
+          >
+            {loading ? "Création en cours…" : "Créer le compte"}
+          </button>
+        )}
       </form>
     </div>
   );

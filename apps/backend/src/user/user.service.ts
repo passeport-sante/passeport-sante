@@ -30,15 +30,21 @@ export class UserService {
   ) {}
 
   async create(createUserDto: CreateUserDto) {
+    const email = createUserDto.email.trim().toLowerCase();
     const hashedPassword = await bcrypt.hash(createUserDto.password, 10);
+    let user;
     try {
-      return await this.prisma.user.create({
-        data: { ...createUserDto, email: createUserDto.email.trim().toLowerCase(), password: hashedPassword },
+      user = await this.prisma.user.create({
+        data: { ...createUserDto, email, password: hashedPassword },
       });
     } catch (e: any) {
       if (e?.code === "P2002") throw new ConflictException("Un compte avec cet email existe déjà");
       throw e;
     }
+    // Email de bienvenue avec les identifiants (best-effort, en clair car connu ici)
+    const emailSent = await this.mail.sendAccountCreated(email, user.name, createUserDto.password);
+    const { password: _pw, ...safeUser } = user;
+    return { ...safeUser, emailSent };
   }
 
   findAll() {

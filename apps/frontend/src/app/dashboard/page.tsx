@@ -75,7 +75,7 @@ export default function DashboardPage() {
         </div>
       ) : (
         <>
-          <StatsRow sessions={diagSessions} />
+          <StatsRow sessions={diagSessions} moduleSessions={moduleSessions} />
 
           {/* ── Sessions diagnostic actives ── */}
           <section>

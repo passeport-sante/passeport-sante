@@ -1,14 +1,20 @@
 import { Activity, CheckCircle, Users, BarChart2 } from "lucide-react";
-import type { SessionSummary } from "@/lib/dashboard";
+import type { SessionSummary, ModuleSessionSummary } from "@/lib/dashboard";
 
 interface Props {
   sessions: SessionSummary[];
+  // Optionnel : quand fourni, les compteurs combinent diagnostic + module.
+  moduleSessions?: ModuleSessionSummary[];
 }
 
-export function StatsRow({ sessions }: Props) {
-  const totalSessions = sessions.length;
-  const activeSessions = sessions.filter((s) => s.isActive).length;
-  const totalStudents = sessions.reduce((acc, s) => acc + s._count.guestStudents, 0);
+export function StatsRow({ sessions, moduleSessions = [] }: Props) {
+  const totalSessions = sessions.length + moduleSessions.length;
+  const activeSessions =
+    sessions.filter((s) => s.isActive).length +
+    moduleSessions.filter((s) => s.isActive).length;
+  const totalStudents =
+    sessions.reduce((acc, s) => acc + s._count.guestStudents, 0) +
+    moduleSessions.reduce((acc, s) => acc + s._count.guestStudents, 0);
   const totalResponses = sessions.reduce((acc, s) => acc + s._count.diagnosticResponses, 0);
 
   const stats = [
@@ -34,7 +40,7 @@ export function StatsRow({ sessions }: Props) {
       bg: "#EDF7EE",
     },
     {
-      label: "Réponses collectées",
+      label: "Réponses diagnostic",
       value: totalResponses,
       icon: CheckCircle,
       color: "#6366F1",

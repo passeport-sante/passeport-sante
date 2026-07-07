@@ -60,10 +60,12 @@ export async function fetchAllUsers(token: string): Promise<AccountUser[]> {
   return res.json();
 }
 
+// Le backend crée le compte ET envoie un email de bienvenue avec les identifiants.
+// `emailSent` indique si cet email est bien parti.
 export async function createAccount(
   token: string,
   payload: CreateAccountPayload,
-): Promise<AccountUser> {
+): Promise<AccountUser & { emailSent: boolean }> {
   const res = await fetch(`${API}/api/user`, {
     method: "POST",
     headers: auth(token),
