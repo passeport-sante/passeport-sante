@@ -64,6 +64,10 @@ model User {
   role        UserRole @default(TRAINER)
   isSuspended Boolean  @default(false)
 
+  // Réinitialisation de mot de passe (lien à usage unique) — on stocke le HASH du token
+  resetTokenHash   String?
+  resetTokenExpiry DateTime?
+
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 

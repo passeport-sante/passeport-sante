@@ -58,6 +58,24 @@ export class MailService {
     );
   }
 
+  // Lien de réinitialisation à usage unique (flux "mot de passe oublié").
+  async sendPasswordResetLink(to: string, name: string, link: string): Promise<boolean> {
+    return this.send(
+      to,
+      "Réinitialisation de votre mot de passe",
+      `Bonjour ${name},\n\n` +
+        `Vous avez demandé à réinitialiser votre mot de passe Passeport Santé.\n\n` +
+        `Cliquez sur ce lien pour en choisir un nouveau (valable 1 heure) :\n${link}\n\n` +
+        `Si vous n'êtes pas à l'origine de cette demande, ignorez cet email : votre mot de passe reste inchangé.\n\n` +
+        `— L'équipe Passeport Santé`,
+      `<p>Bonjour <strong>${name}</strong>,</p>` +
+        `<p>Vous avez demandé à réinitialiser votre mot de passe Passeport Santé.</p>` +
+        `<p><a href="${link}" style="display:inline-block;padding:12px 20px;background:#1B6B8A;color:#fff;border-radius:8px;text-decoration:none;font-weight:bold">Choisir un nouveau mot de passe</a></p>` +
+        `<p style="color:#6b7280;font-size:13px">Ce lien est valable 1 heure. Si vous n'êtes pas à l'origine de cette demande, ignorez cet email : votre mot de passe reste inchangé.</p>` +
+        `<p>— L'équipe Passeport Santé</p>`,
+    );
+  }
+
   // Email de bienvenue à la création d'un compte, avec ses identifiants.
   async sendAccountCreated(to: string, name: string, password: string): Promise<boolean> {
     return this.send(

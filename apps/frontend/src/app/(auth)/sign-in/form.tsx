@@ -4,7 +4,9 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useRouter } from "next/navigation";
+import Link from "next/link";
 import Image from "next/image";
+import { useState } from "react";
 import { useForm } from "react-hook-form";
 
 interface SignInFormValues {
@@ -14,6 +16,7 @@ interface SignInFormValues {
 
 export function SignInForm() {
   const router = useRouter();
+  const [serverError, setServerError] = useState<string | null>(null);
   const {
     register,
     handleSubmit,
@@ -21,17 +24,25 @@ export function SignInForm() {
   } = useForm<SignInFormValues>();
 
   const onSubmit = async (data: SignInFormValues) => {
-    const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/auth/login`, { 
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(data),
-    });
+    setServerError(null);
+    try {
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/auth/login`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(data),
+      });
 
-    const result = await response.json();
-    if (!response.ok) return;
+      const result = await response.json().catch(() => ({}));
+      if (!response.ok) {
+        setServerError(result.message ?? "Email ou mot de passe incorrect");
+        return;
+      }
 
-    localStorage.setItem("access_token", result.access_token);
-    router.push("/");
+      localStorage.setItem("access_token", result.access_token);
+      router.push("/");
+    } catch {
+      setServerError("Impossible de se connecter. Réessayez dans un instant.");
+    }
   };
 
   return (
@@ -83,7 +94,15 @@ export function SignInForm() {
             </div>
 
             <div className="flex flex-col gap-1.5">
-              <Label htmlFor="password">Mot de passe</Label>
+              <div className="flex items-center justify-between">
+                <Label htmlFor="password">Mot de passe</Label>
+                <Link
+                  href="/forgot-password"
+                  className="text-xs font-semibold text-[#1B6B8A] hover:underline"
+                >
+                  Mot de passe oublié ?
+                </Link>
+              </div>
               <Input
                 id="password"
                 type="password"
@@ -96,6 +115,12 @@ export function SignInForm() {
                 </span>
               )}
             </div>
+
+            {serverError && (
+              <p className="text-sm text-red-600 bg-red-50 border border-red-100 rounded-lg px-3 py-2">
+                {serverError}
+              </p>
+            )}
 
             <Button
               type="submit"
