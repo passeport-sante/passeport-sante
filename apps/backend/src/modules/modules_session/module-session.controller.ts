@@ -30,7 +30,7 @@ export class ModuleSessionController {
   @UseGuards(JwtAuthGuard)
   @Get()
   findAll(@CurrentUser() user: AuthUser) {
-    return this.moduleSessionService.findAll(user.organizationId);
+    return this.moduleSessionService.findAll(user);
   }
 
   // Public : utilisé par les élèves/invités pour rejoindre une session via le code d'accès
@@ -44,7 +44,7 @@ export class ModuleSessionController {
   @UseGuards(JwtAuthGuard)
   @Get(":id")
   async findOne(@Param("id") id: string, @CurrentUser() user: AuthUser) {
-    const session = await this.moduleSessionService.findOne(id, user.organizationId);
+    const session = await this.moduleSessionService.findOne(id, user);
     if (!session) throw new NotFoundException("Session introuvable");
     return session;
   }
@@ -52,12 +52,12 @@ export class ModuleSessionController {
   @UseGuards(JwtAuthGuard)
   @Patch(":id")
   update(@Param("id") id: string, @Body() dto: UpdateModuleSessionDto, @CurrentUser() user: AuthUser) {
-    return this.moduleSessionService.update(id, user.organizationId, dto);
+    return this.moduleSessionService.update(id, user, dto);
   }
 
   @UseGuards(JwtAuthGuard)
   @Delete(":id")
   remove(@Param("id") id: string, @CurrentUser() user: AuthUser) {
-    return this.moduleSessionService.remove(id, user.organizationId);
+    return this.moduleSessionService.remove(id, user);
   }
 }

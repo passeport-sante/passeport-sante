@@ -32,7 +32,7 @@ export class DiagnosticSessionController {
   @UseGuards(JwtAuthGuard)
   @Get()
   findAll(@CurrentUser() user: AuthUser) {
-    return this.diagnosticSessionService.findAll(user.organizationId);
+    return this.diagnosticSessionService.findAll(user);
   }
 
   // Public : utilisé par les élèves/invités pour rejoindre une session via le code d'accès
@@ -46,7 +46,7 @@ export class DiagnosticSessionController {
   @UseGuards(JwtAuthGuard)
   @Get(":id")
   async findOne(@Param("id") id: string, @CurrentUser() user: AuthUser) {
-    const session = await this.diagnosticSessionService.findOne(id, user.organizationId);
+    const session = await this.diagnosticSessionService.findOne(id, user);
     if (!session) throw new NotFoundException("Session introuvable");
     return session;
   }
@@ -54,12 +54,12 @@ export class DiagnosticSessionController {
   @UseGuards(JwtAuthGuard)
   @Patch(":id")
   update(@Param("id") id: string, @Body() dto: UpdateDiagnosticSessionDto, @CurrentUser() user: AuthUser) {
-    return this.diagnosticSessionService.update(id, user.organizationId, dto);
+    return this.diagnosticSessionService.update(id, user, dto);
   }
 
   @UseGuards(JwtAuthGuard)
   @Delete(":id")
   remove(@Param("id") id: string, @CurrentUser() user: AuthUser) {
-    return this.diagnosticSessionService.remove(id, user.organizationId);
+    return this.diagnosticSessionService.remove(id, user);
   }
 }

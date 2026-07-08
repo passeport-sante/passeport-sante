@@ -1,6 +1,7 @@
 import { Injectable, NotFoundException } from "@nestjs/common";
 import { ConfigService } from "@nestjs/config";
 import { PrismaService } from "@/prisma/prisma.service";
+import { AuthUser } from "../../auth/decorators/current-user.decorator";
 import { CreateModuleSessionDto } from "./dto/create-module.dto";
 import { UpdateModuleSessionDto } from "./dto/update-module.dto";
 
@@ -10,6 +11,12 @@ export class ModuleSessionService {
     private prisma: PrismaService,
     private config: ConfigService,
   ) {}
+
+  // Portée d'accès : un ADMIN voit/gère toutes les sessions (super-admin),
+  // un TRAINER est limité à son propre établissement.
+  private scope(user: AuthUser) {
+    return user.role === "ADMIN" ? {} : { organizationId: user.organizationId };
+  }
 
   // organizationId/createdByUserId proviennent du token de l'utilisateur authentifié,
   // jamais du body envoyé par le client (sinon une session pourrait être rattachée à un autre établissement).
@@ -23,9 +30,9 @@ export class ModuleSessionService {
     });
   }
 
-  findAll(organizationId: string) {
+  findAll(user: AuthUser) {
     return this.prisma.moduleSession.findMany({
-      where: { organizationId },
+      where: this.scope(user),
       include: {
         _count: { select: { guestStudents: true } },
         module: { select: { id: true, title: true, colorPrimary: true } },
@@ -34,9 +41,9 @@ export class ModuleSessionService {
     });
   }
 
-  findOne(id: string, organizationId: string) {
+  findOne(id: string, user: AuthUser) {
     return this.prisma.moduleSession.findFirst({
-      where: { id, organizationId },
+      where: { id, ...this.scope(user) },
       include: {
         module: {
           select: {
@@ -72,19 +79,19 @@ export class ModuleSessionService {
     });
   }
 
-  async update(id: string, organizationId: string, dto: UpdateModuleSessionDto) {
+  async update(id: string, user: AuthUser, dto: UpdateModuleSessionDto) {
     // organizationId/createdByUserId ne sont jamais modifiables via l'update, même si présents dans le body
     const { organizationId: _orgId, createdByUserId: _ownerId, ...data } = dto;
     const { count } = await this.prisma.moduleSession.updateMany({
-      where: { id, organizationId },
+      where: { id, ...this.scope(user) },
       data,
     });
     if (count === 0) throw new NotFoundException("Session introuvable");
     return this.prisma.moduleSession.findUnique({ where: { id } });
   }
 
-  async remove(id: string, organizationId: string) {
-    const { count } = await this.prisma.moduleSession.deleteMany({ where: { id, organizationId } });
+  async remove(id: string, user: AuthUser) {
+    const { count } = await this.prisma.moduleSession.deleteMany({ where: { id, ...this.scope(user) } });
     if (count === 0) throw new NotFoundException("Session introuvable");
   }
 
