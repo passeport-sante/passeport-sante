@@ -9,7 +9,8 @@ import {
 } from "lucide-react";
 import {
   fetchAllUsers, deleteAccount, resetUserPassword, setSuspended,
-  type AccountUser,
+  fetchOrganizations, deleteOrganization,
+  type AccountUser, type Organization,
 } from "@/lib/admin-users";
 
 function RoleBadge({ role }: { role: "ADMIN" | "TRAINER" }) {
@@ -61,6 +62,12 @@ export default function ComptesPage() {
   const [actionLoading, setActionLoading] = useState(false);
   const [mounted, setMounted] = useState(false);
 
+  // Gestion des établissements
+  const [orgsModal, setOrgsModal] = useState(false);
+  const [orgs, setOrgs] = useState<Organization[]>([]);
+  const [orgError, setOrgError] = useState<string | null>(null);
+  const [orgDeleting, setOrgDeleting] = useState<string | null>(null);
+
   const token = typeof window !== "undefined" ? (localStorage.getItem("access_token") ?? "") : "";
 
   useEffect(() => { setMounted(true); }, []);
@@ -74,6 +81,29 @@ export default function ComptesPage() {
     }
   }
   useEffect(() => { load(); }, []);
+
+  async function openOrgsModal() {
+    setOrgError(null);
+    setOrgsModal(true);
+    try {
+      setOrgs(await fetchOrganizations(token));
+    } catch {
+      setOrgError("Impossible de charger les établissements.");
+    }
+  }
+
+  async function handleDeleteOrg(id: string) {
+    setOrgError(null);
+    setOrgDeleting(id);
+    try {
+      await deleteOrganization(token, id);
+      setOrgs((prev) => prev.filter((o) => o.id !== id));
+    } catch (err) {
+      setOrgError(err instanceof Error ? err.message : "Erreur lors de la suppression.");
+    } finally {
+      setOrgDeleting(null);
+    }
+  }
 
   // Fermer le dropdown quand on clique en dehors
   useEffect(() => {
@@ -163,13 +193,22 @@ export default function ComptesPage() {
             {admins} admin{admins > 1 ? "s" : ""}, {trainers} établissement{trainers > 1 ? "s" : ""}
           </p>
         </div>
-        <Link
-          href="/dashboard/comptes/nouveau"
-          className="inline-flex items-center gap-2 px-5 py-2.5 bg-[#1B6B8A] text-white text-sm font-bold rounded-full hover:opacity-90 transition-opacity"
-        >
-          <Plus size={16} />
-          Créer un compte
-        </Link>
+        <div className="flex items-center gap-3">
+          <button
+            onClick={openOrgsModal}
+            className="inline-flex items-center gap-2 px-5 py-2.5 bg-white border border-gray-200 text-gray-700 text-sm font-bold rounded-full hover:bg-gray-50 transition-colors"
+          >
+            <Building2 size={16} />
+            Établissements
+          </button>
+          <Link
+            href="/dashboard/comptes/nouveau"
+            className="inline-flex items-center gap-2 px-5 py-2.5 bg-[#1B6B8A] text-white text-sm font-bold rounded-full hover:opacity-90 transition-opacity"
+          >
+            <Plus size={16} />
+            Créer un compte
+          </Link>
+        </div>
       </div>
 
       {/* Recherche */}
@@ -380,6 +419,54 @@ export default function ComptesPage() {
                 Supprimer
               </button>
             </div>
+          </div>
+        </Modal>
+      )}
+
+      {/* ── Modal gestion des établissements ── */}
+      {mounted && orgsModal && (
+        <Modal>
+          <div className="bg-white rounded-2xl shadow-2xl p-8 max-w-md w-full space-y-5">
+            <div className="flex items-center gap-3">
+              <div className="w-11 h-11 rounded-xl bg-[#EBF4F8] flex items-center justify-center shrink-0">
+                <Building2 size={20} className="text-[#1B6B8A]" />
+              </div>
+              <div>
+                <h2 className="text-base font-black text-gray-900">Établissements</h2>
+                <p className="text-xs text-gray-400">Supprimer un établissement vide</p>
+              </div>
+            </div>
+
+            {orgError && (
+              <p className="text-sm text-red-600 bg-red-50 border border-red-100 rounded-xl px-4 py-3">{orgError}</p>
+            )}
+
+            <div className="max-h-72 overflow-y-auto divide-y divide-gray-50 -mx-2">
+              {orgs.length === 0 ? (
+                <p className="text-sm text-gray-400 italic px-2 py-4">Aucun établissement.</p>
+              ) : (
+                orgs.map((o) => (
+                  <div key={o.id} className="flex items-center justify-between gap-3 px-2 py-3">
+                    <span className="text-sm font-semibold text-gray-800 truncate">{o.name}</span>
+                    <button
+                      onClick={() => handleDeleteOrg(o.id)}
+                      disabled={orgDeleting === o.id}
+                      className="p-1.5 rounded-lg text-gray-300 hover:text-red-500 hover:bg-red-50 transition-colors disabled:opacity-40"
+                      title="Supprimer cet établissement"
+                    >
+                      <Trash2 size={15} />
+                    </button>
+                  </div>
+                ))
+              )}
+            </div>
+
+            <button
+              onClick={() => setOrgsModal(false)}
+              className="w-full py-2.5 bg-[#1B6B8A] text-white text-sm font-bold rounded-full hover:opacity-90 transition-opacity"
+            >
+              Fermer
+            </button>
           </div>
         </Modal>
       )}

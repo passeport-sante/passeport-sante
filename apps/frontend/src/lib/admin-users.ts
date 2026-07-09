@@ -130,3 +130,16 @@ export async function createOrganization(
   if (!res.ok) throw new Error("Erreur lors de la création de l'établissement");
   return res.json();
 }
+
+// Suppression bloquée côté backend si l'établissement contient encore des données
+// (le message d'erreur explique alors quoi supprimer d'abord).
+export async function deleteOrganization(token: string, id: string): Promise<void> {
+  const res = await fetch(`${API}/api/organization/${id}`, {
+    method: "DELETE",
+    headers: auth(token),
+  });
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({}));
+    throw new Error(err.message ?? "Erreur lors de la suppression de l'établissement");
+  }
+}

@@ -9,15 +9,17 @@ import { TOTAL_DIAGNOSTIC_QUESTIONS } from "@/lib/dashboard";
 interface Props {
   session: SessionSummary;
   onClose: (id: string) => void;
+  totalQuestions?: number;
 }
 
-export function SessionCard({ session, onClose }: Props) {
+export function SessionCard({ session, onClose, totalQuestions }: Props) {
   const [copied, setCopied] = useState(false);
 
   const students = session._count.guestStudents;
   const responses = session._count.diagnosticResponses;
+  const questionsPerStudent = totalQuestions && totalQuestions > 0 ? totalQuestions : TOTAL_DIAGNOSTIC_QUESTIONS;
   const progress =
-    students > 0 ? Math.min(100, Math.round((responses / (students * TOTAL_DIAGNOSTIC_QUESTIONS)) * 100)) : 0;
+    students > 0 ? Math.min(100, Math.round((responses / (students * questionsPerStudent)) * 100)) : 0;
 
   function copyCode() {
     navigator.clipboard.writeText(session.accessCode);
@@ -72,7 +74,9 @@ export function SessionCard({ session, onClose }: Props) {
       {/* Progress */}
       <div className="space-y-1.5">
         <div className="flex justify-between text-xs text-gray-400">
-          <span>Progression</span>
+          <span title={`${responses} réponses sur ${students * questionsPerStudent} attendues (${students} élève(s) × ${questionsPerStudent} questions)`}>
+            Complétion moyenne
+          </span>
           <span className="font-semibold text-[#2A8970]">{progress}%</span>
         </div>
         <div className="h-2 bg-gray-100 rounded-full overflow-hidden">

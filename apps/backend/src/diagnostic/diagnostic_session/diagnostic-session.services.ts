@@ -85,9 +85,29 @@ export class DiagnosticSessionService {
     return this.prisma.diagnosticSession.findUnique({ where: { id } });
   }
 
+  // Suppression définitive : on retire d'abord les réponses et élèves invités liés
+  // (pas de cascade en base), le tout dans une transaction.
   async remove(id: string, user: AuthUser) {
-    const { count } = await this.prisma.diagnosticSession.deleteMany({ where: { id, ...this.scope(user) } });
-    if (count === 0) throw new NotFoundException('Session introuvable');
+    const found = await this.prisma.diagnosticSession.findFirst({
+      where: { id, ...this.scope(user) },
+      select: { id: true },
+    });
+    if (!found) throw new NotFoundException('Session introuvable');
+
+    await this.prisma.$transaction(async (tx) => {
+      const guests = await tx.guestStudent.findMany({
+        where: { diagnosticSessionId: id },
+        select: { id: true },
+      });
+      const guestIds = guests.map((g) => g.id);
+
+      await tx.diagnosticResponse.deleteMany({ where: { sessionId: id } });
+      if (guestIds.length) {
+        await tx.diagnosticResponse.deleteMany({ where: { guestStudentId: { in: guestIds } } });
+        await tx.guestStudent.deleteMany({ where: { id: { in: guestIds } } });
+      }
+      await tx.diagnosticSession.delete({ where: { id } });
+    });
   }
 
   private generateCode(): string {

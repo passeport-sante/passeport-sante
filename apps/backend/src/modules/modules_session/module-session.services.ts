@@ -90,9 +90,32 @@ export class ModuleSessionService {
     return this.prisma.moduleSession.findUnique({ where: { id } });
   }
 
+  // Suppression définitive : on retire d'abord les réponses, progressions et élèves
+  // invités liés (pas de cascade en base), le tout dans une transaction.
   async remove(id: string, user: AuthUser) {
-    const { count } = await this.prisma.moduleSession.deleteMany({ where: { id, ...this.scope(user) } });
-    if (count === 0) throw new NotFoundException("Session introuvable");
+    const found = await this.prisma.moduleSession.findFirst({
+      where: { id, ...this.scope(user) },
+      select: { id: true },
+    });
+    if (!found) throw new NotFoundException("Session introuvable");
+
+    await this.prisma.$transaction(async (tx) => {
+      const guests = await tx.guestStudent.findMany({
+        where: { sessionId: id },
+        select: { id: true },
+      });
+      const guestIds = guests.map((g) => g.id);
+
+      if (guestIds.length) {
+        const where = { guestStudentId: { in: guestIds } };
+        await tx.kanbanResponse.deleteMany({ where });
+        await tx.quizResponse.deleteMany({ where });
+        await tx.puzzleResponse.deleteMany({ where });
+        await tx.moduleProgress.deleteMany({ where });
+        await tx.guestStudent.deleteMany({ where: { id: { in: guestIds } } });
+      }
+      await tx.moduleSession.delete({ where: { id } });
+    });
   }
 
   private generateCode(): string {

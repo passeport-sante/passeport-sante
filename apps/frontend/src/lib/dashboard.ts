@@ -1,6 +1,19 @@
 const API = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:5000";
 
+// Valeur de repli si le comptage dynamique échoue.
 export const TOTAL_DIAGNOSTIC_QUESTIONS = 61;
+
+// Nombre réel de questions du diagnostic (dynamique, pour un calcul de progression exact).
+export async function fetchDiagnosticQuestionCount(): Promise<number> {
+  try {
+    const res = await fetch(`${API}/api/diagnostic/question`, { cache: "no-store" });
+    if (!res.ok) return TOTAL_DIAGNOSTIC_QUESTIONS;
+    const data = await res.json();
+    return Array.isArray(data) && data.length > 0 ? data.length : TOTAL_DIAGNOSTIC_QUESTIONS;
+  } catch {
+    return TOTAL_DIAGNOSTIC_QUESTIONS;
+  }
+}
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 
@@ -143,6 +156,17 @@ export async function closeSession(id: string, token: string): Promise<void> {
     headers: authHeaders(token),
     body: JSON.stringify({ isActive: false }),
   });
+}
+
+export async function deleteSession(id: string, token: string): Promise<void> {
+  const res = await fetch(`${API}/api/diagnostic/session/${id}`, {
+    method: "DELETE",
+    headers: authHeaders(token),
+  });
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({}));
+    throw new Error(err.message ?? "Erreur lors de la suppression");
+  }
 }
 
 // ── Extraction défensive de la réponse ────────────────────────────────────────
@@ -306,6 +330,17 @@ export async function closeModuleSession(id: string, token: string): Promise<voi
     headers: authHeaders(token),
     body: JSON.stringify({ isActive: false }),
   });
+}
+
+export async function deleteModuleSession(id: string, token: string): Promise<void> {
+  const res = await fetch(`${API}/api/module-sessions/${id}`, {
+    method: "DELETE",
+    headers: authHeaders(token),
+  });
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({}));
+    throw new Error(err.message ?? "Erreur lors de la suppression");
+  }
 }
 
 export function computeModuleStepStats(detail: ModuleSessionDetail): StepStats[] {

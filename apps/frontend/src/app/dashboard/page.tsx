@@ -6,8 +6,11 @@ import { Plus } from "lucide-react";
 import {
   fetchSessions,
   closeSession,
+  deleteSession,
   fetchModuleSessions,
   closeModuleSession,
+  deleteModuleSession,
+  fetchDiagnosticQuestionCount,
 } from "@/lib/dashboard";
 import type { ModuleSessionSummary, SessionSummary } from "@/lib/dashboard";
 import { SessionCard } from "./_components/session-card";
@@ -18,10 +21,12 @@ import { StatsRow } from "./_components/stats-row";
 export default function DashboardPage() {
   const [diagSessions, setDiagSessions] = useState<SessionSummary[]>([]);
   const [moduleSessions, setModuleSessions] = useState<ModuleSessionSummary[]>([]);
+  const [questionCount, setQuestionCount] = useState<number | undefined>(undefined);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     const token = localStorage.getItem("access_token") ?? "";
+    fetchDiagnosticQuestionCount().then(setQuestionCount).catch(() => {});
     Promise.all([fetchSessions(token), fetchModuleSessions(token)])
       .then(([diag, mod]) => {
         setDiagSessions(diag);
@@ -44,6 +49,17 @@ export default function DashboardPage() {
     setModuleSessions((prev) =>
       prev.map((s) => (s.id === id ? { ...s, isActive: false } : s)),
     );
+  }
+
+  async function handleDelete(id: string, type: "diagnostic" | "module") {
+    const token = localStorage.getItem("access_token") ?? "";
+    if (type === "diagnostic") {
+      await deleteSession(id, token);
+      setDiagSessions((prev) => prev.filter((s) => s.id !== id));
+    } else {
+      await deleteModuleSession(id, token);
+      setModuleSessions((prev) => prev.filter((s) => s.id !== id));
+    }
   }
 
   const diagActive = diagSessions.filter((s) => s.isActive);
@@ -102,7 +118,7 @@ export default function DashboardPage() {
             ) : (
               <div className="grid grid-cols-3 gap-4">
                 {diagActive.map((s) => (
-                  <SessionCard key={s.id} session={s} onClose={handleClose} />
+                  <SessionCard key={s.id} session={s} onClose={handleClose} totalQuestions={questionCount} />
                 ))}
               </div>
             )}
@@ -149,7 +165,7 @@ export default function DashboardPage() {
                 </span>
               )}
             </h2>
-            <SessionsTable sessions={diagTerminated} moduleSessions={moduleTerminated} />
+            <SessionsTable sessions={diagTerminated} moduleSessions={moduleTerminated} onDelete={handleDelete} />
           </section>
         </>
       )}

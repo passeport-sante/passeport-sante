@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { fetchSessions, fetchModuleSessions } from "@/lib/dashboard";
+import { fetchSessions, fetchModuleSessions, deleteSession, deleteModuleSession } from "@/lib/dashboard";
 import type { SessionSummary, ModuleSessionSummary } from "@/lib/dashboard";
 import { SessionsTable } from "../../_components/sessions-table";
 
@@ -23,6 +23,17 @@ export default function TerminatedSessionsPage() {
       .finally(() => setLoading(false));
   }, []);
 
+  async function handleDelete(id: string, type: "diagnostic" | "module") {
+    const token = localStorage.getItem("access_token") ?? "";
+    if (type === "diagnostic") {
+      await deleteSession(id, token);
+      setTerminated((prev) => prev.filter((s) => s.id !== id));
+    } else {
+      await deleteModuleSession(id, token);
+      setTerminatedModules((prev) => prev.filter((s) => s.id !== id));
+    }
+  }
+
   return (
     <div className="p-8 space-y-6">
       <div>
@@ -35,7 +46,7 @@ export default function TerminatedSessionsPage() {
           <div className="w-8 h-8 border-4 border-[#2A8970] border-t-transparent rounded-full animate-spin" />
         </div>
       ) : (
-        <SessionsTable sessions={terminated} moduleSessions={terminatedModules} />
+        <SessionsTable sessions={terminated} moduleSessions={terminatedModules} onDelete={handleDelete} />
       )}
     </div>
   );
