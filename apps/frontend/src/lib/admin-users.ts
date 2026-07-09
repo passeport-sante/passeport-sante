@@ -79,7 +79,11 @@ export async function createAccount(
 }
 
 export async function deleteAccount(token: string, id: string): Promise<void> {
-  await fetch(`${API}/api/user/${id}`, { method: "DELETE", headers: auth(token) });
+  const res = await fetch(`${API}/api/user/${id}`, { method: "DELETE", headers: auth(token) });
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({}));
+    throw new Error(err.message ?? "Erreur lors de la suppression du compte");
+  }
 }
 
 // Le mot de passe est généré côté serveur, stocké haché, et envoyé par email

@@ -136,8 +136,10 @@ model ModuleSession {
   moduleId String?
   module   Module? @relation(fields: [moduleId], references: [id], onDelete: SetNull)
 
-  createdByUserId String
-  createdByUser   User   @relation(fields: [createdByUserId], references: [id])
+  // Info secondaire "créée par" : la session appartient à l'établissement (organizationId).
+  // Si le compte créateur est supprimé, le champ passe à null (la session survit).
+  createdByUserId String?
+  createdByUser   User?   @relation(fields: [createdByUserId], references: [id], onDelete: SetNull)
 
   organizationId String
   organization   Organization @relation(fields: [organizationId], references: [id])
@@ -175,8 +177,10 @@ model DiagnosticSession {
   createdAt  DateTime @default(now())
   updatedAt  DateTime @updatedAt
 
-  createdByUserId String
-  createdByUser   User   @relation(fields: [createdByUserId], references: [id])
+  // Info secondaire "créée par" : la session appartient à l'établissement (organizationId).
+  // Si le compte créateur est supprimé, le champ passe à null (la session survit).
+  createdByUserId String?
+  createdByUser   User?   @relation(fields: [createdByUserId], references: [id], onDelete: SetNull)
 
   organizationId String
   organization   Organization @relation(fields: [organizationId], references: [id])

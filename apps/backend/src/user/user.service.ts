@@ -94,7 +94,21 @@ export class UserService {
     return { password, emailSent };
   }
 
-  remove(id: string) {
-    return this.prisma.user.delete({ where: { id } });
+  // Les sessions créées par ce compte appartiennent à l'établissement : leur champ
+  // createdByUserId passe à null (onDelete: SetNull), la session survit à la suppression.
+  async remove(id: string) {
+    const user = await this.prisma.user.findUnique({ where: { id }, select: { id: true } });
+    if (!user) throw new NotFoundException("Compte introuvable");
+
+    try {
+      return await this.prisma.user.delete({ where: { id } });
+    } catch (e: any) {
+      if (e?.code === "P2003") {
+        throw new ConflictException(
+          "Ce compte est encore lié à des données qui empêchent sa suppression.",
+        );
+      }
+      throw e;
+    }
   }
 }

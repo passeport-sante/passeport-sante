@@ -52,6 +52,7 @@ export default function ComptesPage() {
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");
   const [confirmDelete, setConfirmDelete] = useState<AccountUser | null>(null);
+  const [deleteError, setDeleteError] = useState<string | null>(null);
   const [menuOpen, setMenuOpen] = useState<string | null>(null);
   const [menuPos, setMenuPos] = useState<{ top: number; right: number } | null>(null);
   const portalMenuRef = useRef<HTMLDivElement>(null);
@@ -133,9 +134,17 @@ export default function ComptesPage() {
   }
 
   async function handleDelete(user: AccountUser) {
-    await deleteAccount(token, user.id);
-    setUsers((prev) => prev.filter((u) => u.id !== user.id));
-    setConfirmDelete(null);
+    setDeleteError(null);
+    setActionLoading(true);
+    try {
+      await deleteAccount(token, user.id);
+      setUsers((prev) => prev.filter((u) => u.id !== user.id));
+      setConfirmDelete(null);
+    } catch (err) {
+      setDeleteError(err instanceof Error ? err.message : "Erreur lors de la suppression du compte");
+    } finally {
+      setActionLoading(false);
+    }
   }
 
   async function handleResetPassword(user: AccountUser) {
@@ -331,7 +340,7 @@ export default function ComptesPage() {
           </button>
           <div className="my-1 border-t border-gray-100" />
           <button
-            onClick={() => { setMenuOpen(null); setConfirmDelete(menuUser); }}
+            onClick={() => { setMenuOpen(null); setDeleteError(null); setConfirmDelete(menuUser); }}
             className="w-full flex items-center gap-2.5 px-4 py-2.5 text-sm text-red-500 hover:bg-red-50 transition-colors"
           >
             <Trash2 size={14} />
@@ -405,18 +414,25 @@ export default function ComptesPage() {
             <p className="text-sm text-gray-500">
               Le compte de <strong>{confirmDelete.name}</strong> sera définitivement supprimé.
             </p>
+            {deleteError && (
+              <p className="text-sm text-red-600 bg-red-50 border border-red-100 rounded-xl px-4 py-3 text-left">
+                {deleteError}
+              </p>
+            )}
             <div className="flex gap-3 pt-2">
               <button
-                onClick={() => setConfirmDelete(null)}
-                className="flex-1 py-2.5 rounded-full border border-gray-200 text-sm font-semibold text-gray-600 hover:bg-gray-50 transition"
+                onClick={() => { setConfirmDelete(null); setDeleteError(null); }}
+                disabled={actionLoading}
+                className="flex-1 py-2.5 rounded-full border border-gray-200 text-sm font-semibold text-gray-600 hover:bg-gray-50 transition disabled:opacity-50"
               >
                 Annuler
               </button>
               <button
                 onClick={() => handleDelete(confirmDelete)}
-                className="flex-1 py-2.5 rounded-full bg-red-500 text-white text-sm font-bold hover:opacity-90 transition"
+                disabled={actionLoading}
+                className="flex-1 py-2.5 rounded-full bg-red-500 text-white text-sm font-bold hover:opacity-90 transition disabled:opacity-50"
               >
-                Supprimer
+                {actionLoading ? "Suppression…" : "Supprimer"}
               </button>
             </div>
           </div>

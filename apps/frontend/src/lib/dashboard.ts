@@ -27,7 +27,7 @@ export type SessionSummary = {
   isActive: boolean;
   createdAt: string;
   updatedAt: string;
-  createdByUser: SessionUser;
+  createdByUser: SessionUser | null;
   _count: { guestStudents: number; diagnosticResponses: number };
 };
 
@@ -50,7 +50,7 @@ export type ResponseEntry = {
 };
 
 export type SessionDetail = Omit<SessionSummary, "_count"> & {
-  createdByUser: SessionUser;
+  createdByUser: SessionUser | null;
   _count: { guestStudents: number; diagnosticResponses: number };
   diagnosticResponses: ResponseEntry[];
 };
