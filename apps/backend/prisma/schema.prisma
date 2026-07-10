@@ -24,6 +24,7 @@ enum GameType {
   PUZZLE
   PHRASE_A_TROU
   SCENARIO
+  MOTS_CROISES
 }
 
 // Distingue une étape de jeu (comptée, cercle Rive) d'une sous-étape de contenu (intercalée, non comptée)

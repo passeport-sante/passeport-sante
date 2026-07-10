@@ -7,7 +7,8 @@ export type GameType =
   | "QUIZ"
   | "PUZZLE"
   | "PHRASE_A_TROU"
-  | "SCENARIO";
+  | "SCENARIO"
+  | "MOTS_CROISES";
 
 export type StepKind = "GAME" | "CONTENT";
 
@@ -173,6 +174,13 @@ export const GAME_TYPE_META: Record<
     bg: "#ECFDF5",
     description: "Face à une situation, choisir la meilleure réaction.",
   },
+  MOTS_CROISES: {
+    label: "Mots croisés",
+    short: "Mots croisés",
+    color: "#0891B2",
+    bg: "#ECFEFF",
+    description: "Remplir une grille de mots croisés à partir de définitions.",
+  },
 };
 
 // ── Métadonnées d'affichage des sous-étapes de contenu ──────────────────────
@@ -224,6 +232,7 @@ export function defaultContentFor(gameType: GameType): { title: string; instruct
     PUZZLE: { title: "Dans le bon ordre !", instructions: "Remets les étapes dans l'ordre correct" },
     PHRASE_A_TROU: { title: "Complète la phrase", instructions: "Glisse les bons mots dans les trous" },
     SCENARIO: { title: "Que ferais-tu ?", instructions: "Choisis la meilleure réaction face à cette situation" },
+    MOTS_CROISES: { title: "Mots croisés", instructions: "Remplis la grille à partir des définitions" },
   };
   return map[gameType];
 }
@@ -297,7 +306,103 @@ export function defaultGameDataFor(gameType: GameType): AdminGameData[] {
           correctAnswer: { choiceId: "a", explanation: "Explique pourquoi c'est la bonne réponse." },
         },
       ];
+    case "MOTS_CROISES":
+      return [
+        {
+          questionData: {
+            words: [
+              { id: "w1", answer: "NON", clue: "Ce qu'il faut savoir dire face à la pression", row: 0, col: 0, dir: "H" },
+              { id: "w2", answer: "NICOTINE", clue: "Produit du tabac qui rend dépendant", row: 0, col: 0, dir: "V" },
+            ],
+          },
+          correctAnswer: {},
+        },
+      ];
   }
+}
+
+// ── Mots croisés : types et construction de grille (partagés jeu ⇆ éditeur) ──
+
+export type CrosswordDir = "H" | "V";
+
+export type CrosswordWord = {
+  id: string;
+  answer: string;
+  clue: string;
+  row: number;
+  col: number;
+  dir: CrosswordDir;
+};
+
+export type CrosswordCell = {
+  r: number;
+  c: number;
+  solution: string;      // lettre attendue (normalisée A-Z)
+  number?: number;       // numéro affiché si la case démarre un mot
+  conflict?: boolean;    // deux mots imposent des lettres différentes
+};
+
+// Normalise une lettre pour la comparaison : majuscule, sans accent, A-Z uniquement.
+export function normalizeLetter(ch: string): string {
+  return ch
+    .toUpperCase()
+    .normalize("NFD")
+    .replace(/\p{Diacritic}/gu, "")
+    .replace(/[^A-Z]/g, "");
+}
+
+export function normalizeAnswer(answer: string): string {
+  return [...answer].map(normalizeLetter).join("");
+}
+
+// Construit la grille à partir des mots : dimensions, cases (clé "r,c"), numéros, conflits.
+export function computeCrossword(words: CrosswordWord[]): {
+  rows: number;
+  cols: number;
+  cells: Map<string, CrosswordCell>;
+  conflicts: number;
+} {
+  const cells = new Map<string, CrosswordCell>();
+  let rows = 0;
+  let cols = 0;
+  let conflicts = 0;
+
+  for (const w of words) {
+    const letters = normalizeAnswer(w.answer);
+    for (let i = 0; i < letters.length; i++) {
+      const r = w.dir === "V" ? w.row + i : w.row;
+      const c = w.dir === "H" ? w.col + i : w.col;
+      if (r < 0 || c < 0) continue;
+      const key = `${r},${c}`;
+      const letter = letters[i]!;
+      const existing = cells.get(key);
+      if (existing) {
+        if (existing.solution !== letter) {
+          existing.conflict = true;
+          conflicts++;
+        }
+      } else {
+        cells.set(key, { r, c, solution: letter });
+      }
+      rows = Math.max(rows, r + 1);
+      cols = Math.max(cols, c + 1);
+    }
+  }
+
+  // Numérotation des cases de départ (parcours haut→bas, gauche→droite)
+  const starts = new Set(words.map((w) => `${w.row},${w.col}`));
+  let n = 0;
+  for (let r = 0; r < rows; r++) {
+    for (let c = 0; c < cols; c++) {
+      const key = `${r},${c}`;
+      if (starts.has(key) && cells.has(key)) {
+        n++;
+        cells.get(key)!.number = n;
+      }
+    }
+  }
+
+  return { rows, cols, cells, conflicts };
 }
 
 // ── Utilitaire : générer un id court pour les items (options, choix) ─────────

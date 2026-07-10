@@ -6,6 +6,7 @@ import { QuizEditor } from "./quiz-editor";
 import { ScenarioEditor } from "./scenario-editor";
 import { PhraseEditor } from "./phrase-editor";
 import { PuzzleEditor } from "./puzzle-editor";
+import { CrosswordEditor } from "./crossword-editor";
 import { ContentEditor } from "./content-editor";
 
 interface Props {
@@ -29,6 +30,8 @@ export function StepEditor(props: Props) {
       return <PhraseEditor {...props} />;
     case "PUZZLE":
       return <PuzzleEditor {...props} />;
+    case "MOTS_CROISES":
+      return <CrosswordEditor {...props} />;
   }
 
   return <ContentEditor {...props} />;

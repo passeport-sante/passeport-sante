@@ -4,6 +4,7 @@ import { PhraseATrou } from "./_components/PhraseATrou";
 import { KanbanGame } from "./_components/KanbanGame";
 import { ScenarioGame } from "./_components/ScenarioGame";
 import { QuizGame } from "./_components/QuizGame";
+import { MotsCroises } from "./_components/MotsCroises";
 import { ContentPanel } from "./_components/ContentPanel";
 import { StepGate } from "./_components/StepGate";
 
@@ -43,6 +44,8 @@ export default async function StepPage({
       <PuzzleGame step={step} />
     ) : step.gameType === "PHRASE_A_TROU" ? (
       <PhraseATrou step={step} />
+    ) : step.gameType === "MOTS_CROISES" ? (
+      <MotsCroises step={step} />
     ) : (
       <div className="h-screen flex items-center justify-center text-gray-500 text-xl font-bold">
         Jeu {step.gameType} — à venir
