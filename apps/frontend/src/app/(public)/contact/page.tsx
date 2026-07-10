@@ -45,21 +45,21 @@ export default function Contact() {
       <div className="circle-about-green" />
 
       {/* Hero */}
-      <section className="relative z-10 brand-container pt-16 pb-12">
-        <h1 className="text-5xl font-black text-gray-900">
+      <section className="relative z-10 brand-container pt-10 md:pt-16 pb-8 md:pb-12">
+        <h1 className="text-3xl md:text-5xl font-black text-gray-900">
           Contacte-<span className="text-brand-green">nous</span>
         </h1>
-        <p className="mt-4 text-xl text-gray-500 max-w-2xl leading-relaxed">
+        <p className="mt-4 text-lg md:text-xl text-gray-500 max-w-2xl leading-relaxed">
           Tu as une question, une suggestion ou tu veux simplement discuter ? On
           est là pour t&apos;écouter.
         </p>
       </section>
 
       {/* Contenu 2 colonnes */}
-      <section className="relative z-10 brand-container pb-32">
-        <div className="grid grid-cols-2 gap-16 items-start">
+      <section className="relative z-10 brand-container pb-20 md:pb-32">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-10 lg:gap-16 items-start">
           {/* ── Formulaire ── */}
-          <div className="bg-white rounded-[28px] shadow-[0_4px_30px_rgba(0,0,0,0.07)] p-10">
+          <div className="bg-white rounded-[28px] shadow-[0_4px_30px_rgba(0,0,0,0.07)] p-6 md:p-10">
             {sent ? (
               <div className="flex flex-col items-center justify-center py-12 text-center gap-4">
                 <div className="w-16 h-16 rounded-full bg-brand-green/10 flex items-center justify-center">
@@ -154,7 +154,7 @@ export default function Contact() {
               alt="Mascotte contact"
               width={550}
               height={550}
-              className="drop-shadow-xl"
+              className="drop-shadow-xl w-56 sm:w-80 lg:w-full h-auto max-w-[550px]"
             />
 
             <div className="w-full space-y-4">

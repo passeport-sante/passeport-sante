@@ -37,8 +37,8 @@ export function SessionsTable({ sessions, moduleSessions = [], onDelete }: Props
   }
 
   return (
-    <div className="overflow-hidden rounded-xl border border-gray-200 bg-white">
-      <table className="w-full text-sm">
+    <div className="rounded-xl border border-gray-200 bg-white overflow-x-auto">
+      <table className="w-full min-w-[640px] text-sm">
         <thead>
           <tr className="border-b border-gray-100 text-left">
             <th className="px-6 py-4 font-semibold text-gray-400 text-xs uppercase tracking-wider">Classe</th>

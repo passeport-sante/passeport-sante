@@ -94,11 +94,11 @@ export function Hero() {
       <div className="relative z-10 brand-container flex flex-col min-h-[calc(100vh-72px)]">
         {/* ─── Zone TITRE ──────────────────────────────────────── */}
         <div className="relative pt-6 pb-2">
-          <div className="max-w-[58%]">
-            <h1 className="font-display text-[clamp(2.5rem,4.2vw,4.5rem)] font-black text-brand-ink leading-none whitespace-nowrap tracking-tight">
+          <div className="max-w-full lg:max-w-[58%]">
+            <h1 className="font-display text-[clamp(2rem,7vw,4.5rem)] font-black text-brand-ink leading-none lg:whitespace-nowrap tracking-tight">
               Ton corps, tes choix
             </h1>
-            <p className="text-gray-600 text-lg leading-relaxed mt-10 max-w-lg">
+            <p className="text-gray-600 text-base md:text-lg leading-relaxed mt-6 md:mt-10 max-w-lg">
               Marre qu&apos;on te dise quoi faire sans t&apos;expliquer pourquoi&nbsp;?
               Ici, c&apos;est toi qui prends les commandes. Mon Passeport Santé,
               ce n&apos;est pas un cours de plus, c&apos;est ton outil perso pour
@@ -110,7 +110,7 @@ export function Hero() {
           {/* "Ta santé" — SVG : bold sans-serif, gradient vert→bleu, inner shadow vert,
                           + blur vert dégradé tout autour (drop-shadows empilés) */}
           <div
-            className="absolute select-none pointer-events-none"
+            className="absolute select-none pointer-events-none hidden lg:block"
             style={{
               top: "50px",
               left: "calc(44% + 8px)",
@@ -124,11 +124,11 @@ export function Hero() {
         </div>
 
         {/* ─── Zone INFÉRIEURE : 3 colonnes ───────────────────── */}
-        <div className="flex flex-1 items-start gap-8 pb-10 pt-4">
+        <div className="flex flex-col lg:flex-row flex-1 items-center lg:items-start gap-8 pb-10 pt-4">
           {/* Colonne 1 : téléphone avec vidéo mascotte */}
           <div className="flex-shrink-0">
             <PhoneSvg
-              className="w-[280px] lg:w-[320px] h-auto"
+              className="w-[220px] sm:w-[280px] lg:w-[320px] h-auto"
               stroke="#1F6F8B"
               accent="#1F6F8B"
               screen={<PhoneVideo />}
@@ -136,19 +136,33 @@ export function Hero() {
           </div>
 
           {/* Colonne 2 : "C'est quoi" + 3 bulles venn — remontée */}
-          <div className="flex-1 space-y-3 -mt-4">
+          <div className="flex-1 space-y-3 lg:-mt-4 text-center lg:text-left">
             <h2 className="font-display text-2xl font-extrabold text-brand-ink leading-snug">
               C&apos;est quoi le{" "}
               <span className="text-brand-green">passeport santé&nbsp;?</span>
             </h2>
-            <p className="text-gray-600 text-sm leading-relaxed max-w-[400px]">
+            <p className="text-gray-600 text-sm leading-relaxed max-w-[400px] mx-auto lg:mx-0">
               Parce que la santé, ce n&apos;est pas juste « ne pas être malade ».
               C&apos;est avoir l&apos;énergie pour tes projets, comprendre tes
               émotions et savoir faire des choix qui TE font du bien.
             </p>
 
-            {/* 3 cercles overlappants */}
-            <div style={circlesStyles.wrap}>
+            {/* Version mobile : liste simple des 3 atouts (le venn en px ne tient pas) */}
+            <div className="lg:hidden space-y-3 pt-2 text-left">
+              {[
+                { t: "Zéro pression", d: "Teste tes connaissances sans notes, juste pour toi." },
+                { t: "Prends le pouvoir", d: "Plus tu en sais, moins on peut décider à ta place." },
+                { t: "Deviens incollable", d: "Démonte les idées reçues et les fake news des réseaux." },
+              ].map((it) => (
+                <div key={it.t} className="bg-white/70 rounded-2xl px-4 py-3 shadow-sm">
+                  <h3 className="font-bold text-brand-ink text-sm">{it.t}</h3>
+                  <p className="text-gray-600 text-sm mt-0.5">{it.d}</p>
+                </div>
+              ))}
+            </div>
+
+            {/* 3 cercles overlappants — desktop uniquement */}
+            <div style={circlesStyles.wrap} className="hidden lg:block">
               <div style={circlesStyles.fills} aria-hidden="true">
                 <div
                   style={{ ...circlesStyles.circle, ...circlesStyles.circleTop }}
@@ -191,10 +205,10 @@ export function Hero() {
           </div>
 
           {/* Colonne 3 : CTAs */}
-          <div className="flex-shrink-0 flex flex-col gap-4 mt-12">
+          <div className="flex-shrink-0 flex flex-col gap-4 w-full sm:w-auto lg:mt-12">
             <Link
               href="/sign-in"
-              className="group inline-flex items-center gap-3 px-8 py-5 bg-brand-dark-green text-white font-bold rounded-full text-base shadow-lg hover:shadow-xl hover:-translate-y-0.5 transition-all whitespace-nowrap"
+              className="group inline-flex items-center justify-center gap-3 px-8 py-4 lg:py-5 bg-brand-dark-green text-white font-bold rounded-full text-base shadow-lg hover:shadow-xl hover:-translate-y-0.5 transition-all whitespace-nowrap"
             >
               Commencer le parcours
               <ArrowRight
@@ -204,7 +218,7 @@ export function Hero() {
             </Link>
             <Link
               href="/modules"
-              className="inline-flex items-center justify-center px-8 py-5 bg-white text-brand-ink font-bold rounded-2xl text-base border-2 border-blue-200 hover:border-blue-500 hover:text-blue-500 transition-colors whitespace-nowrap"
+              className="inline-flex items-center justify-center px-8 py-4 lg:py-5 bg-white text-brand-ink font-bold rounded-2xl text-base border-2 border-blue-200 hover:border-blue-500 hover:text-blue-500 transition-colors whitespace-nowrap"
             >
               Voir les thèmes
             </Link>

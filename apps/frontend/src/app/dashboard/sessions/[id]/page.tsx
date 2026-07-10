@@ -126,7 +126,7 @@ export default function SessionDetailPage() {
       </div>
 
       {/* Score cards */}
-      <div className="grid grid-cols-4 gap-4">
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
         <ScoreCard
           label="Participants"
           value={session._count.guestStudents}
@@ -162,7 +162,7 @@ export default function SessionDetailPage() {
               {questionStats.length}
             </span>
           </h2>
-          <div className="grid grid-cols-2 gap-3">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-3">
             {questionStats.map((qs, i) => (
               <QuestionResultCard
                 key={qs.question.id}

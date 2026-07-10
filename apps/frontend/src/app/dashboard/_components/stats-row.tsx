@@ -49,7 +49,7 @@ export function StatsRow({ sessions, moduleSessions = [] }: Props) {
   ];
 
   return (
-    <div className="grid grid-cols-4 rounded-xl border border-gray-200 bg-white divide-x divide-gray-100">
+    <div className="grid grid-cols-2 lg:grid-cols-4 rounded-xl border border-gray-200 bg-white divide-x divide-gray-100">
       {stats.map(({ label, value, icon: Icon, color, bg }) => (
         <div key={label} className="p-5 flex items-center gap-4">
           <div className="w-12 h-12 rounded-xl flex items-center justify-center shrink-0" style={{ background: bg }}>

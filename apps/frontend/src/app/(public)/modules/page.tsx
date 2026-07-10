@@ -48,7 +48,7 @@ export default async function ModulesPage() {
             </h2>
 
             {/* Grille modules */}
-            <div className="grid grid-cols-2 gap-5">
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
               {category.modules.map((module) => (
                 <BubbleCard key={module.id} module={module} />
               ))}

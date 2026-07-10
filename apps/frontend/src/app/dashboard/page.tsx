@@ -116,7 +116,7 @@ export default function DashboardPage() {
                 </Link>
               </div>
             ) : (
-              <div className="grid grid-cols-3 gap-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
                 {diagActive.map((s) => (
                   <SessionCard key={s.id} session={s} onClose={handleClose} totalQuestions={questionCount} />
                 ))}
@@ -147,7 +147,7 @@ export default function DashboardPage() {
                 </Link>
               </div>
             ) : (
-              <div className="grid grid-cols-3 gap-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
                 {moduleActive.map((s) => (
                   <ModuleSessionCard key={s.id} session={s} onClose={handleCloseModule} />
                 ))}

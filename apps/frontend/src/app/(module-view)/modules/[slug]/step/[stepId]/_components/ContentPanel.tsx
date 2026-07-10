@@ -42,11 +42,11 @@ export function ContentPanel({ step }: { step: StepData }) {
 
   return (
     <div
-      className="h-screen flex flex-col overflow-hidden"
+      className="min-h-screen flex flex-col"
       style={{ background: `linear-gradient(160deg, ${primaryColor} 0%, ${bottomColor} 100%)` }}
     >
       {/* Navbar */}
-      <header className="shrink-0 flex items-center justify-between px-8 py-5 bg-white">
+      <header className="shrink-0 flex items-center justify-between gap-3 px-4 md:px-8 py-4 md:py-5 bg-white">
         <Link
           href={`/modules/${step.module.slug}`}
           className="flex items-center gap-3 text-gray-700 hover:opacity-70 transition-opacity"
@@ -62,7 +62,7 @@ export function ContentPanel({ step }: { step: StepData }) {
       </header>
 
       {/* Contenu */}
-      <main className="flex-1 flex flex-col items-center justify-center gap-6 px-8 py-8 overflow-y-auto">
+      <main className="flex-1 flex flex-col items-center justify-center gap-6 px-4 md:px-8 py-8 overflow-y-auto">
         <div
           className="w-full max-w-3xl rounded-3xl px-8 py-8 space-y-5"
           style={{ background: "rgba(255,255,255,0.96)", boxShadow: "0 24px 80px rgba(0,0,0,0.3)" }}

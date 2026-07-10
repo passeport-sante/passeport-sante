@@ -116,10 +116,10 @@ export function QuizGame({ step }: { step: StepData }) {
 
   return (
     <div
-      className="h-screen flex flex-col overflow-hidden"
+      className="min-h-screen flex flex-col"
       style={{ background: `linear-gradient(160deg, ${primaryColor} 0%, ${bottomColor} 100%)` }}
     >
-      <header className="shrink-0 flex items-center justify-between px-8 py-5 bg-white">
+      <header className="shrink-0 flex items-center justify-between gap-3 px-4 md:px-8 py-4 md:py-5 bg-white">
         <Link
           href={`/modules/${step.module.slug}`}
           className="flex items-center gap-3 text-gray-700 hover:opacity-70 transition-opacity"
@@ -140,7 +140,7 @@ export function QuizGame({ step }: { step: StepData }) {
         </div>
       </header>
 
-      <main className="flex-1 flex flex-col items-center justify-center gap-8 px-8 py-6">
+      <main className="flex-1 flex flex-col items-center justify-center gap-6 md:gap-8 px-4 md:px-8 py-6">
         {!finished ? (
           <>
             {/* Barre de progression */}

@@ -85,7 +85,7 @@ export default function StatsPage() {
           Modules
         </h2>
 
-        <div className="grid grid-cols-3 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
           <MiniStat label="Sessions modules" value={moduleSessions.length} color="#1B6B8A" icon={Layers} />
           <MiniStat label="Sessions actives" value={moduleActive} color="#2A8970" icon={Activity} />
           <MiniStat label="Élèves (modules)" value={moduleStudents} color="#4CAF5A" icon={Users} />
@@ -131,7 +131,7 @@ export default function StatsPage() {
           Diagnostic
         </h2>
 
-        <div className="grid grid-cols-4 gap-4">
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
           <MiniStat label="Sessions diagnostic" value={sessions.length} color="#6366F1" icon={FileText} />
           <MiniStat label="Élèves (diagnostic)" value={diagStudents} color="#4CAF5A" icon={Users} />
           <MiniStat label="Élèves / session" value={diagAvgStudents} color="#1B6B8A" icon={Users} sub="en moyenne" />

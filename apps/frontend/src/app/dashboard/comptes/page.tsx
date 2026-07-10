@@ -244,7 +244,8 @@ export default function ComptesPage() {
             <p className="text-sm font-medium">Aucun compte trouvé</p>
           </div>
         ) : (
-          <table className="w-full text-sm">
+          <div className="overflow-x-auto">
+          <table className="w-full min-w-[720px] text-sm">
             <thead>
               <tr className="border-b border-gray-100 bg-gray-50/60">
                 <th className="text-left px-6 py-3 text-xs font-bold text-gray-500 uppercase tracking-wider">Compte</th>
@@ -310,6 +311,7 @@ export default function ComptesPage() {
               ))}
             </tbody>
           </table>
+          </div>
         )}
       </div>
 

@@ -87,6 +87,20 @@ export function ModuleImmersiveClient({ module }: Props) {
   const [showCompleteOverlay, setShowCompleteOverlay] = useState(false);
   const [pdfMounted, setPdfMounted] = useState(false);
 
+  // Mise à l'échelle du canvas (1200px) pour tenir sur tous les écrans
+  const [canvasScale, setCanvasScale] = useState(1);
+  const canvasWrapRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    function update() {
+      const w = canvasWrapRef.current?.clientWidth ?? CANVAS_WIDTH;
+      setCanvasScale(Math.min(1, w / CANVAS_WIDTH));
+    }
+    update();
+    window.addEventListener("resize", update);
+    return () => window.removeEventListener("resize", update);
+  }, []);
+
   const searchParams = useSearchParams();
   const router = useRouter();
   const storageKey = `module_level_${module.slug}`;
@@ -161,52 +175,54 @@ export function ModuleImmersiveClient({ module }: Props) {
       }}
     >
       {/* Navbar */}
-      <header className="shrink-0 flex items-center justify-between px-8 py-5 bg-white">
+      <header className="shrink-0 flex items-center justify-between gap-3 px-4 md:px-8 py-3 md:py-5 bg-white">
         <Link
           href="/modules"
-          className="flex items-center gap-3 text-gray-700 hover:opacity-70 transition-opacity"
+          className="flex items-center gap-2 md:gap-3 text-gray-700 hover:opacity-70 transition-opacity shrink-0"
         >
-          <div className="w-10 h-10 rounded-full border-2 border-gray-300 flex items-center justify-center">
+          <div className="w-9 h-9 md:w-10 md:h-10 rounded-full border-2 border-gray-300 flex items-center justify-center">
             <ArrowLeft size={18} />
           </div>
-          <span className="font-bold text-sm tracking-widest uppercase">
+          <span className="hidden sm:inline font-bold text-sm tracking-widest uppercase">
             Retour aux modules
           </span>
         </Link>
 
-        <div className="text-center text-gray-900">
-          <h1 className="font-black text-xl tracking-wide">{module.title}</h1>
+        <div className="text-center text-gray-900 min-w-0">
+          <h1 className="font-black text-base md:text-xl tracking-wide truncate">{module.title}</h1>
           {module.category && (
-            <p className="text-sm text-gray-400 mt-0.5">
+            <p className="hidden sm:block text-sm text-gray-400 mt-0.5">
               {module.category.name}
             </p>
           )}
         </div>
 
-        <div className="flex items-center gap-3 text-gray-700">
-          <span className="text-xs font-bold tracking-widest uppercase text-gray-400">
+        <div className="flex items-center gap-2 md:gap-3 text-gray-700 shrink-0">
+          <span className="hidden lg:inline text-xs font-bold tracking-widest uppercase text-gray-400">
             Progression Global
           </span>
-          <div className="w-44 h-2.5 bg-gray-100 rounded-full overflow-hidden">
+          <div className="hidden sm:block w-24 lg:w-44 h-2.5 bg-gray-100 rounded-full overflow-hidden">
             <div
               className="h-full rounded-full transition-all duration-700"
               style={{ width: `${pct}%`, background: primaryColor }}
             />
           </div>
           <div
-            className="w-12 h-12 rounded-full border-2 flex items-center justify-center shrink-0"
+            className="w-10 h-10 md:w-12 md:h-12 rounded-full border-2 flex items-center justify-center shrink-0"
             style={{ borderColor: primaryColor, color: primaryColor }}
           >
-            <span className="font-black text-sm">{pct}%</span>
+            <span className="font-black text-xs md:text-sm">{pct}%</span>
           </div>
         </div>
       </header>
 
       {/* Contenu principal */}
-      <main className="flex-1 flex flex-col items-center justify-center pb-6 gap-6">
+      <main className="flex-1 flex flex-col items-center justify-center pb-6 gap-6 overflow-hidden">
+        <div ref={canvasWrapRef} className="w-full flex justify-center">
+        <div style={{ width: CANVAS_WIDTH * canvasScale, height: CANVAS_HEIGHT * canvasScale }}>
         <div
           className="relative"
-          style={{ width: CANVAS_WIDTH, height: CANVAS_HEIGHT }}
+          style={{ width: CANVAS_WIDTH, height: CANVAS_HEIGHT, transform: `scale(${canvasScale})`, transformOrigin: "top left" }}
         >
           {/* Bulle de dialogue — placée sur le côté de la mascotte */}
           <div
@@ -311,6 +327,8 @@ export function ModuleImmersiveClient({ module }: Props) {
                 />
               );
             })}
+        </div>
+        </div>
         </div>
 
         {/* Bouton étape suivante */}

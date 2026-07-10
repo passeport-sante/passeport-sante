@@ -133,7 +133,7 @@ export default function AdminModulesPage() {
       </div>
 
       {/* Stats row */}
-      <div className="grid grid-cols-3 rounded-xl border border-gray-200 bg-white divide-x divide-gray-100">
+      <div className="grid grid-cols-3 rounded-xl border border-gray-200 bg-white divide-x divide-gray-100 text-center sm:text-left">
         <StatTile label="Modules" value={counts.total} icon={<Layers size={16} />} />
         <StatTile label="Actifs" value={counts.active} accent="emerald" />
         <StatTile label="Inactifs" value={counts.inactive} accent="gray" />
