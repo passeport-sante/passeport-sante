@@ -132,8 +132,8 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
             </span>
           </Link>
 
-          {/* Navigation centrale — passe en pleine largeur (2e ligne) sur mobile */}
-          <nav className="order-last w-full md:order-none md:w-auto flex items-center bg-gray-100 rounded-full p-1 gap-1 overflow-x-auto">
+          {/* Navigation centrale — pleine largeur (2e ligne) sur mobile, avec retour à la ligne */}
+          <nav className="order-last w-full md:order-none md:w-auto flex flex-wrap md:flex-nowrap items-center justify-center bg-gray-100 rounded-2xl md:rounded-full p-1 gap-1">
             {visibleNav.map((item) => {
               const { href, label, adminOnly } = item;
               const active = isActive(item);
@@ -141,7 +141,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
                 <Link
                   key={href}
                   href={href}
-                  className={`px-4 md:px-5 py-2 rounded-full text-sm font-semibold transition-all flex items-center gap-1.5 whitespace-nowrap shrink-0 ${
+                  className={`px-3.5 md:px-5 py-2 rounded-full text-[13px] md:text-sm font-semibold transition-all flex items-center gap-1.5 whitespace-nowrap ${
                     active
                       ? "bg-white text-[#1B6B8A] shadow-sm"
                       : "text-gray-500 hover:text-gray-700"
@@ -226,14 +226,14 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
 
       {isAdmin && SESSION_GROUP.includes(pathname) && (
         <div className="bg-white border-b border-gray-100">
-          <div className="brand-container flex items-center gap-1 py-2">
+          <div className="brand-container flex flex-wrap items-center gap-1 py-2">
             {SESSION_TABS.map((tab) => {
               const tabActive = pathname === tab.href;
               return (
                 <Link
                   key={tab.href}
                   href={tab.href}
-                  className={`px-4 py-1.5 rounded-lg text-sm font-semibold transition-colors ${
+                  className={`px-3 sm:px-4 py-1.5 rounded-lg text-[13px] sm:text-sm font-semibold transition-colors whitespace-nowrap ${
                     tabActive
                       ? "bg-[#EBF4F8] text-[#1B6B8A]"
                       : "text-gray-500 hover:text-gray-700"

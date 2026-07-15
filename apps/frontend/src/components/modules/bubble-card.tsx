@@ -40,8 +40,8 @@ export function BubbleCard({ module }: { module: Module }) {
   return (
     <article className="group flex bg-white rounded-[28px] shadow-[0_4px_20px_rgba(0,0,0,0.06)] hover:shadow-[0_10px_40px_rgba(0,0,0,0.12)] transition-all duration-300 ease-out hover:-translate-y-1 h-[200px]">
 
-      {/* ── Zone mascotte ── fond clipé séparé + mascotte libre de déborder */}
-      <div className="relative w-[38%] flex-shrink-0 flex items-end justify-center">
+      {/* ── Zone mascotte ── fond clipé séparé + mascotte centrée */}
+      <div className="relative w-[38%] flex-shrink-0 flex items-center justify-center p-3">
 
         {/* Fond coloré — clipé aux coins arrondis, ne contient PAS la mascotte */}
         <div
@@ -55,14 +55,14 @@ export function BubbleCard({ module }: { module: Module }) {
           />
         </div>
 
-        {/* Mascotte — container fixe, s'adapte à n'importe quelle image */}
+        {/* Mascotte — centrée dans la zone */}
         {mascotFile && (
-          <div className="relative z-20 w-full h-full transition-transform duration-500 ease-in-out group-hover:-translate-y-3">
+          <div className="relative z-20 w-full h-full transition-transform duration-500 ease-in-out group-hover:-translate-y-1.5">
             <Image
               src={`/assets/mascotte/${mascotFile}`}
               alt={module.title}
               fill
-              className="object-contain object-bottom"
+              className="object-contain object-center"
             />
           </div>
         )}

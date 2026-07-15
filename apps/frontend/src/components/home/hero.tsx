@@ -125,14 +125,17 @@ export function Hero() {
 
         {/* ─── Zone INFÉRIEURE : 3 colonnes ───────────────────── */}
         <div className="flex flex-col lg:flex-row flex-1 items-center lg:items-start gap-8 pb-10 pt-4">
-          {/* Colonne 1 : téléphone avec vidéo mascotte */}
-          <div className="flex-shrink-0">
-            <PhoneSvg
-              className="w-[220px] sm:w-[280px] lg:w-[320px] h-auto"
-              stroke="#1F6F8B"
-              accent="#1F6F8B"
-              screen={<PhoneVideo />}
-            />
+          {/* Colonne 1 : téléphone avec vidéo mascotte.
+              La vidéo est un overlay HTML (et non un foreignObject SVG) car iOS/Safari
+              ne clippe pas correctement le contenu d'un foreignObject → la vidéo débordait. */}
+          <div className="flex-shrink-0 relative w-[220px] sm:w-[280px] lg:w-[320px]">
+            <PhoneSvg className="w-full h-auto" stroke="#1F6F8B" accent="#1F6F8B" />
+            <div
+              className="absolute overflow-hidden bg-white"
+              style={{ left: "25.8%", top: "17.7%", width: "48.4%", height: "63.2%", borderRadius: "6%" }}
+            >
+              <PhoneVideo />
+            </div>
           </div>
 
           {/* Colonne 2 : "C'est quoi" + 3 bulles venn — remontée */}

@@ -194,7 +194,7 @@ export default function ComptesPage() {
     <div className="brand-container py-10 space-y-8">
 
       {/* En-tête */}
-      <div className="flex items-center justify-between">
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
           <h1 className="text-2xl font-black text-gray-900">Gestion des comptes</h1>
           <p className="text-sm text-gray-500 mt-1">
@@ -202,17 +202,17 @@ export default function ComptesPage() {
             {admins} admin{admins > 1 ? "s" : ""}, {trainers} établissement{trainers > 1 ? "s" : ""}
           </p>
         </div>
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-2 sm:gap-3 shrink-0">
           <button
             onClick={openOrgsModal}
-            className="inline-flex items-center gap-2 px-5 py-2.5 bg-white border border-gray-200 text-gray-700 text-sm font-bold rounded-full hover:bg-gray-50 transition-colors"
+            className="flex-1 sm:flex-none inline-flex items-center justify-center gap-2 px-4 sm:px-5 py-2.5 bg-white border border-gray-200 text-gray-700 text-sm font-bold rounded-full hover:bg-gray-50 transition-colors whitespace-nowrap"
           >
             <Building2 size={16} />
             Établissements
           </button>
           <Link
             href="/dashboard/comptes/nouveau"
-            className="inline-flex items-center gap-2 px-5 py-2.5 bg-[#1B6B8A] text-white text-sm font-bold rounded-full hover:opacity-90 transition-opacity"
+            className="flex-1 sm:flex-none inline-flex items-center justify-center gap-2 px-4 sm:px-5 py-2.5 bg-[#1B6B8A] text-white text-sm font-bold rounded-full hover:opacity-90 transition-opacity whitespace-nowrap"
           >
             <Plus size={16} />
             Créer un compte
