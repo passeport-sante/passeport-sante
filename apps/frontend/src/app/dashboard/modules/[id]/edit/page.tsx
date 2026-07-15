@@ -85,7 +85,7 @@ export default function EditModulePage({ params }: PageProps) {
 
   if (error || !module) {
     return (
-      <div className="p-8 max-w-3xl">
+      <div className="p-4 md:p-8 max-w-3xl">
         <Link
           href="/dashboard/modules"
           className="inline-flex items-center gap-2 text-sm text-gray-500 hover:text-gray-700 mb-4"
@@ -103,7 +103,7 @@ export default function EditModulePage({ params }: PageProps) {
   const stepCount = module.steps?.filter((s) => s.kind === "GAME").length ?? 0;
 
   return (
-    <div className={`p-8 ${tab === "steps" ? "max-w-[1400px]" : "max-w-6xl"}`}>
+    <div className={`p-4 md:p-8 ${tab === "steps" ? "max-w-[1400px]" : "max-w-6xl"}`}>
       {/* Toast de confirmation sauvegarde */}
       {savedColor !== null && (
         <div className="fixed top-5 right-5 z-50 flex items-center gap-3 px-5 py-3 rounded-2xl bg-emerald-600 text-white text-sm font-bold shadow-xl animate-in slide-in-from-top-2">

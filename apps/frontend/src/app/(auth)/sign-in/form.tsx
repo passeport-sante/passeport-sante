@@ -48,7 +48,7 @@ export function SignInForm() {
   return (
     <div className="flex min-h-screen w-full">
       {/* Côté gauche — formulaire */}
-      <div className="relative flex flex-1 flex-col justify-center items-center px-12 py-16 overflow-hidden bg-white">
+      <div className="relative flex flex-1 flex-col justify-center items-center px-6 sm:px-12 py-12 sm:py-16 overflow-hidden bg-white">
         {/* Cercles décoratifs bleu site */}
         <div
           className="absolute -top-24 -left-24 w-96 h-96 rounded-full"

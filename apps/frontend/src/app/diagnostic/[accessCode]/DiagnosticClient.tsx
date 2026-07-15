@@ -127,7 +127,7 @@ export default function DiagnosticClient({ session }: Props) {
     return (
       <div className="min-h-screen flex items-center justify-center px-6">
         <div
-          className="bg-[#0F3A5C]/80 backdrop-blur-sm rounded-3xl p-12 text-center text-white max-w-sm flex flex-col items-center"
+          className="bg-[#0F3A5C]/80 backdrop-blur-sm rounded-3xl p-6 sm:p-12 text-center text-white max-w-sm flex flex-col items-center"
           style={{ boxShadow: "0 0 60px rgba(78,175,90,0.25)" }}
         >
           <div className="text-5xl mb-4">🎉</div>
@@ -186,12 +186,12 @@ export default function DiagnosticClient({ session }: Props) {
     answer !== undefined;
 
   return (
-    <div className="min-h-screen flex flex-col p-8">
-      <div className="absolute top-8 left-8 z-10">
+    <div className="min-h-screen flex flex-col p-4 md:p-8">
+      <div className="absolute top-4 left-4 md:top-8 md:left-8 z-10">
         <ProgressCard current={index + 1} total={questions.length} exitHref="/diagnostic" />
       </div>
 
-      <div className="flex-1 flex items-center justify-center overflow-y-auto min-h-0 py-20">
+      <div className="flex-1 flex items-center justify-center overflow-y-auto min-h-0 pt-20 pb-24 md:py-20">
         <QuestionRenderer
           question={question}
           answer={answer}
@@ -202,7 +202,7 @@ export default function DiagnosticClient({ session }: Props) {
       </div>
 
       {!isClassify && (
-        <div className="absolute bottom-8 right-8 z-10">
+        <div className="absolute bottom-4 right-4 md:bottom-8 md:right-8 z-10">
           <NextButton onClick={next} disabled={!canNext} />
         </div>
       )}

@@ -14,7 +14,7 @@ export function ProgressCard({ current, total, exitHref = "/" }: Props) {
 
   return (
     <div
-      className="bg-[#0F3A5C]/85 backdrop-blur-sm text-white rounded-2xl p-4 w-60"
+      className="bg-[#0F3A5C]/85 backdrop-blur-sm text-white rounded-2xl p-3 sm:p-4 w-48 sm:w-60"
       style={{ boxShadow: "0 4px 24px rgba(78,175,90,0.25), 0 1px 6px rgba(0,0,0,0.3)" }}
     >
       <div className="flex justify-between items-center mb-2">

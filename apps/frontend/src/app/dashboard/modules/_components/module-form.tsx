@@ -291,7 +291,7 @@ export function ModuleForm({
 
           {/* Mascotte picker */}
           <Field label="Mascotte" hint="Choisissez le personnage qui accompagne le module">
-            <div className="grid grid-cols-5 gap-2">
+            <div className="grid grid-cols-4 sm:grid-cols-5 gap-2">
               {AVAILABLE_MASCOTTES.map((m) => {
                 const selected = values.mascotte === m;
                 return (

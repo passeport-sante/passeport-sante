@@ -4,9 +4,9 @@ import { ArrowRight, KeyRound } from "lucide-react";
 
 export function CtaSection() {
   return (
-    <section className="relative py-20 lg:py-28 overflow-hidden">
+    <section className="relative py-14 md:py-20 lg:py-28 overflow-hidden">
       <div className="brand-container">
-        <div className="relative rounded-[40px] lg:rounded-[60px] overflow-hidden bg-brand-green text-white p-10 lg:p-16">
+        <div className="relative rounded-[28px] sm:rounded-[40px] lg:rounded-[60px] overflow-hidden bg-brand-green text-white p-6 sm:p-10 lg:p-16">
           {/* Texture pattern */}
           <div
             className="absolute inset-0 pointer-events-none opacity-20"
@@ -57,12 +57,12 @@ export function CtaSection() {
                 <span className="w-2 h-2 rounded-full bg-white" />
                 Prêt·e ?
               </div>
-              <h2 className="font-display text-5xl lg:text-7xl font-black leading-[0.95] tracking-tight mb-6">
+              <h2 className="font-display text-4xl sm:text-5xl lg:text-7xl font-black leading-[0.95] tracking-tight mb-6">
                 Ton parcours
                 <br />
                 t&apos;attend.
               </h2>
-              <p className="text-white/90 text-lg lg:text-xl max-w-xl leading-relaxed">
+              <p className="text-white/90 text-base sm:text-lg lg:text-xl max-w-xl leading-relaxed">
                 Pas besoin de compte pour commencer. Choisis un thème, fais le
                 quiz, et garde ton passeport. Promis,{" "}
                 <strong className="underline decoration-2 underline-offset-4">

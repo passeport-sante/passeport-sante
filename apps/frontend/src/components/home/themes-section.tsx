@@ -56,7 +56,7 @@ const THEMES: Theme[] = [
 
 export function ThemesSection() {
   return (
-    <section className="relative py-24 lg:py-32 overflow-hidden bg-brand-ink text-white">
+    <section className="relative py-16 md:py-24 lg:py-32 overflow-hidden bg-brand-ink text-white">
       {/* Background pattern dots */}
       <div
         className="absolute inset-0 pointer-events-none opacity-[0.08]"
@@ -86,7 +86,7 @@ export function ThemesSection() {
               <span className="w-2 h-2 rounded-full bg-[#9CC084]" />
               12 thèmes au programme
             </div>
-            <h2 className="font-display text-5xl lg:text-7xl font-black leading-[0.95] tracking-tight">
+            <h2 className="font-display text-4xl sm:text-5xl lg:text-7xl font-black leading-[0.95] tracking-tight">
               Tout ce qui te
               <br />
               <span className="text-brand-green italic font-handwritten">

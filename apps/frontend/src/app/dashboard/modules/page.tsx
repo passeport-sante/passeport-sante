@@ -113,7 +113,7 @@ export default function AdminModulesPage() {
   );
 
   return (
-    <div className="p-8 space-y-6 min-h-screen">
+    <div className="p-4 md:p-8 space-y-6 min-h-screen">
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>

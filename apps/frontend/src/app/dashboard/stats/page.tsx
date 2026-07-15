@@ -69,7 +69,7 @@ export default function StatsPage() {
   const maxStudents = Math.max(1, ...moduleBreakdown.map((m) => m.students));
 
   return (
-    <div className="p-8 space-y-8">
+    <div className="p-4 md:p-8 space-y-6 md:space-y-8">
       <div>
         <h1 className="text-2xl font-black text-[#1A1A1A]">Statistiques école</h1>
         <p className="text-gray-400 text-sm mt-1">Vue d&apos;ensemble de votre établissement</p>

@@ -54,7 +54,7 @@ export default function SessionDetailPage() {
   const questionStats = computeQuestionStats(session.diagnosticResponses);
 
   return (
-    <div className="p-8 space-y-8 min-h-screen">
+    <div className="p-4 md:p-8 space-y-6 md:space-y-8 min-h-screen">
       {/* Header */}
       <div className="flex items-start gap-4">
         <Link

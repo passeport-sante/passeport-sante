@@ -68,7 +68,7 @@ export default function DashboardPage() {
   const moduleTerminated = moduleSessions.filter((s) => !s.isActive);
 
   return (
-    <div className="p-8 space-y-8 min-h-screen">
+    <div className="p-4 md:p-8 space-y-6 md:space-y-8 min-h-screen">
       {/* Page header */}
       <div className="flex items-center justify-between">
         <div>

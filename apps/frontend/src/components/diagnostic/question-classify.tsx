@@ -45,7 +45,7 @@ export function QuestionClassify({
       key={id}
       draggable
       onDragStart={() => setDraggingId(id)}
-      className={`rounded-full px-6 py-3 text-sm font-semibold text-gray-700 cursor-grab select-none transition-transform active:scale-95 ${
+      className={`rounded-full px-3 py-2 sm:px-6 sm:py-3 text-xs sm:text-sm font-semibold text-gray-700 cursor-grab select-none transition-transform active:scale-95 break-words ${
         zone === "pending" ? "bg-white/75 w-full text-center" : "bg-white/80"
       }`}
     >
@@ -54,28 +54,29 @@ export function QuestionClassify({
   );
 
   return (
-    <div className="flex flex-col items-center w-full h-full px-8 py-6 gap-6">
+    <div className="flex flex-col items-center w-full h-full px-3 sm:px-8 py-4 sm:py-6 gap-4 sm:gap-6">
       {/* Header */}
       <div className="flex flex-col items-center gap-1">
-        <Heart size={44} className="text-white/25" />
-        <h2 className="text-3xl font-black text-white">{title}</h2>
-        <p className="text-white/60 text-sm">{subtitle}</p>
+        <Heart size={36} className="text-white/25 sm:hidden" />
+        <Heart size={44} className="text-white/25 hidden sm:block" />
+        <h2 className="text-2xl sm:text-3xl font-black text-white text-center">{title}</h2>
+        <p className="text-white/60 text-xs sm:text-sm text-center">{subtitle}</p>
       </div>
 
       {/* Colonnes */}
-      <div className="flex gap-6 w-full flex-1">
+      <div className="flex gap-2 sm:gap-6 w-full flex-1">
         {/* Vrai */}
         <div
-          className="flex-1 border-2 border-green-400 bg-green-300/30 rounded-3xl p-4 flex flex-col gap-3"
+          className="flex-1 min-w-0 border-2 border-green-400 bg-green-300/30 rounded-2xl sm:rounded-3xl p-2 sm:p-4 flex flex-col gap-2 sm:gap-3"
           {...dropProps("vrai")}
         >
-          <p className="text-white font-black text-2xl">Vrai</p>
+          <p className="text-white font-black text-lg sm:text-2xl">Vrai</p>
           {inZone("vrai").map((i) => dragItem(i.id, "vrai"))}
         </div>
 
         {/* Centre : items non classés + bouton */}
         <div
-          className="flex-1 flex flex-col items-center gap-3"
+          className="flex-1 min-w-0 flex flex-col items-center gap-2 sm:gap-3"
           {...dropProps("pending")}
         >
           {inZone("pending").map((i) => dragItem(i.id, "pending"))}
@@ -88,18 +89,18 @@ export function QuestionClassify({
               })
             }
             disabled={!allClassified}
-            className="mt-auto bg-green-500 hover:bg-green-600 disabled:bg-green-500/40 disabled:cursor-not-allowed text-white font-black py-4 px-10 rounded-2xl text-lg transition-colors"
+            className="mt-auto bg-green-500 hover:bg-green-600 disabled:bg-green-500/40 disabled:cursor-not-allowed text-white font-black py-3 px-5 sm:py-4 sm:px-10 rounded-2xl text-sm sm:text-lg transition-colors w-full sm:w-auto"
           >
-            Valider les choix
+            Valider
           </button>
         </div>
 
         {/* Faux */}
         <div
-          className="flex-1 border-2 border-red-400 bg-red-300/20 rounded-3xl p-4 flex flex-col gap-3 items-end"
+          className="flex-1 min-w-0 border-2 border-red-400 bg-red-300/20 rounded-2xl sm:rounded-3xl p-2 sm:p-4 flex flex-col gap-2 sm:gap-3 items-end"
           {...dropProps("faux")}
         >
-          <p className="text-white font-black text-2xl">Faux</p>
+          <p className="text-white font-black text-lg sm:text-2xl">Faux</p>
           {inZone("faux").map((i) => dragItem(i.id, "faux"))}
         </div>
       </div>

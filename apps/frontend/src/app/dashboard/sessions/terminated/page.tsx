@@ -35,7 +35,7 @@ export default function TerminatedSessionsPage() {
   }
 
   return (
-    <div className="p-8 space-y-6">
+    <div className="p-4 md:p-8 space-y-6">
       <div>
         <h1 className="text-2xl font-black text-[#1A1A1A]">Sessions Terminées</h1>
         <p className="text-gray-400 text-sm mt-1">Historique de toutes vos sessions clôturées</p>

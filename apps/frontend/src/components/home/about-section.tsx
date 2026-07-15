@@ -23,7 +23,7 @@ const STEPS = [
 
 export function AboutSection() {
   return (
-    <section className="relative py-24 lg:py-32 overflow-hidden">
+    <section className="relative py-16 md:py-24 lg:py-32 overflow-hidden">
       {/* Halo blob bas-gauche */}
       <div
         className="absolute -bottom-32 -left-32 w-[400px] h-[400px] rounded-full pointer-events-none"
@@ -36,10 +36,10 @@ export function AboutSection() {
 
       <div className="relative z-10 brand-container">
         {/* Header éditorial : kicker + titre + intro */}
-        <div className="grid grid-cols-12 gap-8 mb-16 lg:mb-24">
+        <div className="grid grid-cols-12 gap-8 mb-12 md:mb-16 lg:mb-24">
           <div className="col-span-12 lg:col-span-5">
             <div className="kicker mb-6">Comment ça marche</div>
-            <h2 className="font-display text-5xl lg:text-6xl font-black text-brand-ink leading-[0.95] tracking-tight">
+            <h2 className="font-display text-4xl sm:text-5xl lg:text-6xl font-black text-brand-ink leading-[0.95] tracking-tight">
               C&apos;est quoi <br />
               le <span className="accent-handwritten">passeport</span> ?
             </h2>
