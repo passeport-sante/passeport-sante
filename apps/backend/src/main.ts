@@ -8,8 +8,23 @@ async function bootstrap() {
 
   app.setGlobalPrefix('api');
   app.useGlobalPipes(new ValidationPipe({ whitelist: true, transform: true }));
+
+  // CORS : en dev on autorise toutes les origines (tests en local / réseau local).
+  // En prod, seules les origines listées dans CORS_ORIGINS (ou FRONTEND_URL) sont acceptées.
+  const isProd = process.env.NODE_ENV === 'production';
+  const allowlist = (process.env.CORS_ORIGINS || process.env.FRONTEND_URL || 'http://localhost:3000')
+    .split(',')
+    .map((o) => o.trim())
+    .filter(Boolean);
+
   app.enableCors({
-    origin: process.env.FRONTEND_URL || 'http://localhost:3000',
+    origin: (origin, callback) => {
+      // Requêtes sans origine (curl, SSR, apps natives) → autorisées
+      if (!origin) return callback(null, true);
+      if (!isProd) return callback(null, true);
+      if (allowlist.includes(origin)) return callback(null, true);
+      return callback(new Error(`Origine non autorisée par CORS : ${origin}`));
+    },
     credentials: true,
   });
 
