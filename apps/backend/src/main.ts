@@ -18,17 +18,15 @@ async function bootstrap() {
     .filter(Boolean);
 
   app.enableCors({
-  origin: (
-    origin: string | undefined,
-    callback: (err: Error | null, allow?: boolean) => void,
-  ) => {
-    if (!origin) return callback(null, true);
-    if (!isProd) return callback(null, true);
-    if (allowlist.includes(origin)) return callback(null, true);
-    return callback(new Error(`Origine non autorisée par CORS : ${origin}`));
-  },
-  credentials: true,
-});
+    origin: (origin, callback) => {
+      // Requêtes sans origine (curl, SSR, apps natives) → autorisées
+      if (!origin) return callback(null, true);
+      if (!isProd) return callback(null, true);
+      if (allowlist.includes(origin)) return callback(null, true);
+      return callback(new Error(`Origine non autorisée par CORS : ${origin}`));
+    },
+    credentials: true,
+  });
 
   const config = new DocumentBuilder()
     .setTitle('Prevention Platform API')
