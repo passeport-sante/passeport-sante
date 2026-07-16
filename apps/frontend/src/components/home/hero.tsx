@@ -210,7 +210,7 @@ export function Hero() {
           {/* Colonne 3 : CTAs */}
           <div className="flex-shrink-0 flex flex-col gap-4 w-full sm:w-auto lg:mt-12">
             <Link
-              href="/sign-in"
+              href="/modules"
               className="group inline-flex items-center justify-center gap-3 px-8 py-4 lg:py-5 bg-brand-dark-green text-white font-bold rounded-full text-base shadow-lg hover:shadow-xl hover:-translate-y-0.5 transition-all whitespace-nowrap"
             >
               Commencer le parcours

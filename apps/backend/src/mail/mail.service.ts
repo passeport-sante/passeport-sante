@@ -78,6 +78,8 @@ export class MailService {
 
   // Email de bienvenue à la création d'un compte, avec ses identifiants.
   async sendAccountCreated(to: string, name: string, password: string): Promise<boolean> {
+    const siteUrl = process.env.FRONTEND_URL || "http://localhost:3000";
+    const loginUrl = `${siteUrl}/sign-in`;
     return this.send(
       to,
       "Votre compte Passeport Santé a été créé",
@@ -85,13 +87,15 @@ export class MailService {
         `Un compte Passeport Santé vient d'être créé pour vous.\n\n` +
         `Identifiant (email) : ${to}\n` +
         `Mot de passe : ${password}\n\n` +
-        `Vous pouvez vous connecter dès maintenant. Nous vous conseillons de modifier votre mot de passe après votre première connexion.\n\n` +
+        `Connectez-vous ici : ${loginUrl}\n\n` +
+        `Nous vous conseillons de modifier votre mot de passe après votre première connexion.\n\n` +
         `— L'équipe Passeport Santé`,
       `<p>Bonjour <strong>${name}</strong>,</p>` +
         `<p>Un compte Passeport Santé vient d'être créé pour vous.</p>` +
         `<p><strong>Identifiant (email) :</strong> ${to}<br/>` +
         `<strong>Mot de passe :</strong> <strong style="font-family:monospace;font-size:16px">${password}</strong></p>` +
-        `<p style="color:#6b7280">Vous pouvez vous connecter dès maintenant. Nous vous conseillons de modifier votre mot de passe après votre première connexion.</p>` +
+        `<p><a href="${loginUrl}" style="display:inline-block;padding:12px 20px;background:#1B6B8A;color:#fff;border-radius:8px;text-decoration:none;font-weight:bold">Se connecter</a></p>` +
+        `<p style="color:#6b7280;font-size:13px">Ou copiez ce lien : <a href="${loginUrl}">${loginUrl}</a><br/>Nous vous conseillons de modifier votre mot de passe après votre première connexion.</p>` +
         `<p>— L'équipe Passeport Santé</p>`,
     );
   }

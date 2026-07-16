@@ -8,6 +8,7 @@ import Link from "next/link";
 import Image from "next/image";
 import { useState } from "react";
 import { useForm } from "react-hook-form";
+import { Eye, EyeOff } from "lucide-react";
 
 interface SignInFormValues {
   email: string;
@@ -17,6 +18,7 @@ interface SignInFormValues {
 export function SignInForm() {
   const router = useRouter();
   const [serverError, setServerError] = useState<string | null>(null);
+  const [showPwd, setShowPwd] = useState(false);
   const {
     register,
     handleSubmit,
@@ -103,12 +105,23 @@ export function SignInForm() {
                   Mot de passe oublié ?
                 </Link>
               </div>
-              <Input
-                id="password"
-                type="password"
-                placeholder="••••••••"
-                {...register("password", { required: true })}
-              />
+              <div className="relative">
+                <Input
+                  id="password"
+                  type={showPwd ? "text" : "password"}
+                  placeholder="••••••••"
+                  className="pr-10"
+                  {...register("password", { required: true })}
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowPwd((v) => !v)}
+                  aria-label={showPwd ? "Masquer le mot de passe" : "Afficher le mot de passe"}
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
+                >
+                  {showPwd ? <EyeOff size={16} /> : <Eye size={16} />}
+                </button>
+              </div>
               {errors.password && (
                 <span className="text-destructive text-sm">
                   Mot de passe requis

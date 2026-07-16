@@ -73,7 +73,7 @@ export function CtaSection() {
 
               <div className="mt-10 flex flex-wrap gap-4">
                 <Link
-                  href="/sign-in"
+                  href="/modules"
                   className="group inline-flex items-center gap-3 px-8 py-4 bg-brand-ink text-white font-bold rounded-full text-base hover:bg-black transition-colors"
                 >
                   Commencer maintenant
