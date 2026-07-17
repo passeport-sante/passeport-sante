@@ -226,7 +226,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
 
       {isAdmin && SESSION_GROUP.includes(pathname) && (
         <div className="bg-white border-b border-gray-100">
-          <div className="brand-container flex flex-wrap items-center gap-1 py-2">
+          <div className="brand-container flex flex-wrap items-center justify-center gap-1 py-2">
             {SESSION_TABS.map((tab) => {
               const tabActive = pathname === tab.href;
               return (
