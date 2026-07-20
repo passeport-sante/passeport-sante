@@ -16,7 +16,7 @@
     "@dnd-kit/utilities": "^3.2.2",
     "@react-pdf/renderer": "^4.3.2",
     "@repo/ui": "*",
-    "@rive-app/react-canvas": "^4.29.0",
+    "@rive-app/react-canvas": "4.28.1",
     "@tailwindcss/postcss": "^4.2.2",
     "@types/nodemailer": "^8.0.0",
     "class-variance-authority": "^0.7.1",
