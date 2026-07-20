@@ -23,6 +23,8 @@ export type StepContent = {
   imageUrl?: string;
   videoUrl?: string;
   caption?: string;
+  // Scénario : active le mode "bouclier mental" (jauge à points, on avance à chaque choix)
+  shieldMode?: boolean;
 };
 
 export type AdminStep = {
