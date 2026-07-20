@@ -92,13 +92,21 @@ export function ModuleImmersiveClient({ module }: Props) {
   const canvasWrapRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
+    const el = canvasWrapRef.current;
     function update() {
-      const w = canvasWrapRef.current?.clientWidth ?? CANVAS_WIDTH;
-      setCanvasScale(Math.min(1, w / CANVAS_WIDTH));
+      const w = el?.clientWidth ?? 0;
+      // Ne jamais mettre l'échelle à 0 : si la largeur n'est pas encore connue, on garde 1 (visible)
+      if (w > 0) setCanvasScale(Math.min(1, w / CANVAS_WIDTH));
     }
     update();
+    // ResizeObserver : recalcule quand la mise en page est prête (fiable en prod), + fallback resize fenêtre
+    const ro = typeof ResizeObserver !== "undefined" && el ? new ResizeObserver(update) : null;
+    if (ro && el) ro.observe(el);
     window.addEventListener("resize", update);
-    return () => window.removeEventListener("resize", update);
+    return () => {
+      if (ro) ro.disconnect();
+      window.removeEventListener("resize", update);
+    };
   }, []);
 
   const searchParams = useSearchParams();
