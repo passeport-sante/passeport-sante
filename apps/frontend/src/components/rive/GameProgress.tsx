@@ -2,7 +2,13 @@
 
 import { useEffect, useRef } from "react";
 import { useRive } from "@rive-app/react-canvas";
-import type { Rive as RiveType } from "@rive-app/canvas";
+import { RuntimeLoader, type Rive as RiveType } from "@rive-app/canvas";
+
+// Auto-héberge le runtime WASM de Rive au lieu de le charger depuis le CDN unpkg.com.
+// Sinon, un réseau filtré (écoles) ou une CSP en prod peut bloquer le CDN → la barre reste invisible.
+if (typeof window !== "undefined") {
+  RuntimeLoader.setWasmUrl("/rive/rive.wasm");
+}
 
 interface Props {
   level: 1 | 2 | 3 | 4 | 5;
