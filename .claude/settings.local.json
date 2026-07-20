@@ -36,7 +36,23 @@
       "PowerShell(docker restart prevention_backend 2>&1)",
       "PowerShell(docker exec -w /app/apps/backend prevention_backend /app/apps/backend/node_modules/.bin/prisma migrate dev --name make-module-session-moduleid-nullable 2>&1)",
       "Bash(rtk npx *)",
-      "Bash(node shots.js)"
+      "Bash(node shots.js)",
+      "Bash(awk '{print $5}')",
+      "Read(//tmp/**)",
+      "Bash(awk '{print $5, $NF}')",
+      "Bash(node -e ' *)",
+      "Bash(node -e \"let d='';process.stdin.on\\('data',c=>d+=c\\).on\\('end',\\(\\)=>{try{const m=JSON.parse\\(d\\);console.log\\(m.map\\(x=>x.slug\\).join\\('\\\\n'\\)\\)}catch\\(e\\){console.log\\('parse err', d.slice\\(0,200\\)\\)}}\\)\")",
+      "Bash(node prodrive.js)",
+      "Bash(node -e \"let d='';process.stdin.on\\('data',c=>d+=c\\).on\\('end',\\(\\)=>{try{console.log\\('slugs:', JSON.parse\\(d\\).map\\(x=>x.slug\\).join\\(', '\\)\\)}catch\\(e\\){console.log\\('api down'\\)}}\\)\")",
+      "Bash(docker compose *)",
+      "Bash(xxd /tmp/riv_ae)",
+      "Bash(rtk wc *)",
+      "Bash(xxd /tmp/wasm_ae)",
+      "Bash(node -e \"console.log\\('react-canvas:', require\\('@rive-app/react-canvas/package.json'\\).version\\); console.log\\('canvas:', require\\('@rive-app/canvas/package.json'\\).version\\)\")",
+      "Bash(npm view *)",
+      "Bash(xxd /tmp/now.riv)",
+      "Bash(node rivetest.js)",
+      "Bash(awk '{print $5, $9}')"
     ]
   }
 }
