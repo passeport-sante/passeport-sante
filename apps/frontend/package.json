@@ -5,6 +5,8 @@
   "private": true,
   "scripts": {
     "dev": "next dev --webpack --port 3000",
+    "sync-rive-wasm": "node scripts/sync-rive-wasm.mjs",
+    "prebuild": "node scripts/sync-rive-wasm.mjs",
     "build": "next build",
     "start": "next start",
     "lint": "eslint --max-warnings 0",
@@ -16,7 +18,7 @@
     "@dnd-kit/utilities": "^3.2.2",
     "@react-pdf/renderer": "^4.3.2",
     "@repo/ui": "*",
-    "@rive-app/react-canvas": "4.28.1",
+    "@rive-app/react-canvas": "4.29.5",
     "@tailwindcss/postcss": "^4.2.2",
     "@types/nodemailer": "^8.0.0",
     "class-variance-authority": "^0.7.1",

@@ -52,7 +52,12 @@
       "Bash(npm view *)",
       "Bash(xxd /tmp/now.riv)",
       "Bash(node rivetest.js)",
-      "Bash(awk '{print $5, $9}')"
+      "Bash(awk '{print $5, $9}')",
+      "Bash(xxd)",
+      "Bash(md5sum node_modules/@rive-app/canvas/rive.wasm apps/frontend/public/rive/rive.wasm; stat -c '%s %n' node_modules/@rive-app/canvas/rive.wasm apps/frontend/public/rive/rive.wasm)",
+      "Read(//c/Users/cleme/Desktop/Workspace/Codes/prevention-platform/**)",
+      "Bash(node -p \"require\\('./node_modules/@rive-app/canvas/package.json'\\).version\")",
+      "Bash(git rm *)"
     ]
   }
 }
