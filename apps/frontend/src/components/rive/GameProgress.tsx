@@ -3,6 +3,7 @@
 import { useEffect, useRef } from "react";
 import { useRive } from "@rive-app/react-canvas";
 import { RuntimeLoader, type Rive as RiveType } from "@rive-app/canvas";
+import { mascotteUrl } from "@/lib/mascotte";
 
 // Auto-héberge le runtime WASM de Rive au lieu de le charger depuis le CDN unpkg.com.
 // Sinon, un réseau filtré (écoles) ou une CSP en prod peut bloquer le CDN → la barre reste invisible.
@@ -17,7 +18,7 @@ interface Props {
   height?: number;
   /** Couleur principale des steps débloqués (hex, ex: "#1B6B8A") */
   stepColor?: string;
-  /** Fichier de mascotte à injecter dans le .riv, ex: "mascotte1.png" */
+  /** Mascotte à injecter dans le .riv : nom de fichier legacy ou URL Cloudinary */
   mascotteFile?: string;
 }
 
@@ -70,15 +71,6 @@ function setRiveLevel(rive: RiveType, level: number) {
   if (charX) charX.value = -9999;
 }
 
-function lighten(c: { r: number; g: number; b: number; a: number }, t = 0.35) {
-  return {
-    r: Math.round(c.r + (255 - c.r) * t),
-    g: Math.round(c.g + (255 - c.g) * t),
-    b: Math.round(c.b + (255 - c.b) * t),
-    a: 255,
-  };
-}
-
 // Rive stores colors as packed ARGB integers, not {r,g,b,a} objects
 function toArgb(c: { r: number; g: number; b: number; a: number }): number {
   return (((c.a << 24) | (c.r << 16) | (c.g << 8) | c.b) >>> 0) as number;
@@ -120,8 +112,11 @@ export function GameProgress({
       if (!asset.isImage) return false;
 
       if (asset.name === "mascotte-a") {
-        if (mascotteFile) {
-          fetch(`/assets/mascotte/${mascotteFile}`)
+        // Taille "rive" volontairement réduite : l'image est décodée en texture GPU,
+        // un original 2814x1536 coûterait ~17 Mo de VRAM pour un rendu à 400px.
+        const url = mascotteUrl(mascotteFile, "rive");
+        if (url) {
+          fetch(url)
             .then((r) => r.arrayBuffer())
             .then((buf) => asset.decode(new Uint8Array(buf)));
         } else {

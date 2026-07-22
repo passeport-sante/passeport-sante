@@ -173,15 +173,6 @@ export function slugify(input: string): string {
 
 export const SLUG_REGEX = /^[a-z0-9]+(?:-[a-z0-9]+)*$/;
 
-// Mascottes disponibles dans public/assets/mascotte/
-export const AVAILABLE_MASCOTTES = [
-  "Mme-etoile.png",
-  "Petit-savon.png",
-  "Butternut-mascotte.png",
-  "mascotte5.png",
-  "mascotte6.png",
-];
-
 // Palettes pré-définies cohérentes par thématique
 export const COLOR_PRESETS: { name: string; colors: { colorPrimary: string; colorSecondary: string; colorCard: string; colorCardSecondary: string } }[] = [
   {

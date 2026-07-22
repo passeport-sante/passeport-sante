@@ -57,7 +57,13 @@
       "Bash(md5sum node_modules/@rive-app/canvas/rive.wasm apps/frontend/public/rive/rive.wasm; stat -c '%s %n' node_modules/@rive-app/canvas/rive.wasm apps/frontend/public/rive/rive.wasm)",
       "Read(//c/Users/cleme/Desktop/Workspace/Codes/prevention-platform/**)",
       "Bash(node -p \"require\\('./node_modules/@rive-app/canvas/package.json'\\).version\")",
-      "Bash(git rm *)"
+      "Bash(git rm *)",
+      "Bash(rtk lint *)",
+      "Bash(node -e \"let d='';process.stdin.on\\('data',c=>d+=c\\).on\\('end',\\(\\)=>{const r=JSON.parse\\(d\\);r[0].messages.forEach\\(m=>console.log\\(m.line+':'+m.column,m.ruleId,m.message\\)\\)}\\)\")",
+      "Bash(./node_modules/.bin/eslint \"src/app/dashboard/modules/_components/module-form.tsx\")",
+      "Bash(./node_modules/.bin/eslint apps/frontend/src/app/dashboard/modules/_components/module-form.tsx)",
+      "Bash(node -e \"const r=require\\('/tmp/lint.json'\\);r[0].messages.forEach\\(m=>console.log\\(m.line+':'+m.column,m.ruleId,'-',m.message\\)\\)\")",
+      "Bash(rtk proxy *)"
     ]
   }
 }

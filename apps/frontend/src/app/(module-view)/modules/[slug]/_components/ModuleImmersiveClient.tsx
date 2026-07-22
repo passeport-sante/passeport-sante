@@ -7,6 +7,7 @@ import Image from "next/image";
 import { ArrowLeft, ChevronRight, Download, Loader2 } from "lucide-react";
 import { PDFDownloadLink } from "@react-pdf/renderer";
 import { GameProgress } from "@/components/rive/GameProgress";
+import { mascotteUrl } from "@/lib/mascotte";
 import { createGuestStudent, setGuestStudentId, getGuestStudentId } from "@/lib/modules";
 import { ModuleCertificatePdf } from "./ModuleCertificatePdf";
 
@@ -72,14 +73,8 @@ function getBubbleLayout(mascotteX: number, mascotteCenterY: number) {
   return { left, top, placeRight, triangleTop };
 }
 
-function resolveMascotte(raw: string | null): string | null {
-  if (!raw) return null;
-  if (raw.startsWith("/") || raw.startsWith("http")) return raw;
-  return `/assets/mascotte/${raw}`;
-}
-
 export function ModuleImmersiveClient({ module }: Props) {
-  const mascotteSrc = resolveMascotte(module.mascotte);
+  const mascotteSrc = mascotteUrl(module.mascotte, "card");
   const [riveLevel, setRiveLevel] = useState<number | null>(null);
   const [unlockedLevel, setUnlockedLevel] = useState<number | null>(null);
   const [showNextBtn, setShowNextBtn] = useState(false);

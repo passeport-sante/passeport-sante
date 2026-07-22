@@ -14,6 +14,7 @@ import {
   Clock,
 } from "lucide-react";
 import type { AdminModule } from "@/lib/modules-admin";
+import { mascotteUrl } from "@/lib/mascotte";
 
 interface Props {
   module: AdminModule;
@@ -38,6 +39,7 @@ export function AdminModuleCard({ module, onDuplicate, onToggleActive, onDelete 
   }, [menuOpen]);
 
   const color = module.colorPrimary ?? "#1B6B8A";
+  const mascotteSrc = mascotteUrl(module.mascotte, "thumb");
 
   return (
     <div className="group relative bg-white rounded-xl border border-gray-200 overflow-hidden flex flex-col hover:border-gray-300 transition-colors">
@@ -48,9 +50,9 @@ export function AdminModuleCard({ module, onDuplicate, onToggleActive, onDelete 
             className="w-12 h-12 rounded-xl flex items-center justify-center shrink-0 overflow-hidden"
             style={{ background: module.colorCard ?? `${color}15` }}
           >
-            {module.mascotte ? (
+            {mascotteSrc ? (
               <Image
-                src={`/assets/mascotte/${module.mascotte}`}
+                src={mascotteSrc}
                 alt={module.title}
                 width={40}
                 height={40}

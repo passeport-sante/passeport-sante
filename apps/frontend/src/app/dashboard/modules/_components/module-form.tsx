@@ -2,10 +2,11 @@
 
 import { useEffect, useState } from "react";
 import Image from "next/image";
-import { BarChart3, Check, Loader2, Sparkles } from "lucide-react";
+import { BarChart3, Loader2, Sparkles } from "lucide-react";
 import { GameProgress } from "@/components/rive/GameProgress";
+import { MascottePicker } from "./mascotte-picker";
+import { mascotteUrl } from "@/lib/mascotte";
 import {
-  AVAILABLE_MASCOTTES,
   COLOR_PRESETS,
   SLUG_REGEX,
   isSlugTaken,
@@ -38,7 +39,9 @@ const DEFAULTS: ModuleFormValues = {
   slug: "",
   duration: 20,
   categoryId: "",
-  mascotte: AVAILABLE_MASCOTTES[0] ?? "",
+  // Vide par défaut : le catalogue est chargé par MascottePicker, on ne peut pas
+  // présélectionner sans connaître son contenu.
+  mascotte: "",
   colorPrimary: "#1B6B8A",
   colorSecondary: "#2A8970",
   colorCard: "#EBF4F8",
@@ -70,7 +73,7 @@ export function ModuleForm({
           slug: initial.slug,
           duration: initial.duration ?? "",
           categoryId: initial.categoryId ?? "",
-          mascotte: initial.mascotte ?? AVAILABLE_MASCOTTES[0] ?? "",
+          mascotte: initial.mascotte ?? "",
           colorPrimary: initial.colorPrimary ?? "#1B6B8A",
           colorSecondary: initial.colorSecondary ?? "#2A8970",
           colorCard: initial.colorCard ?? "#EBF4F8",
@@ -290,37 +293,14 @@ export function ModuleForm({
           </div>
 
           {/* Mascotte picker */}
-          <Field label="Mascotte" hint="Choisissez le personnage qui accompagne le module">
-            <div className="grid grid-cols-4 sm:grid-cols-5 gap-2">
-              {AVAILABLE_MASCOTTES.map((m) => {
-                const selected = values.mascotte === m;
-                return (
-                  <button
-                    key={m}
-                    type="button"
-                    onClick={() => update("mascotte", m)}
-                    className={`relative aspect-square rounded-xl border-2 p-2 transition-all ${
-                      selected
-                        ? "border-[#2A8970] bg-[#EBF6F3]"
-                        : "border-gray-100 bg-gray-50 hover:border-gray-200"
-                    }`}
-                  >
-                    {selected && (
-                      <span className="absolute top-1 right-1 w-4 h-4 rounded-full bg-[#2A8970] flex items-center justify-center">
-                        <Check size={9} className="text-white" strokeWidth={3} />
-                      </span>
-                    )}
-                    <Image
-                      src={`/assets/mascotte/${m}`}
-                      alt={m}
-                      width={60}
-                      height={60}
-                      className="w-full h-full object-contain"
-                    />
-                  </button>
-                );
-              })}
-            </div>
+          <Field
+            label="Mascotte"
+            hint="Choisissez le personnage qui accompagne le module, ou ajoutez-en un"
+          >
+            <MascottePicker
+              value={values.mascotte}
+              onChange={(url) => update("mascotte", url)}
+            />
           </Field>
         </Section>
 
@@ -378,7 +358,7 @@ export function ModuleForm({
             {values.mascotte && (
               <div className="absolute bottom-2 left-2 w-12 h-12 rounded-xl bg-white shadow-sm border border-gray-100 flex items-center justify-center">
                 <Image
-                  src={`/assets/mascotte/${values.mascotte}`}
+                  src={mascotteUrl(values.mascotte, "thumb") ?? ""}
                   alt="mascotte"
                   width={40}
                   height={40}
@@ -507,7 +487,7 @@ function ModuleCardPreview({ values }: { values: ModuleFormValues }) {
         >
           {values.mascotte && (
             <Image
-              src={`/assets/mascotte/${values.mascotte}`}
+              src={mascotteUrl(values.mascotte, "thumb") ?? ""}
               alt="mascotte"
               width={56}
               height={56}
@@ -535,53 +515,6 @@ function ModuleCardPreview({ values }: { values: ModuleFormValues }) {
       >
         Découvrir le module →
       </div>
-    </div>
-  );
-}
-
-function lightenHex(hex: string, t = 0.35): string {
-  const h = hex.replace("#", "");
-  const r = parseInt(h.slice(0, 2), 16);
-  const g = parseInt(h.slice(2, 4), 16);
-  const b = parseInt(h.slice(4, 6), 16);
-  const lr = Math.round(r + (255 - r) * t).toString(16).padStart(2, "0");
-  const lg = Math.round(g + (255 - g) * t).toString(16).padStart(2, "0");
-  const lb = Math.round(b + (255 - b) * t).toString(16).padStart(2, "0");
-  return `#${lr}${lg}${lb}`;
-}
-
-function ProgressStepsPreview({ color, mascotte }: { color: string; mascotte: string }) {
-  const light = lightenHex(color);
-  return (
-    <div className="rounded-2xl border border-gray-100 bg-white p-4 flex flex-col items-center gap-4">
-      <div className="flex items-center gap-0">
-        {[1, 2, 3, 4, 5].map((i) => (
-          <div key={i} className="flex items-center">
-            <div
-              className="w-10 h-10 rounded-full shadow-sm flex items-center justify-center text-white text-xs font-bold"
-              style={{
-                background: i === 1
-                  ? `radial-gradient(circle at 38% 35%, ${light}, ${color})`
-                  : "#d1d5db",
-              }}
-            >
-              {i === 1 ? <Check size={14} strokeWidth={3} /> : i}
-            </div>
-            {i < 5 && (
-              <div className="w-8 h-1 rounded-full" style={{ background: "#e5e7eb" }} />
-            )}
-          </div>
-        ))}
-      </div>
-      {mascotte && (
-        <Image
-          src={`/assets/mascotte/${mascotte}`}
-          alt="mascotte"
-          width={72}
-          height={72}
-          className="object-contain"
-        />
-      )}
     </div>
   );
 }

@@ -93,6 +93,25 @@ model Category {
   modules Module[]
 }
 
+// ─── Mascottes ────────────────────────────────────────────────────────────────
+
+// Catalogue commun des mascottes proposées à la création d'un module.
+// Alimenté par les admins depuis le back-office ; les visuels sont hébergés sur
+// Cloudinary. Volontairement non rattaché à une Organization : la gestion des
+// mascottes est réservée aux admins, le catalogue est donc partagé.
+//
+// `url` accepte deux formats, cf. le helper mascotteUrl() côté front :
+//  - un nom de fichier ("mascotte1.png") pour les mascottes livrées avec le build
+//  - une URL Cloudinary absolue pour celles uploadées
+model Mascotte {
+  id        String   @id @default(cuid())
+  label     String
+  url       String   @unique
+  order     Int      @default(0)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
 // ─── Modules ──────────────────────────────────────────────────────────────────
 
 model Module {

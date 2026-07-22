@@ -3,6 +3,7 @@ import { ConfigModule } from "@nestjs/config";
 import { OrganizationModule } from "./organization/organization.module";
 import { UserModule } from "./user/user.module";
 import { ModulesModule } from "./modules/modules.module";
+import { MascotteModule } from "./mascotte/mascotte.module";
 import { StepModule } from "./step/step.module";
 import { DiagnosticModule } from "./diagnostic/diagnostic.module";
 import { ResponseModule } from "./response/response.module";
@@ -21,6 +22,7 @@ import { AuthModule } from "./auth/auth.module";
     OrganizationModule,
     UserModule,
     ModulesModule,
+    MascotteModule,
     StepModule,
     DiagnosticModule,
     ResponseModule,

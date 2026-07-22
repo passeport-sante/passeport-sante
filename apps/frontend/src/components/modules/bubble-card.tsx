@@ -1,6 +1,7 @@
 import Image from "next/image";
 import Link from "next/link";
 import { Clock, ArrowRight } from "lucide-react";
+import { mascotteUrl } from "@/lib/mascotte";
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 
@@ -33,7 +34,7 @@ const FALLBACK_SECONDARY = "#C7DCFF";
 // ── Composant ─────────────────────────────────────────────────────────────────
 
 export function BubbleCard({ module }: { module: Module }) {
-  const mascotFile   = module.mascotte ?? "";
+  const mascotteSrc  = mascotteUrl(module.mascotte, "card");
   const bgLeft       = module.colorCard      ?? module.colorPrimary   ?? FALLBACK_PRIMARY;
   const bgLeftCircle = module.colorCardSecondary ?? module.colorSecondary ?? FALLBACK_SECONDARY;
 
@@ -56,10 +57,10 @@ export function BubbleCard({ module }: { module: Module }) {
         </div>
 
         {/* Mascotte — centrée dans la zone */}
-        {mascotFile && (
+        {mascotteSrc && (
           <div className="relative z-20 w-full h-full transition-transform duration-500 ease-in-out group-hover:-translate-y-1.5">
             <Image
-              src={`/assets/mascotte/${mascotFile}`}
+              src={mascotteSrc}
               alt={module.title}
               fill
               className="object-contain object-center"

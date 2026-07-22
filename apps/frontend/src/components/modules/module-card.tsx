@@ -1,6 +1,7 @@
 import Image from "next/image";
 import Link from "next/link";
 import { Clock } from "lucide-react";
+import { mascotteUrl } from "@/lib/mascotte";
 
 export type Module = {
   id: string;
@@ -18,18 +19,22 @@ export type Category = {
 };
 
 export function ModuleCard({ module }: { module: Module }) {
+  const mascotteSrc = mascotteUrl(module.mascotte, "card");
+
   return (
     <div className="module-card-wrapper">
       {/* Mascotte — superposée sur la carte, indépendante du contenu */}
-      <div className="module-card-mascotte">
-        <Image
-          src={`/assets/mascotte/${module.mascotte}`}
-          alt={module.title}
-          width={100}
-          height={100}
-          className="w-full h-full object-contain object-bottom"
-        />
-      </div>
+      {mascotteSrc && (
+        <div className="module-card-mascotte">
+          <Image
+            src={mascotteSrc}
+            alt={module.title}
+            width={100}
+            height={100}
+            className="w-full h-full object-contain object-bottom"
+          />
+        </div>
+      )}
 
       {/* Carte — layout fixe, non affecté par la taille de la mascotte */}
       <div className="module-card">
