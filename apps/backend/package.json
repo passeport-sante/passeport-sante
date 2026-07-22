@@ -21,10 +21,12 @@
     "prisma:generate": "prisma generate",
     "prisma:migrate": "prisma migrate dev",
     "prisma:seed": "ts-node prisma/seed.ts",
+    "prisma:seed-mascottes": "ts-node prisma/seed-mascottes.ts",
     "docker:migrate": "docker exec -w /app/apps/backend prevention_backend npx prisma@6 migrate dev",
     "docker:generate": "docker exec -w /app/apps/backend prevention_backend npx prisma@6 generate",
     "docker:studio": "docker exec -w /app/apps/backend prevention_backend npx prisma@6 studio",
-    "docker:seed": "docker exec -w /app/apps/backend prevention_backend npx ts-node prisma/seed.ts"
+    "docker:seed": "docker exec -w /app/apps/backend prevention_backend npx ts-node prisma/seed.ts",
+    "docker:seed-mascottes": "docker exec -w /app/apps/backend prevention_backend npx ts-node prisma/seed-mascottes.ts"
   },
   "dependencies": {
     "@nestjs/common": "^11.0.0",
