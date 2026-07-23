@@ -21,6 +21,7 @@ const GAME_TYPE_LABEL: Record<string, string> = {
   SCENARIO:    "Mise en situation",
   QUIZ:        "Quiz final",
   MOTS_CROISES: "Mots croisés",
+  HISTOIRE:    "Histoire",
 };
 
 export default function ModuleSessionDetailPage() {

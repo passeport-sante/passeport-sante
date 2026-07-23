@@ -25,6 +25,7 @@ enum GameType {
   PHRASE_A_TROU
   SCENARIO
   MOTS_CROISES
+  HISTOIRE
 }
 
 // Distingue une étape de jeu (comptée, cercle Rive) d'une sous-étape de contenu (intercalée, non comptée)

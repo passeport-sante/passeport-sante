@@ -5,6 +5,7 @@ import { KanbanGame } from "./_components/KanbanGame";
 import { ScenarioGame } from "./_components/ScenarioGame";
 import { QuizGame } from "./_components/QuizGame";
 import { MotsCroises } from "./_components/MotsCroises";
+import { HistoireGame } from "./_components/HistoireGame";
 import { ContentPanel } from "./_components/ContentPanel";
 import { StepGate } from "./_components/StepGate";
 
@@ -42,6 +43,8 @@ export default async function StepPage({
       <QuizGame step={step} />
     ) : step.gameType === "PUZZLE" ? (
       <PuzzleGame step={step} />
+    ) : step.gameType === "HISTOIRE" ? (
+      <HistoireGame step={step} />
     ) : step.gameType === "PHRASE_A_TROU" ? (
       <PhraseATrou step={step} />
     ) : step.gameType === "MOTS_CROISES" ? (

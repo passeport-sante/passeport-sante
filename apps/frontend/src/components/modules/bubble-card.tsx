@@ -42,7 +42,7 @@ export function BubbleCard({ module }: { module: Module }) {
     <article className="group flex bg-white rounded-[28px] shadow-[0_4px_20px_rgba(0,0,0,0.06)] hover:shadow-[0_10px_40px_rgba(0,0,0,0.12)] transition-all duration-300 ease-out hover:-translate-y-1 h-[200px]">
 
       {/* ── Zone mascotte ── fond clipé séparé + mascotte centrée */}
-      <div className="relative w-[38%] flex-shrink-0 flex items-center justify-center p-3">
+      <div className="relative w-[38%] flex-shrink-0">
 
         {/* Fond coloré — clipé aux coins arrondis, ne contient PAS la mascotte */}
         <div
@@ -56,14 +56,19 @@ export function BubbleCard({ module }: { module: Module }) {
           />
         </div>
 
-        {/* Mascotte — centrée dans la zone */}
+        {/* Mascotte — posée sur le bas de la carte.
+            Les visuels ont des ratios et des marges très variables : un centrage
+            simple les faisait flotter à des hauteurs différentes d'une carte à
+            l'autre. On leur impose donc une même ligne de sol (bas de la carte)
+            et une même hauteur max, en débordant un peu par le haut. */}
         {mascotteSrc && (
-          <div className="relative z-20 w-full h-full transition-transform duration-500 ease-in-out group-hover:-translate-y-1.5">
+          <div className="absolute z-20 inset-x-2 bottom-0 top-1 transition-transform duration-500 ease-in-out group-hover:-translate-y-1.5">
             <Image
               src={mascotteSrc}
               alt={module.title}
               fill
-              className="object-contain object-center"
+              sizes="(max-width: 1024px) 40vw, 200px"
+              className="object-contain object-bottom"
             />
           </div>
         )}
