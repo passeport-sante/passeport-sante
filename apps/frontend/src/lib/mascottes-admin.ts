@@ -1,5 +1,6 @@
 import { authHeaders } from "./auth";
 import { validateMascotteFile } from "./mascotte";
+import { uploadImageFile } from "./upload";
 
 const API = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:5000";
 
@@ -45,31 +46,14 @@ export async function deleteMascotte(id: string): Promise<void> {
 /**
  * Envoie le fichier sur Cloudinary et retourne l'URL sécurisée.
  *
- * On uploade l'original sans le redimensionner : les dimensions de rendu sont
- * appliquées à la livraison par mascotteUrl(). Ça évite d'imposer un format à
- * l'admin tout en garantissant qu'aucun composant ne sert l'original brut.
+ * L'upload passe par la route Next `/api/upload` (voir lib/upload.ts) : l'appel
+ * direct à Cloudinary est bloqué par la CSP de production. On uploade l'original
+ * sans le redimensionner — les dimensions de rendu sont appliquées à la
+ * livraison par mascotteUrl(). La validation mascotte (PNG/WebP transparents)
+ * reste faite ici avant l'envoi.
  */
 export async function uploadMascotteFile(file: File): Promise<string> {
   const validationError = validateMascotteFile(file);
   if (validationError) throw new Error(validationError);
-
-  const cloudName = process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME;
-  const preset = process.env.NEXT_PUBLIC_CLOUDINARY_UPLOAD_PRESET;
-  if (!cloudName || !preset) {
-    throw new Error("Cloudinary n'est pas configuré (variables NEXT_PUBLIC_CLOUDINARY_*)");
-  }
-
-  const fd = new FormData();
-  fd.append("file", file);
-  fd.append("upload_preset", preset);
-
-  const res = await fetch(`https://api.cloudinary.com/v1_1/${cloudName}/image/upload`, {
-    method: "POST",
-    body: fd,
-  });
-  if (!res.ok) throw new Error("Échec de l'upload Cloudinary");
-
-  const data = await res.json();
-  if (!data.secure_url) throw new Error("Réponse Cloudinary inattendue");
-  return data.secure_url as string;
+  return uploadImageFile(file);
 }
