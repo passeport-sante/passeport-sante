@@ -673,18 +673,24 @@ export function shortId(): string {
 
 // ── Vidéo : normalise un lien YouTube/Vimeo en URL d'intégration (embed) ─────
 // Accepte aussi une URL d'embed déjà valide. Renvoie null si non reconnu.
+//
+// On produit des URLs « respectueuses de la vie privée » : youtube-nocookie.com
+// (pas de cookie tant que la vidéo n'est pas lue) et `dnt=1` pour Vimeo. Couplé
+// au chargement différé de <VideoEmbed/>, aucune donnée ne part vers le tiers
+// avant le clic de l'utilisateur (conformité CNIL). Le frame-src de la CSP doit
+// donc autoriser youtube-nocookie.com et player.vimeo.com.
 export function toEmbedUrl(raw: string): string | null {
   const url = raw.trim();
   if (!url) return null;
 
-  // YouTube : watch?v=, youtu.be/, /embed/, /shorts/
+  // YouTube : watch?v=, youtu.be/, /embed/, /shorts/, nocookie
   const yt =
-    url.match(/(?:youtube\.com\/watch\?v=|youtu\.be\/|youtube\.com\/embed\/|youtube\.com\/shorts\/)([\w-]{11})/);
-  if (yt) return `https://www.youtube.com/embed/${yt[1]}`;
+    url.match(/(?:youtube(?:-nocookie)?\.com\/watch\?v=|youtu\.be\/|youtube(?:-nocookie)?\.com\/embed\/|youtube\.com\/shorts\/)([\w-]{11})/);
+  if (yt) return `https://www.youtube-nocookie.com/embed/${yt[1]}?rel=0`;
 
   // Vimeo : vimeo.com/123456789 ou player.vimeo.com/video/123456789
   const vimeo = url.match(/vimeo\.com\/(?:video\/)?(\d+)/);
-  if (vimeo) return `https://player.vimeo.com/video/${vimeo[1]}`;
+  if (vimeo) return `https://player.vimeo.com/video/${vimeo[1]}?dnt=1`;
 
   // Déjà une URL d'embed http(s) → on la garde telle quelle
   if (/^https?:\/\//.test(url)) return url;

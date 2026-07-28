@@ -2,7 +2,7 @@ export const metadata = {
   title: "Politique de confidentialité — Passeport Santé",
 };
 
-const UPDATED = "5 juin 2026";
+const UPDATED = "24 juillet 2026";
 
 export default function PolitiqueConfidentialitePage() {
   return (
@@ -110,7 +110,36 @@ export default function PolitiqueConfidentialitePage() {
           </p>
         </Section>
 
-        <Section title="7. Sécurité">
+        <Section title="7. Lecteurs vidéo tiers et cookies">
+          <p>
+            Certains modules pédagogiques peuvent intégrer des vidéos hébergées par des
+            services tiers (<strong>YouTube</strong> et <strong>Vimeo</strong>). Ces services
+            sont susceptibles de déposer des cookies et de collecter des données de connexion
+            (dont l'adresse IP) lors de la lecture d'une vidéo.
+          </p>
+          <p className="mt-3">
+            Pour protéger votre vie privée, ces vidéos ne sont <strong>pas chargées
+            automatiquement</strong> : une vignette s'affiche à la place, et le lecteur tiers
+            n'est contacté qu'<strong>après un clic explicite</strong> de votre part sur le
+            bouton de lecture. Tant que vous ne cliquez pas, aucune donnée n'est transmise à
+            YouTube ou Vimeo.
+          </p>
+          <p className="mt-3">
+            Les vidéos sont en outre intégrées en mode « respect de la vie privée »
+            (<em>youtube-nocookie.com</em>, option <em>Do Not Track</em> pour Vimeo), qui
+            limite le dépôt de traceurs. La lecture d'une vidéo est soumise aux politiques de
+            confidentialité de{" "}
+            <a href="https://policies.google.com/privacy" target="_blank" rel="noopener noreferrer" className="text-[#1B6B8A] hover:underline">
+              Google/YouTube
+            </a>{" "}
+            et{" "}
+            <a href="https://vimeo.com/privacy" target="_blank" rel="noopener noreferrer" className="text-[#1B6B8A] hover:underline">
+              Vimeo
+            </a>.
+          </p>
+        </Section>
+
+        <Section title="8. Sécurité">
           <p>
             Le CODES95 met en œuvre les mesures techniques et organisationnelles
             appropriées pour protéger les données contre tout accès non autorisé,
@@ -119,7 +148,7 @@ export default function PolitiqueConfidentialitePage() {
           </p>
         </Section>
 
-        <Section title="8. Vos droits">
+        <Section title="9. Vos droits">
           <p>
             Conformément au RGPD, les établissements disposent d'un droit d'accès,
             de rectification et de suppression de leurs données. Pour exercer ces droits,

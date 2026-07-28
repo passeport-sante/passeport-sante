@@ -4,6 +4,7 @@ import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { ArrowLeft, ChevronRight } from "lucide-react";
 import { toEmbedUrl } from "@/lib/steps-admin";
+import { VideoEmbed } from "@/components/modules/VideoEmbed";
 import { goToNextStep, type FlowStep } from "@/lib/step-flow";
 
 interface StepData {
@@ -96,15 +97,7 @@ export function ContentPanel({ step }: { step: StepData }) {
           {contentType === "VIDEO" &&
             (embed ? (
               <figure className="space-y-2">
-                <div className="relative w-full overflow-hidden rounded-2xl" style={{ aspectRatio: "16 / 9" }}>
-                  <iframe
-                    src={embed}
-                    className="absolute inset-0 w-full h-full"
-                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                    allowFullScreen
-                    title={content.title ?? "Vidéo"}
-                  />
-                </div>
+                <VideoEmbed url={embed} title={content.title} accent={primaryColor} />
                 {content.caption && (
                   <figcaption className="text-center text-sm text-gray-500">{content.caption}</figcaption>
                 )}

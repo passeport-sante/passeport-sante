@@ -13,6 +13,7 @@ import {
   type StepContent,
 } from "@/lib/steps-admin";
 import { uploadImageFile } from "@/lib/upload";
+import { VideoEmbed } from "@/components/modules/VideoEmbed";
 
 interface Props {
   step: AdminStep;
@@ -242,17 +243,7 @@ export function ContentEditor({ step, color, onSave }: Props) {
                 className={INPUT_CLASS}
               />
             </Field>
-            {embed && (
-              <div className="relative w-full overflow-hidden rounded-xl border border-gray-200" style={{ aspectRatio: "16 / 9" }}>
-                <iframe
-                  src={embed}
-                  className="absolute inset-0 w-full h-full"
-                  allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                  allowFullScreen
-                  title="Aperçu vidéo"
-                />
-              </div>
-            )}
+            {embed && <VideoEmbed url={embed} title="Aperçu vidéo" accent={color} />}
           </>
         )}
       </div>
