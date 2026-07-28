@@ -12,9 +12,12 @@ import {
   Layers,
   Users,
   Clock,
+  Download,
+  Loader2,
 } from "lucide-react";
 import type { AdminModule } from "@/lib/modules-admin";
 import { mascotteUrl } from "@/lib/mascotte";
+import { downloadModuleExport } from "@/lib/module-export";
 
 interface Props {
   module: AdminModule;
@@ -25,7 +28,20 @@ interface Props {
 
 export function AdminModuleCard({ module, onDuplicate, onToggleActive, onDelete }: Props) {
   const [menuOpen, setMenuOpen] = useState(false);
+  const [exporting, setExporting] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
+
+  async function handleExport() {
+    setExporting(true);
+    try {
+      await downloadModuleExport(module.id, module.slug);
+      setMenuOpen(false);
+    } catch (err) {
+      alert(err instanceof Error ? err.message : "Échec de l'export");
+    } finally {
+      setExporting(false);
+    }
+  }
 
   useEffect(() => {
     if (!menuOpen) return;
@@ -113,6 +129,18 @@ export function AdminModuleCard({ module, onDuplicate, onToggleActive, onDelete 
                   >
                     <Copy size={14} className="text-gray-400" />
                     Dupliquer
+                  </button>
+                  <button
+                    onClick={handleExport}
+                    disabled={exporting}
+                    className="w-full flex items-center gap-2 px-3 py-2 text-sm text-gray-700 hover:bg-gray-50 transition-colors text-left disabled:opacity-50"
+                  >
+                    {exporting ? (
+                      <Loader2 size={14} className="text-gray-400 animate-spin" />
+                    ) : (
+                      <Download size={14} className="text-gray-400" />
+                    )}
+                    Exporter le contenu
                   </button>
                   <button
                     onClick={() => { onToggleActive(module); setMenuOpen(false); }}

@@ -4,6 +4,7 @@ import { OrganizationModule } from "./organization/organization.module";
 import { UserModule } from "./user/user.module";
 import { ModulesModule } from "./modules/modules.module";
 import { MascotteModule } from "./mascotte/mascotte.module";
+import { CategoryModule } from "./category/category.module";
 import { StepModule } from "./step/step.module";
 import { DiagnosticModule } from "./diagnostic/diagnostic.module";
 import { ResponseModule } from "./response/response.module";
@@ -23,6 +24,7 @@ import { AuthModule } from "./auth/auth.module";
     UserModule,
     ModulesModule,
     MascotteModule,
+    CategoryModule,
     StepModule,
     DiagnosticModule,
     ResponseModule,

@@ -1,4 +1,4 @@
-import { authHeaders, getToken } from "./auth";
+import { authHeaders } from "./auth";
 
 const API = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:5000";
 
@@ -37,6 +37,12 @@ export type CategoryLite = {
   name: string;
   slug: string;
   color: string | null;
+};
+
+// Catégorie côté gestion : inclut l'ordre et le nombre de modules rattachés.
+export type AdminCategory = CategoryLite & {
+  order: number;
+  _count: { modules: number };
 };
 
 export type CreateModulePayload = {
@@ -149,14 +155,57 @@ export async function isSlugTaken(slug: string): Promise<boolean> {
 }
 
 export async function fetchCategories(): Promise<CategoryLite[]> {
-  // L'endpoint /api/modules?grouped=true renvoie déjà les catégories avec leurs modules.
-  // On extrait juste les méta des catégories ici.
-  const res = await fetch(`${API}/api/modules?grouped=true`, {
-    cache: "no-store",
-  });
+  const res = await fetch(`${API}/api/category`, { cache: "no-store" });
   if (!res.ok) return [];
-  const groups: { id: string; name: string; slug: string; color: string | null }[] = await res.json();
-  return groups.map(({ id, name, slug, color }) => ({ id, name, slug, color }));
+  const cats: CategoryLite[] = await res.json();
+  return cats.map(({ id, name, slug, color }) => ({ id, name, slug, color }));
+}
+
+// Catégories avec compteurs, pour l'écran de gestion (ajout / suppression).
+export async function fetchAdminCategories(): Promise<AdminCategory[]> {
+  const res = await fetch(`${API}/api/category`, { cache: "no-store" });
+  if (!res.ok) throw new Error("Impossible de charger les catégories");
+  return res.json();
+}
+
+export async function createCategory(payload: { name: string; color?: string }): Promise<AdminCategory> {
+  const res = await fetch(`${API}/api/category`, {
+    method: "POST",
+    headers: authHeaders(),
+    body: JSON.stringify(payload),
+  });
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({}));
+    throw new Error(err.message ?? "Erreur lors de la création de la catégorie");
+  }
+  return res.json();
+}
+
+export async function updateCategory(
+  id: string,
+  payload: { name?: string; color?: string; order?: number },
+): Promise<AdminCategory> {
+  const res = await fetch(`${API}/api/category/${id}`, {
+    method: "PATCH",
+    headers: authHeaders(),
+    body: JSON.stringify(payload),
+  });
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({}));
+    throw new Error(err.message ?? "Erreur lors de la mise à jour de la catégorie");
+  }
+  return res.json();
+}
+
+export async function deleteCategory(id: string): Promise<void> {
+  const res = await fetch(`${API}/api/category/${id}`, {
+    method: "DELETE",
+    headers: authHeaders(),
+  });
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({}));
+    throw new Error(err.message ?? "Erreur lors de la suppression de la catégorie");
+  }
 }
 
 // Helpers UX ─────────────────────────────────────────────────────────────────

@@ -26,7 +26,9 @@ interface StepData {
   content: { title: string; instructions: string };
   gameData: {
     questionData: { questions: Question[] };
-    correctAnswer: { answers: Record<string, string> };
+    // Une réponse par question, historiquement une string, désormais un tableau
+    // (multi-réponses). Les deux formats sont acceptés en lecture.
+    correctAnswer: { answers: Record<string, string | string[]> };
   }[];
   module: {
     id: string;
@@ -39,6 +41,18 @@ interface StepData {
   };
 }
 
+// Normalise une réponse correcte (string historique ou string[]) en tableau.
+function toIds(value: string | string[] | undefined): string[] {
+  if (Array.isArray(value)) return value.filter(Boolean);
+  return value ? [value] : [];
+}
+// Égalité d'ensembles (tout ou rien) : mêmes ids, quel que soit l'ordre.
+function sameSet(a: string[], b: string[]): boolean {
+  if (a.length !== b.length) return false;
+  const sb = new Set(b);
+  return a.every((id) => sb.has(id));
+}
+
 export function QuizGame({ step }: { step: StepData }) {
   const router = useRouter();
 
@@ -47,8 +61,8 @@ export function QuizGame({ step }: { step: StepData }) {
   const correctAnswers = gameData?.correctAnswer?.answers ?? {};
 
   const [currentIndex, setCurrentIndex] = useState(0);
-  const [selected, setSelected] = useState<string | null>(null);
-  const [userAnswers, setUserAnswers] = useState<Record<string, string>>({});
+  const [selected, setSelected] = useState<string[]>([]);
+  const [userAnswers, setUserAnswers] = useState<Record<string, string[]>>({});
   const [overlay, setOverlay] = useState<{ show: boolean; isCorrect: boolean } | null>(null);
   const [finished, setFinished] = useState(false);
   const startTimeRef = useRef(Date.now());
@@ -61,13 +75,27 @@ export function QuizGame({ step }: { step: StepData }) {
   const currentQuestion = questions[currentIndex];
   const isLastQuestion = currentIndex === questions.length - 1;
 
-  const score = Object.entries(userAnswers).filter(([qId, ans]) => correctAnswers[qId] === ans).length;
+  // Une question à choix multiple attend plusieurs bonnes réponses.
+  const currentCorrectIds = currentQuestion ? toIds(correctAnswers[currentQuestion.id]) : [];
+  const isMulti = currentCorrectIds.length > 1;
+
+  const score = Object.entries(userAnswers).filter(([qId, ans]) =>
+    sameSet(ans, toIds(correctAnswers[qId])),
+  ).length;
   const total = questions.length;
   const passed = total > 0 && score / total >= 0.7;
 
+  // Choix multiple → on coche/décoche ; choix unique → on remplace la sélection.
+  function handleSelect(optId: string) {
+    setSelected((prev) => {
+      if (!isMulti) return [optId];
+      return prev.includes(optId) ? prev.filter((id) => id !== optId) : [...prev, optId];
+    });
+  }
+
   function handleConfirm() {
-    if (!selected || !currentQuestion) return;
-    const isCorrect = correctAnswers[currentQuestion.id] === selected;
+    if (selected.length === 0 || !currentQuestion) return;
+    const isCorrect = sameSet(selected, currentCorrectIds);
     const timing = Math.round((Date.now() - startTimeRef.current) / 1000);
     setUserAnswers((prev) => ({ ...prev, [currentQuestion.id]: selected }));
 
@@ -93,7 +121,7 @@ export function QuizGame({ step }: { step: StepData }) {
       setFinished(true);
     } else {
       setCurrentIndex((i) => i + 1);
-      setSelected(null);
+      setSelected([]);
     }
   }
 
@@ -103,7 +131,7 @@ export function QuizGame({ step }: { step: StepData }) {
 
   function handleRetry() {
     setCurrentIndex(0);
-    setSelected(null);
+    setSelected([]);
     setUserAnswers({});
     setFinished(false);
     setOverlay(null);
@@ -162,16 +190,21 @@ export function QuizGame({ step }: { step: StepData }) {
               <p className="text-gray-800 text-lg font-semibold leading-relaxed">
                 {currentQuestion?.text}
               </p>
+              {isMulti && (
+                <p className="mt-3 inline-block px-3 py-1 rounded-full text-xs font-bold text-white" style={{ background: primaryColor }}>
+                  Plusieurs réponses possibles
+                </p>
+              )}
             </div>
 
             {/* Options */}
             <div className="flex flex-col gap-3 w-full max-w-2xl">
               {currentQuestion?.options.map((option) => {
-                const isSel = selected === option.id;
+                const isSel = selected.includes(option.id);
                 return (
                   <button
                     key={option.id}
-                    onClick={() => setSelected(option.id)}
+                    onClick={() => handleSelect(option.id)}
                     className="w-full text-left px-6 py-4 rounded-2xl font-semibold text-sm transition-all"
                     style={
                       isSel
@@ -197,13 +230,13 @@ export function QuizGame({ step }: { step: StepData }) {
 
             <button
               onClick={handleConfirm}
-              disabled={!selected}
+              disabled={selected.length === 0}
               className="px-10 py-3.5 rounded-2xl text-white font-black text-base transition-all"
               style={{
-                background: selected ? "rgba(255,255,255,0.25)" : "rgba(255,255,255,0.1)",
+                background: selected.length ? "rgba(255,255,255,0.25)" : "rgba(255,255,255,0.1)",
                 backdropFilter: "blur(8px)",
-                border: `2px solid ${selected ? "rgba(255,255,255,0.6)" : "rgba(255,255,255,0.2)"}`,
-                opacity: selected ? 1 : 0.5,
+                border: `2px solid ${selected.length ? "rgba(255,255,255,0.6)" : "rgba(255,255,255,0.2)"}`,
+                opacity: selected.length ? 1 : 0.5,
               }}
             >
               Valider ma réponse

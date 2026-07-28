@@ -2,7 +2,7 @@
 
 import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
-import { Plus, Search, Layers } from "lucide-react";
+import { Plus, Search, Layers, FolderCog } from "lucide-react";
 import {
   fetchAdminModules,
   duplicateModule,
@@ -14,6 +14,7 @@ import {
 } from "@/lib/modules-admin";
 import { AdminModuleCard } from "./_components/admin-module-card";
 import { DeleteModuleModal } from "./_components/delete-module-modal";
+import { ManageCategoriesModal } from "./_components/manage-categories-modal";
 
 type StatusFilter = "all" | "active" | "inactive";
 type SortKey = "recent" | "alpha" | "steps";
@@ -30,6 +31,7 @@ export default function AdminModulesPage() {
   const [sort, setSort] = useState<SortKey>("recent");
 
   const [toDelete, setToDelete] = useState<AdminModule | null>(null);
+  const [manageCategories, setManageCategories] = useState(false);
 
   async function refresh() {
     try {
@@ -122,14 +124,23 @@ export default function AdminModulesPage() {
             Créez et personnalisez les contenus pédagogiques
           </p>
         </div>
-        <Link
-          href="/dashboard/modules/new"
-          className="flex items-center gap-2 px-5 py-2.5 text-white text-sm font-semibold rounded-xl hover:opacity-90 transition-opacity"
-          style={{ background: "linear-gradient(135deg, #1B6B8A, #2A8970)" }}
-        >
-          <Plus size={17} />
-          Nouveau module
-        </Link>
+        <div className="flex items-center gap-2">
+          <button
+            onClick={() => setManageCategories(true)}
+            className="flex items-center gap-2 px-4 py-2.5 text-sm font-semibold rounded-xl border border-gray-200 text-gray-600 hover:bg-gray-50 transition-colors"
+          >
+            <FolderCog size={16} />
+            Catégories
+          </button>
+          <Link
+            href="/dashboard/modules/new"
+            className="flex items-center gap-2 px-5 py-2.5 text-white text-sm font-semibold rounded-xl hover:opacity-90 transition-opacity"
+            style={{ background: "linear-gradient(135deg, #1B6B8A, #2A8970)" }}
+          >
+            <Plus size={17} />
+            Nouveau module
+          </Link>
+        </div>
       </div>
 
       {/* Stats row */}
@@ -226,6 +237,12 @@ export default function AdminModulesPage() {
         module={toDelete}
         onCancel={() => setToDelete(null)}
         onConfirm={handleConfirmDelete}
+      />
+
+      <ManageCategoriesModal
+        open={manageCategories}
+        onClose={() => setManageCategories(false)}
+        onChanged={refresh}
       />
     </div>
   );

@@ -81,7 +81,8 @@ export class ModulesService {
       where: { id },
       include: {
         category: { select: { id: true, name: true, slug: true } },
-        steps: { orderBy: { order: 'asc' } },
+        // gameData inclus pour permettre l'export complet du contenu d'un module.
+        steps: { orderBy: { order: 'asc' }, include: { gameData: true } },
       },
     });
   }
