@@ -12,6 +12,7 @@ import {
   type ContentType,
   type StepContent,
 } from "@/lib/steps-admin";
+import { uploadImageFile } from "@/lib/upload";
 
 interface Props {
   step: AdminStep;
@@ -39,16 +40,10 @@ export function ContentEditor({ step, color, onSave }: Props) {
   async function handleFileUpload(file: File) {
     setUploading(true);
     try {
-      const fd = new FormData();
-      fd.append("file", file);
-      fd.append("upload_preset", process.env.NEXT_PUBLIC_CLOUDINARY_UPLOAD_PRESET!);
-      const res = await fetch(
-        `https://api.cloudinary.com/v1_1/${process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME}/image/upload`,
-        { method: "POST", body: fd },
-      );
-      if (!res.ok) throw new Error("Échec de l'upload Cloudinary");
-      const data = await res.json();
-      setImageUrl(data.secure_url);
+      // Passe par /api/upload (voir lib/upload.ts) : l'appel direct à Cloudinary
+      // est bloqué par la CSP. Le helper redimensionne aussi l'image avant envoi.
+      const url = await uploadImageFile(file);
+      setImageUrl(url);
     } catch (err) {
       alert(err instanceof Error ? err.message : "Échec de l'upload");
     } finally {
