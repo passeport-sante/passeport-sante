@@ -138,6 +138,32 @@ function renderGame(gameType: GameType, data: ExportGameData): string {
         .join("");
       return `<ol class="ordered">${li}</ol>`;
     }
+    case "DIALOGUE": {
+      const scenes = (q.scenes as Json[]) ?? [];
+      const endings = (q.endings as Json[]) ?? [];
+      const startId = String(q.startId ?? "");
+      const label = (id: string): string => {
+        const si = scenes.findIndex((s) => String(s.id) === id);
+        if (si >= 0) return `Scène ${si + 1}`;
+        const ei = endings.findIndex((e) => String(e.id) === id);
+        if (ei >= 0) return `Fin ${ei + 1}`;
+        return "?";
+      };
+      const scenesHtml = scenes
+        .map((s, i) => {
+          const isStart = String(s.id) === startId ? ' <span class="tag">départ</span>' : "";
+          const choices = ((s.choices as Json[]) ?? [])
+            .map((c) => `<li>${esc(c.text)} <span class="muted">→ ${esc(label(String(c.goto)))}</span></li>`)
+            .join("");
+          return `<div class="q"><p class="q-text">Scène ${i + 1}${isStart}</p><p>${esc(s.text)}</p><ul>${choices}</ul></div>`;
+        })
+        .join("");
+      const tone: Record<string, string> = { good: "✅ bonne", neutral: "🟡 neutre", bad: "🔴 à éviter" };
+      const endingsHtml = endings
+        .map((e, i) => `<tr><td>Fin ${i + 1}</td><td>${esc(tone[String(e.tone)] ?? String(e.tone))}</td><td>${esc(e.text)}</td></tr>`)
+        .join("");
+      return `${scenesHtml}<p class="q-text">Fins</p><table><thead><tr><th>#</th><th>Type</th><th>Message</th></tr></thead><tbody>${endingsHtml}</tbody></table>`;
+    }
     default:
       return `<pre class="raw">${esc(JSON.stringify(q, null, 2))}</pre>`;
   }

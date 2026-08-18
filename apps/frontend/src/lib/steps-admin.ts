@@ -9,7 +9,8 @@ export type GameType =
   | "PHRASE_A_TROU"
   | "SCENARIO"
   | "MOTS_CROISES"
-  | "HISTOIRE";
+  | "HISTOIRE"
+  | "DIALOGUE";
 
 export type StepKind = "GAME" | "CONTENT";
 
@@ -191,6 +192,13 @@ export const GAME_TYPE_META: Record<
     bg: "#FAF5FF",
     description: "Remettre dans l'ordre les vignettes (image + texte) d'un récit.",
   },
+  DIALOGUE: {
+    label: "Dialogue interactif",
+    short: "Dialogue",
+    color: "#4F46E5",
+    bg: "#EEF2FF",
+    description: "Une histoire à embranchements : les choix de l'élève mènent à différentes fins.",
+  },
 };
 
 // ── Métadonnées d'affichage des sous-étapes de contenu ──────────────────────
@@ -244,6 +252,7 @@ export function defaultContentFor(gameType: GameType): { title: string; instruct
     SCENARIO: { title: "Que ferais-tu ?", instructions: "Choisis la meilleure réaction face à cette situation" },
     MOTS_CROISES: { title: "Mots croisés", instructions: "Remplis la grille à partir des définitions" },
     HISTOIRE: { title: "Raconte l'histoire", instructions: "Remets les vignettes dans l'ordre du récit" },
+    DIALOGUE: { title: "L'histoire dont tu es le héros", instructions: "Fais tes choix et découvre où ils te mènent" },
   };
   return map[gameType];
 }
@@ -342,8 +351,67 @@ export function defaultGameDataFor(gameType: GameType): AdminGameData[] {
           correctAnswer: { order: ["a", "b"] },
         },
       ];
+    case "DIALOGUE":
+      return [
+        {
+          questionData: {
+            startId: "s1",
+            scenes: [
+              {
+                id: "s1",
+                text: "Dans la cour, un groupe se moque de Tom à cause de ses chaussures. Que fais-tu ?",
+                choices: [
+                  { id: "c1", text: "Je ris avec le groupe", goto: "s2" },
+                  { id: "c2", text: "Je vais voir Tom", goto: "e_good" },
+                ],
+              },
+              {
+                id: "s2",
+                text: "Tom baisse la tête, il a l'air vraiment triste. Et là ?",
+                choices: [
+                  { id: "c3", text: "Je continue comme si de rien", goto: "e_bad" },
+                  { id: "c4", text: "Je m'arrête et je le défends", goto: "e_good" },
+                ],
+              },
+            ],
+            endings: [
+              { id: "e_good", text: "Tu as soutenu Tom. Ton geste compte plus que tu ne crois.", tone: "good" },
+              { id: "e_bad", text: "Personne n'a aidé Tom aujourd'hui. Rejoue pour voir ce que tu pouvais changer.", tone: "bad" },
+            ],
+          },
+          correctAnswer: { bestEndingId: "e_good" },
+        },
+      ];
   }
 }
+
+// ── Dialogue interactif : types partagés éditeur ⇆ jeu ───────────────────────
+
+export type DialogueTone = "good" | "neutral" | "bad";
+
+export type DialogueChoice = {
+  id: string;
+  text: string;
+  goto: string; // id d'une scène OU d'une fin
+};
+
+export type DialogueScene = {
+  id: string;
+  text: string;
+  choices: DialogueChoice[];
+};
+
+export type DialogueEnding = {
+  id: string;
+  text: string;
+  tone: DialogueTone;
+};
+
+export type DialogueData = {
+  startId: string;
+  scenes: DialogueScene[];
+  endings: DialogueEnding[];
+};
 
 // ── Mots croisés : types et construction de grille (partagés jeu ⇆ éditeur) ──
 

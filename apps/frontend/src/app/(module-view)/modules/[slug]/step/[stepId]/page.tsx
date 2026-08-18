@@ -6,6 +6,7 @@ import { ScenarioGame } from "./_components/ScenarioGame";
 import { QuizGame } from "./_components/QuizGame";
 import { MotsCroises } from "./_components/MotsCroises";
 import { HistoireGame } from "./_components/HistoireGame";
+import { DialogueGame } from "./_components/DialogueGame";
 import { ContentPanel } from "./_components/ContentPanel";
 import { StepGate } from "./_components/StepGate";
 
@@ -49,6 +50,8 @@ export default async function StepPage({
       <PhraseATrou step={step} />
     ) : step.gameType === "MOTS_CROISES" ? (
       <MotsCroises step={step} />
+    ) : step.gameType === "DIALOGUE" ? (
+      <DialogueGame step={step} />
     ) : (
       <div className="h-screen flex items-center justify-center text-gray-500 text-xl font-bold">
         Jeu {step.gameType} — à venir
