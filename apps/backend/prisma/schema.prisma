@@ -27,6 +27,8 @@ enum GameType {
   MOTS_CROISES
   HISTOIRE
   DIALOGUE
+  SWIPE
+  CURSEUR
 }
 
 // Distingue une étape de jeu (comptée, cercle Rive) d'une sous-étape de contenu (intercalée, non comptée)

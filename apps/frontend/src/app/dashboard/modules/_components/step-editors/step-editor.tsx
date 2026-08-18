@@ -9,6 +9,8 @@ import { PuzzleEditor } from "./puzzle-editor";
 import { CrosswordEditor } from "./crossword-editor";
 import { HistoireEditor } from "./histoire-editor";
 import { DialogueEditor } from "./dialogue-editor";
+import { SwipeEditor } from "./swipe-editor";
+import { CurseurEditor } from "./curseur-editor";
 import { ContentEditor } from "./content-editor";
 
 interface Props {
@@ -38,6 +40,10 @@ export function StepEditor(props: Props) {
       return <HistoireEditor {...props} />;
     case "DIALOGUE":
       return <DialogueEditor {...props} />;
+    case "SWIPE":
+      return <SwipeEditor {...props} />;
+    case "CURSEUR":
+      return <CurseurEditor {...props} />;
   }
 
   return <ContentEditor {...props} />;

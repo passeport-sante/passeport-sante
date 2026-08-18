@@ -1,6 +1,6 @@
 "use client";
 
-import { X, ListTodo, HelpCircle, ListOrdered, Type, MessageCircle, Grid3x3, BookOpen, Route, Lightbulb, Image as ImageIcon, Video } from "lucide-react";
+import { X, ListTodo, HelpCircle, ListOrdered, Type, MessageCircle, Grid3x3, BookOpen, Route, GalleryHorizontalEnd, SlidersHorizontal, Lightbulb, Image as ImageIcon, Video } from "lucide-react";
 import {
   GAME_TYPE_META,
   CONTENT_TYPE_META,
@@ -17,6 +17,8 @@ const GAME_ICONS: Record<GameType, React.ReactNode> = {
   MOTS_CROISES: <Grid3x3 size={22} />,
   HISTOIRE: <BookOpen size={22} />,
   DIALOGUE: <Route size={22} />,
+  SWIPE: <GalleryHorizontalEnd size={22} />,
+  CURSEUR: <SlidersHorizontal size={22} />,
 };
 
 const CONTENT_ICONS: Record<ContentType, React.ReactNode> = {
@@ -25,7 +27,7 @@ const CONTENT_ICONS: Record<ContentType, React.ReactNode> = {
   VIDEO: <Video size={22} />,
 };
 
-const GAME_ORDER: GameType[] = ["KANBAN", "QUIZ", "PUZZLE", "HISTOIRE", "DIALOGUE", "PHRASE_A_TROU", "SCENARIO", "MOTS_CROISES"];
+const GAME_ORDER: GameType[] = ["KANBAN", "QUIZ", "SWIPE", "CURSEUR", "PUZZLE", "HISTOIRE", "DIALOGUE", "PHRASE_A_TROU", "SCENARIO", "MOTS_CROISES"];
 const CONTENT_ORDER: ContentType[] = ["INFO", "IMAGE", "VIDEO"];
 
 // Choix renvoyé : étape de jeu (comptée), sous-étape de contenu, ou sous-étape de jeu (non comptée)

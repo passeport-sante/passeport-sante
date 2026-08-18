@@ -138,6 +138,31 @@ function renderGame(gameType: GameType, data: ExportGameData): string {
         .join("");
       return `<ol class="ordered">${li}</ol>`;
     }
+    case "SWIPE": {
+      const cards = (q.cards as Json[]) ?? [];
+      const rows = cards
+        .map((c) => {
+          const ok = String(c.answer) === "vrai";
+          const exp = c.explanation ? ` — <span class="muted">${esc(c.explanation)}</span>` : "";
+          return `<tr><td>${esc(c.text)}</td><td class="correct">${ok ? "Vrai" : "Faux"}</td></tr><tr><td colspan="2" class="muted">${exp ? esc(String(c.explanation)) : ""}</td></tr>`;
+        })
+        .join("");
+      return `<table><thead><tr><th>Affirmation</th><th>Réponse</th></tr></thead><tbody>${rows}</tbody></table>`;
+    }
+    case "CURSEUR": {
+      const items = (q.items as Json[]) ?? [];
+      const rows = items
+        .map((it) => {
+          if (String(it.mode) === "estimation") {
+            const t = Number(it.target ?? 50);
+            const tol = Number(it.tolerance ?? 15);
+            return `<tr><td>${esc(it.text)}</td><td>Estimation</td><td class="correct">zone ${Math.max(0, t - tol)}–${Math.min(100, t + tol)} / 100</td></tr>`;
+          }
+          return `<tr><td>${esc(it.text)}</td><td>Opinion</td><td class="muted">${esc(it.leftLabel)} ↔ ${esc(it.rightLabel)}</td></tr>`;
+        })
+        .join("");
+      return `<table><thead><tr><th>Affirmation</th><th>Type</th><th>Réponse / échelle</th></tr></thead><tbody>${rows}</tbody></table>`;
+    }
     case "DIALOGUE": {
       const scenes = (q.scenes as Json[]) ?? [];
       const endings = (q.endings as Json[]) ?? [];

@@ -10,7 +10,9 @@ export type GameType =
   | "SCENARIO"
   | "MOTS_CROISES"
   | "HISTOIRE"
-  | "DIALOGUE";
+  | "DIALOGUE"
+  | "SWIPE"
+  | "CURSEUR";
 
 export type StepKind = "GAME" | "CONTENT";
 
@@ -199,6 +201,20 @@ export const GAME_TYPE_META: Record<
     bg: "#EEF2FF",
     description: "Une histoire à embranchements : les choix de l'élève mènent à différentes fins.",
   },
+  SWIPE: {
+    label: "Vrai / Faux à balayer",
+    short: "Swipe",
+    color: "#0EA5E9",
+    bg: "#F0F9FF",
+    description: "Balaye les cartes : vrai à droite, faux à gauche. Idéal pour casser les idées reçues.",
+  },
+  CURSEUR: {
+    label: "Curseur d'accord",
+    short: "Curseur",
+    color: "#0D9488",
+    bg: "#F0FDFA",
+    description: "Place un curseur sur une échelle (opinion) ou pour estimer une valeur.",
+  },
 };
 
 // ── Métadonnées d'affichage des sous-étapes de contenu ──────────────────────
@@ -253,6 +269,8 @@ export function defaultContentFor(gameType: GameType): { title: string; instruct
     MOTS_CROISES: { title: "Mots croisés", instructions: "Remplis la grille à partir des définitions" },
     HISTOIRE: { title: "Raconte l'histoire", instructions: "Remets les vignettes dans l'ordre du récit" },
     DIALOGUE: { title: "L'histoire dont tu es le héros", instructions: "Fais tes choix et découvre où ils te mènent" },
+    SWIPE: { title: "Vrai ou Faux ?", instructions: "Balaye à droite pour Vrai, à gauche pour Faux" },
+    CURSEUR: { title: "Place le curseur", instructions: "Déplace le curseur selon ton avis" },
   };
   return map[gameType];
 }
@@ -382,8 +400,58 @@ export function defaultGameDataFor(gameType: GameType): AdminGameData[] {
           correctAnswer: { bestEndingId: "e_good" },
         },
       ];
+    case "SWIPE":
+      return [
+        {
+          questionData: {
+            cards: [
+              { id: "c1", text: "Faire du sport, c'est forcément en club.", answer: "faux", explanation: "Marcher, danser, jouer dehors : tout mouvement compte !" },
+              { id: "c2", text: "Rester assis longtemps est mauvais, même si on fait du sport.", answer: "vrai", explanation: "Il faut couper les temps assis régulièrement." },
+            ],
+          },
+          correctAnswer: {},
+        },
+      ];
+    case "CURSEUR":
+      return [
+        {
+          questionData: {
+            items: [
+              { id: "i1", text: "« Bouger, c'est réservé aux sportifs. » Es-tu d'accord ?", leftLabel: "Pas du tout", rightLabel: "Tout à fait", mode: "opinion" },
+              { id: "i2", text: "Combien d'heures de sommeil par nuit à ton âge ?", leftLabel: "6 h", rightLabel: "11 h", mode: "estimation", target: 60, tolerance: 15 },
+            ],
+          },
+          correctAnswer: {},
+        },
+      ];
   }
 }
+
+// ── Vrai/Faux à balayer (Swipe) : types partagés éditeur ⇆ jeu ───────────────
+
+export type SwipeAnswer = "vrai" | "faux";
+
+export type SwipeCard = {
+  id: string;
+  text: string;
+  answer: SwipeAnswer;
+  explanation?: string;
+};
+
+// ── Curseur d'accord : types partagés éditeur ⇆ jeu ──────────────────────────
+
+export type CurseurMode = "opinion" | "estimation";
+
+export type CurseurItem = {
+  id: string;
+  text: string;
+  leftLabel: string;
+  rightLabel: string;
+  mode: CurseurMode;
+  // Estimation uniquement : cible et tolérance sur l'échelle 0–100.
+  target?: number;
+  tolerance?: number;
+};
 
 // ── Dialogue interactif : types partagés éditeur ⇆ jeu ───────────────────────
 
