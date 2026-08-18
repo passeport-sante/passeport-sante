@@ -2,12 +2,24 @@ import { ConflictException, Injectable, NotFoundException } from '@nestjs/common
 import { Prisma } from '@prisma/client';
 import { CreateModuleDto } from './dto/create-module.dto';
 import { UpdateModuleDto } from './dto/update-module.dto';
+import { ImportModuleDto } from './dto/import-module.dto';
 import { PrismaService } from '@/prisma/prisma.service';
 
 // Helper : Json? Prisma → InputJsonValue | DbNull (skip undefined)
 function jsonOrDbNull(value: Prisma.JsonValue | null | undefined): Prisma.InputJsonValue | typeof Prisma.DbNull {
   if (value === null || value === undefined) return Prisma.DbNull;
   return value as Prisma.InputJsonValue;
+}
+
+// Slug kebab-case sans accent, aligné sur le front.
+function slugify(input: string): string {
+  return input
+    .toLowerCase()
+    .normalize('NFD')
+    .replace(/\p{Diacritic}/gu, '')
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/^-+|-+$/g, '')
+    .slice(0, 64);
 }
 
 // Champs publics d'un module renvoyés au frontend
@@ -195,5 +207,64 @@ export class ModulesService {
       slug = `${base}-${i++}`;
     }
     return slug;
+  }
+
+  // Crée un module complet (étapes + gameData) à partir d'un JSON d'import.
+  // L'ordre des étapes est déduit de leur position dans le tableau. La catégorie
+  // est retrouvée par nom, ou créée à la volée si elle n'existe pas encore.
+  async importModule(dto: ImportModuleDto) {
+    const categoryId = await this.resolveCategoryByName(dto.category);
+    const slug = await this.findAvailableSlug(slugify(dto.title) || 'module');
+
+    return this.prisma.module.create({
+      data: {
+        title: dto.title.trim(),
+        description: dto.description,
+        slug,
+        duration: dto.duration,
+        isActive: dto.isActive ?? false,
+        mascotte: dto.mascotte,
+        colorPrimary: dto.colorPrimary,
+        colorSecondary: dto.colorSecondary,
+        colorCard: dto.colorCard,
+        colorCardSecondary: dto.colorCardSecondary,
+        organizationId: dto.organizationId,
+        categoryId: categoryId ?? undefined,
+        steps: {
+          create: (dto.steps ?? []).map((s, i) => ({
+            kind: s.kind ?? 'GAME',
+            gameType: s.gameType ?? null,
+            order: i,
+            mascotteImage: s.mascotteImage,
+            content: s.content ? (s.content as Prisma.InputJsonValue) : undefined,
+            gameData: s.gameData?.length
+              ? {
+                  create: s.gameData.map((gd) => ({
+                    questionData: gd.questionData as Prisma.InputJsonValue,
+                    correctAnswer: jsonOrDbNull(gd.correctAnswer),
+                    hints: jsonOrDbNull(gd.hints),
+                  })),
+                }
+              : undefined,
+          })),
+        },
+      },
+    });
+  }
+
+  // Retrouve une catégorie par nom (ou slug), ou la crée si absente.
+  private async resolveCategoryByName(name?: string): Promise<string | null> {
+    if (!name?.trim()) return null;
+    const slug = slugify(name);
+    const existing = await this.prisma.category.findFirst({
+      where: { OR: [{ slug }, { name: name.trim() }] },
+    });
+    if (existing) return existing.id;
+    const order =
+      ((await this.prisma.category.aggregate({ _max: { order: true } }))._max.order ?? -1) + 1;
+    const created = await this.prisma.category.create({
+      data: { name: name.trim(), slug, order },
+    });
+    return created.id;
   }
 }

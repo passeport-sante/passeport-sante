@@ -1,4 +1,5 @@
-import { authHeaders } from "./auth";
+import { authHeaders, getToken, decodeJwt } from "./auth";
+import type { GameType } from "./steps-admin";
 
 const API = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:5000";
 
@@ -152,6 +153,63 @@ export async function isSlugTaken(slug: string): Promise<boolean> {
   if (!res.ok) return false;
   const data = await res.json().catch(() => null);
   return !!data;
+}
+
+// ── Import d'un module complet (JSON) ────────────────────────────────────────
+
+// Une étape dans un fichier d'import : l'ordre suit la position dans le tableau.
+export type ImportStep = {
+  kind?: "GAME" | "CONTENT";
+  gameType?: GameType;
+  mascotteImage?: string;
+  content?: Record<string, unknown>;
+  gameData?: { questionData: Record<string, unknown>; correctAnswer?: Record<string, unknown>; hints?: Record<string, unknown> }[];
+};
+
+// Format du fichier .json d'import (organizationId ajouté automatiquement).
+export type ImportModuleFile = {
+  title: string;
+  description?: string;
+  duration?: number;
+  category?: string;
+  mascotte?: string;
+  colorPrimary?: string;
+  colorSecondary?: string;
+  colorCard?: string;
+  colorCardSecondary?: string;
+  isActive?: boolean;
+  steps: ImportStep[];
+};
+
+// Récupère l'organisation de l'utilisateur courant (nécessaire à la création).
+export async function fetchMyOrganizationId(): Promise<string> {
+  const token = getToken();
+  if (!token) throw new Error("Vous n'êtes pas connecté");
+  const payload = decodeJwt<{ sub: string }>(token);
+  if (!payload?.sub) throw new Error("Session invalide");
+  const res = await fetch(`${API}/api/user/${payload.sub}`, { headers: authHeaders() });
+  if (!res.ok) throw new Error("Impossible de récupérer votre organisation");
+  const user = await res.json();
+  if (!user?.organizationId) throw new Error("Aucune organisation associée à votre compte");
+  return user.organizationId as string;
+}
+
+export async function importModule(file: ImportModuleFile): Promise<{ id: string; slug: string }> {
+  if (!file || typeof file.title !== "string" || !Array.isArray(file.steps)) {
+    throw new Error("Fichier invalide : il manque « title » ou « steps ».");
+  }
+  const organizationId = await fetchMyOrganizationId();
+  const res = await fetch(`${API}/api/modules/import`, {
+    method: "POST",
+    headers: authHeaders(),
+    body: JSON.stringify({ ...file, organizationId }),
+  });
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({}));
+    const msg = Array.isArray(err.message) ? err.message.join(", ") : err.message;
+    throw new Error(msg ?? "Échec de l'import du module");
+  }
+  return res.json();
 }
 
 export async function fetchCategories(): Promise<CategoryLite[]> {

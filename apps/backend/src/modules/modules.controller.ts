@@ -12,6 +12,7 @@ import {
 import { ModulesService } from "./modules.service";
 import { CreateModuleDto } from "./dto/create-module.dto";
 import { UpdateModuleDto } from "./dto/update-module.dto";
+import { ImportModuleDto } from "./dto/import-module.dto";
 import { ApiBearerAuth, ApiQuery } from "@nestjs/swagger";
 import { JwtAuthGuard } from "../auth/jwt-auth.guard";
 import { RolesGuard } from "../auth/guards/roles.guard";
@@ -57,6 +58,13 @@ export class ModulesController {
   @Patch(":id")
   update(@Param("id") id: string, @Body() updateModuleDto: UpdateModuleDto) {
     return this.modulesService.update(id, updateModuleDto);
+  }
+
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles("ADMIN")
+  @Post("import")
+  import(@Body() dto: ImportModuleDto) {
+    return this.modulesService.importModule(dto);
   }
 
   @UseGuards(JwtAuthGuard, RolesGuard)

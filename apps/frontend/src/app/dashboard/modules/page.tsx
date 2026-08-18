@@ -1,16 +1,18 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
-import { Plus, Search, Layers, FolderCog } from "lucide-react";
+import { Plus, Search, Layers, FolderCog, Upload, Loader2 } from "lucide-react";
 import {
   fetchAdminModules,
   duplicateModule,
   updateModule,
   deleteModule,
   fetchCategories,
+  importModule,
   type AdminModule,
   type CategoryLite,
+  type ImportModuleFile,
 } from "@/lib/modules-admin";
 import { AdminModuleCard } from "./_components/admin-module-card";
 import { DeleteModuleModal } from "./_components/delete-module-modal";
@@ -32,6 +34,8 @@ export default function AdminModulesPage() {
 
   const [toDelete, setToDelete] = useState<AdminModule | null>(null);
   const [manageCategories, setManageCategories] = useState(false);
+  const [importing, setImporting] = useState(false);
+  const importInputRef = useRef<HTMLInputElement>(null);
 
   async function refresh() {
     try {
@@ -80,6 +84,21 @@ export default function AdminModulesPage() {
     await refresh();
   }
 
+  async function handleImportFile(file: File) {
+    setImporting(true);
+    try {
+      const parsed = JSON.parse(await file.text()) as ImportModuleFile;
+      const created = await importModule(parsed);
+      await refresh();
+      alert(`Module « ${parsed.title} » importé avec succès (${created.slug}).`);
+    } catch (err) {
+      const msg = err instanceof SyntaxError ? "Le fichier n'est pas un JSON valide." : err instanceof Error ? err.message : "Échec de l'import";
+      alert(msg);
+    } finally {
+      setImporting(false);
+    }
+  }
+
   const filtered = useMemo(() => {
     const q = query.trim().toLowerCase();
     let list = modules.filter((m) => {
@@ -125,6 +144,25 @@ export default function AdminModulesPage() {
           </p>
         </div>
         <div className="flex items-center gap-2">
+          <input
+            ref={importInputRef}
+            type="file"
+            accept="application/json,.json"
+            className="hidden"
+            onChange={(e) => {
+              const f = e.target.files?.[0];
+              if (f) handleImportFile(f);
+              e.target.value = "";
+            }}
+          />
+          <button
+            onClick={() => importInputRef.current?.click()}
+            disabled={importing}
+            className="flex items-center gap-2 px-4 py-2.5 text-sm font-semibold rounded-xl border border-gray-200 text-gray-600 hover:bg-gray-50 transition-colors disabled:opacity-50"
+          >
+            {importing ? <Loader2 size={16} className="animate-spin" /> : <Upload size={16} />}
+            Importer
+          </button>
           <button
             onClick={() => setManageCategories(true)}
             className="flex items-center gap-2 px-4 py-2.5 text-sm font-semibold rounded-xl border border-gray-200 text-gray-600 hover:bg-gray-50 transition-colors"
