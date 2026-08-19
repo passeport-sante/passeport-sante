@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
-import { ArrowLeft } from "lucide-react";
+import { ArrowLeft, Backpack } from "lucide-react";
 import { FeedbackOverlay } from "@/components/modules/FeedbackOverlay";
 import { getGuestStudentId, submitKanbanResponse } from "@/lib/modules";
 import { goToNextStep, gameProgress, type FlowStep } from "@/lib/step-flow";
@@ -11,7 +11,7 @@ import { goToNextStep, gameProgress, type FlowStep } from "@/lib/step-flow";
 interface StepData {
   id: string;
   order: number;
-  content: { title: string; instructions: string };
+  content: { title: string; instructions: string; freeMode?: boolean; minRequired?: number };
   gameData: {
     questionData: { items: string[]; categories: string[] };
     correctAnswer: Record<string, string>;
@@ -52,6 +52,14 @@ export function KanbanGame({ step }: { step: StepData }) {
   const unassigned = items.filter((item) => assignments[item] === null);
   const assignedCount = items.length - unassigned.length;
   const allAssigned = unassigned.length === 0;
+
+  // Mode libre (panier) : pas de bonne/mauvaise réponse, il faut juste un minimum
+  // d'items dans la 1ère catégorie (le "sac") pour valider.
+  const freeMode = !!step.content?.freeMode;
+  const minRequired = step.content?.minRequired ?? 1;
+  const bagCategory = categories[0];
+  const collectedCount = items.filter((item) => assignments[item] === bagCategory).length;
+  const canSubmit = freeMode ? collectedCount >= minRequired : allAssigned;
 
   // ── Drag handlers ────────────────────────────────────────────────────────────
 
@@ -94,6 +102,23 @@ export function KanbanGame({ step }: { step: StepData }) {
 
   function handleSubmit() {
     if (revealing) return;
+
+    // Mode libre : pas de correction, on valide dès que le minimum est atteint.
+    if (freeMode) {
+      const guestStudentId = getGuestStudentId(step.module.slug);
+      if (guestStudentId) {
+        submitKanbanResponse({
+          guestStudentId,
+          stepId: step.id,
+          moduleId: step.module.id,
+          userAnswer: assignments as Record<string, string>,
+          isCorrect: true,
+        }).catch(() => {});
+      }
+      setOverlay({ show: true, isCorrect: true });
+      return;
+    }
+
     const correct = items.every((item) => assignments[item] === correctAnswer[item]);
     const guestStudentId = getGuestStudentId(step.module.slug);
     if (guestStudentId) {
@@ -169,7 +194,7 @@ export function KanbanGame({ step }: { step: StepData }) {
             ))}
           </div>
           <span className="text-white/70 text-xs font-bold">
-            {assignedCount}/{items.length} placés
+            {freeMode ? `${collectedCount}/${minRequired} dans ton sac` : `${assignedCount}/${items.length} placés`}
           </span>
         </div>
 
@@ -213,6 +238,7 @@ export function KanbanGame({ step }: { step: StepData }) {
           {categories.map((category) => {
             const categoryItems = items.filter((item) => assignments[item] === category);
             const isOver = dragOver === category;
+            const isBag = freeMode && category === bagCategory;
 
             return (
               <div
@@ -220,7 +246,7 @@ export function KanbanGame({ step }: { step: StepData }) {
                 onDragOver={(e) => onDragOver(e, category)}
                 onDragLeave={onDragLeave}
                 onDrop={(e) => onDropCategory(e, category)}
-                className="flex-1 min-h-[150px] rounded-3xl p-4 transition-all duration-200"
+                className="relative flex-1 min-h-[150px] rounded-3xl p-4 transition-all duration-200 overflow-hidden"
                 style={{
                   background: isOver ? "rgba(255,255,255,0.22)" : "rgba(255,255,255,0.1)",
                   border: `2px dashed ${isOver ? "rgba(255,255,255,0.8)" : "rgba(255,255,255,0.3)"}`,
@@ -228,17 +254,28 @@ export function KanbanGame({ step }: { step: StepData }) {
                   transform: isOver ? "scale(1.02)" : "scale(1)",
                 }}
               >
-                <p className="text-white font-black text-center mb-3 tracking-widest uppercase text-xs">
+                {/* Filigrane sac à dos : matérialise visuellement le "panier" en mode libre */}
+                {isBag && (
+                  <Backpack
+                    size={96}
+                    className="absolute -bottom-4 -right-4 opacity-10 pointer-events-none"
+                    style={{ color: "#fff" }}
+                  />
+                )}
+                <p className="relative text-white font-black text-center mb-3 tracking-widest uppercase text-xs flex items-center justify-center gap-1.5">
+                  {isBag && <Backpack size={13} />}
                   {category}
                 </p>
-                <div className="flex flex-col gap-2">
+                <div className="relative flex flex-col gap-2">
                   {categoryItems.map((item) => {
                     const isRight = assignments[item] === correctAnswer[item];
-                    const resultStyle = verified
-                      ? isRight
-                        ? { background: "#16A34A", color: "#fff" }
-                        : { background: "#DC2626", color: "#fff" }
-                      : { background: "rgba(255,255,255,0.92)", color: "#1a1a1a" };
+                    const resultStyle = freeMode
+                      ? { background: "rgba(255,255,255,0.92)", color: "#1a1a1a" }
+                      : verified
+                        ? isRight
+                          ? { background: "#16A34A", color: "#fff" }
+                          : { background: "#DC2626", color: "#fff" }
+                        : { background: "rgba(255,255,255,0.92)", color: "#1a1a1a" };
                     return (
                       <div
                         key={item}
@@ -260,16 +297,16 @@ export function KanbanGame({ step }: { step: StepData }) {
 
         <button
           onClick={handleSubmit}
-          disabled={!allAssigned || revealing}
+          disabled={!canSubmit || revealing}
           className="px-10 py-3.5 rounded-2xl text-white font-black text-base transition-all"
           style={{
-            background: allAssigned ? "rgba(255,255,255,0.25)" : "rgba(255,255,255,0.1)",
+            background: canSubmit ? "rgba(255,255,255,0.25)" : "rgba(255,255,255,0.1)",
             backdropFilter: "blur(8px)",
-            border: `2px solid ${allAssigned ? "rgba(255,255,255,0.6)" : "rgba(255,255,255,0.2)"}`,
-            opacity: allAssigned && !revealing ? 1 : 0.5,
+            border: `2px solid ${canSubmit ? "rgba(255,255,255,0.6)" : "rgba(255,255,255,0.2)"}`,
+            opacity: canSubmit && !revealing ? 1 : 0.5,
           }}
         >
-          Valider mon tri
+          {freeMode ? "Valider mon sac" : "Valider mon tri"}
         </button>
       </main>
 
@@ -277,9 +314,11 @@ export function KanbanGame({ step }: { step: StepData }) {
         show={overlay?.show ?? false}
         isCorrect={overlay?.isCorrect ?? false}
         explanation={
-          overlay?.isCorrect
-            ? "Tu as parfaitement classé tous les éléments. Continue comme ça !"
-            : "Les étiquettes en rouge sont mal classées, celles en vert sont bonnes et restent en place. Réessaie pour corriger !"
+          freeMode
+            ? "Ton sac est prêt ! Ce sont toutes de bonnes façons de bouger."
+            : overlay?.isCorrect
+              ? "Tu as parfaitement classé tous les éléments. Continue comme ça !"
+              : "Les étiquettes en rouge sont mal classées, celles en vert sont bonnes et restent en place. Réessaie pour corriger !"
         }
         mascotte={step.module.mascotte}
         primaryColor={primaryColor}

@@ -11,6 +11,7 @@ import { HistoireEditor } from "./histoire-editor";
 import { DialogueEditor } from "./dialogue-editor";
 import { SwipeEditor } from "./swipe-editor";
 import { CurseurEditor } from "./curseur-editor";
+import { CorpsEditor } from "./corps-editor";
 import { ContentEditor } from "./content-editor";
 
 interface Props {
@@ -44,6 +45,8 @@ export function StepEditor(props: Props) {
       return <SwipeEditor {...props} />;
     case "CURSEUR":
       return <CurseurEditor {...props} />;
+    case "CORPS":
+      return <CorpsEditor {...props} />;
   }
 
   return <ContentEditor {...props} />;

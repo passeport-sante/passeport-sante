@@ -167,6 +167,16 @@ function renderGame(gameType: GameType, data: ExportGameData): string {
         .join("");
       return `<table><thead><tr><th>Affirmation</th><th>Type</th><th>Réponse / échelle</th></tr></thead><tbody>${rows}</tbody></table>`;
     }
+    case "CORPS": {
+      const zoneLabels: Record<string, string> = {
+        tete: "Tête / Cerveau", coeur: "Cœur", poumons: "Poumons", muscles: "Muscles", os: "Os", corps: "Corps entier",
+      };
+      const benefits = (q.benefits as Json[]) ?? [];
+      const rows = benefits
+        .map((b) => `<tr><td>${esc(b.text)}</td><td class="correct">${esc(zoneLabels[String(b.zoneId)] ?? String(b.zoneId))}</td></tr>`)
+        .join("");
+      return `<table><thead><tr><th>Bienfait</th><th>Zone du corps</th></tr></thead><tbody>${rows}</tbody></table>`;
+    }
     case "DIALOGUE": {
       const scenes = (q.scenes as Json[]) ?? [];
       const endings = (q.endings as Json[]) ?? [];

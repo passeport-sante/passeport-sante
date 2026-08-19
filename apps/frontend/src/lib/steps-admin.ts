@@ -12,7 +12,8 @@ export type GameType =
   | "HISTOIRE"
   | "DIALOGUE"
   | "SWIPE"
-  | "CURSEUR";
+  | "CURSEUR"
+  | "CORPS";
 
 export type StepKind = "GAME" | "CONTENT";
 
@@ -29,6 +30,10 @@ export type StepContent = {
   caption?: string;
   // Scénario : active le mode "bouclier mental" (jauge à points, on avance à chaque choix)
   shieldMode?: boolean;
+  // Kanban "mode libre" : pas de bonne/mauvaise réponse, l'élève choisit librement
+  // au moins `minRequired` items dans la 1ère catégorie (ex. un panier d'activités).
+  freeMode?: boolean;
+  minRequired?: number;
 };
 
 export type AdminStep = {
@@ -215,6 +220,13 @@ export const GAME_TYPE_META: Record<
     bg: "#F0FDFA",
     description: "Place un curseur sur une échelle (opinion) ou pour estimer une valeur.",
   },
+  CORPS: {
+    label: "Corps humain",
+    short: "Corps",
+    color: "#E11D48",
+    bg: "#FFF1F2",
+    description: "Associe chaque bienfait à la bonne zone du corps (tête, cœur, muscles...).",
+  },
 };
 
 // ── Métadonnées d'affichage des sous-étapes de contenu ──────────────────────
@@ -271,6 +283,7 @@ export function defaultContentFor(gameType: GameType): { title: string; instruct
     DIALOGUE: { title: "L'histoire dont tu es le héros", instructions: "Fais tes choix et découvre où ils te mènent" },
     SWIPE: { title: "Vrai ou Faux ?", instructions: "Balaye à droite pour Vrai, à gauche pour Faux" },
     CURSEUR: { title: "Place le curseur", instructions: "Déplace le curseur selon ton avis" },
+    CORPS: { title: "Où se trouve le bienfait ?", instructions: "Clique un bienfait puis la zone du corps correspondante" },
   };
   return map[gameType];
 }
@@ -424,8 +437,45 @@ export function defaultGameDataFor(gameType: GameType): AdminGameData[] {
           correctAnswer: {},
         },
       ];
+    case "CORPS":
+      return [
+        {
+          questionData: {
+            benefits: [
+              { id: "b1", text: "Moins de stress, meilleur moral", zoneId: "tete" },
+              { id: "b2", text: "Cœur plus endurant", zoneId: "coeur" },
+              { id: "b3", text: "Meilleur souffle", zoneId: "poumons" },
+              { id: "b4", text: "Muscles plus forts", zoneId: "muscles" },
+              { id: "b5", text: "Os plus solides", zoneId: "os" },
+              { id: "b6", text: "Meilleures défenses immunitaires", zoneId: "corps" },
+            ],
+          },
+          correctAnswer: {},
+        },
+      ];
   }
 }
+
+// ── Corps humain : zones fixes partagées éditeur ⇆ jeu ───────────────────────
+// Zones volontairement figées (pas d'éditeur de coordonnées) : un seul schéma,
+// simple à saisir côté admin, cohérent pour tous les modules qui l'utilisent.
+
+export type BodyZoneId = "tete" | "coeur" | "poumons" | "muscles" | "os" | "corps";
+
+export const BODY_ZONES: { id: BodyZoneId; label: string; emoji: string }[] = [
+  { id: "tete", label: "Tête / Cerveau", emoji: "🧠" },
+  { id: "coeur", label: "Cœur", emoji: "❤️" },
+  { id: "poumons", label: "Poumons", emoji: "🫁" },
+  { id: "muscles", label: "Muscles", emoji: "💪" },
+  { id: "os", label: "Os", emoji: "🦴" },
+  { id: "corps", label: "Corps entier", emoji: "✨" },
+];
+
+export type CorpsBenefit = {
+  id: string;
+  text: string;
+  zoneId: BodyZoneId;
+};
 
 // ── Vrai/Faux à balayer (Swipe) : types partagés éditeur ⇆ jeu ───────────────
 

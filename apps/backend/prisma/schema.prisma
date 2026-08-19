@@ -30,6 +30,7 @@ enum GameType {
   DIALOGUE
   SWIPE
   CURSEUR
+  CORPS
 }
 
 // Distingue une étape de jeu (comptée, cercle Rive) d'une sous-étape de contenu (intercalée, non comptée)

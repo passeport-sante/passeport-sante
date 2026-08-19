@@ -1,15 +1,15 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import { Trash2, Plus, X } from "lucide-react";
-import { EditorShell, Field, SectionHeader, INPUT_CLASS, ICON_BUTTON_CLASS } from "./editor-shell";
-import type { AdminStep, AdminGameData } from "@/lib/steps-admin";
+import { Trash2, Plus, X, Backpack } from "lucide-react";
+import { EditorShell, SectionHeader, INPUT_CLASS, ICON_BUTTON_CLASS } from "./editor-shell";
+import type { AdminStep, AdminGameData, StepContent } from "@/lib/steps-admin";
 
 interface Props {
   step: AdminStep;
   color: string;
   onSave: (payload: {
-    content: { title?: string; instructions?: string };
+    content: StepContent;
     gameData: AdminGameData[];
   }) => Promise<void>;
 }
@@ -27,6 +27,10 @@ export function KanbanEditor({ step, color, onSave }: Props) {
   const [instructions, setInstructions] = useState(step.content?.instructions ?? "");
   const [categories, setCategories] = useState<string[]>(initialCategories);
   const [items, setItems] = useState<Item[]>(initialItems.length ? initialItems : [{ text: "", correct: initialCategories[0] ?? "" }]);
+  // Mode libre : pas de bonne/mauvaise réponse, l'élève choisit librement au moins
+  // `minRequired` items dans la 1ère catégorie (ex. un panier d'activités préférées).
+  const [freeMode, setFreeMode] = useState(!!step.content?.freeMode);
+  const [minRequired, setMinRequired] = useState(step.content?.minRequired ?? Math.min(4, initialItems.length || 4));
 
   const validationError = useMemo(() => {
     if (categories.length < 2) return "Il faut au moins 2 catégories";
@@ -34,15 +38,25 @@ export function KanbanEditor({ step, color, onSave }: Props) {
     if (categories.some((c) => !c.trim())) return "Toutes les catégories doivent avoir un nom";
     if (items.length === 0) return "Ajoutez au moins une affirmation";
     if (items.some((i) => !i.text.trim())) return "Toutes les affirmations doivent être renseignées";
-    if (items.some((i) => !categories.includes(i.correct))) return "Chaque affirmation doit être assignée à une catégorie";
+    if (freeMode) {
+      if (minRequired < 1) return "Le minimum requis doit être d'au moins 1";
+      if (minRequired > items.length) return "Le minimum requis dépasse le nombre d'items disponibles";
+    } else if (items.some((i) => !categories.includes(i.correct))) {
+      return "Chaque affirmation doit être assignée à une catégorie";
+    }
     return null;
-  }, [categories, items]);
+  }, [categories, items, freeMode, minRequired]);
 
   const isDirty = true; // pour la v1, on autorise toujours d'enregistrer
 
   async function handleSave() {
     await onSave({
-      content: { title: title.trim(), instructions: instructions.trim() },
+      content: {
+        title: title.trim(),
+        instructions: instructions.trim(),
+        freeMode,
+        ...(freeMode ? { minRequired } : {}),
+      },
       gameData: [
         {
           ...(initial?.id ? { id: initial.id } : {}),
@@ -50,7 +64,7 @@ export function KanbanEditor({ step, color, onSave }: Props) {
             categories: categories.map((c) => c.trim()),
             items: items.map((i) => i.text.trim()),
           },
-          correctAnswer: Object.fromEntries(items.map((i) => [i.text.trim(), i.correct])),
+          correctAnswer: freeMode ? {} : Object.fromEntries(items.map((i) => [i.text.trim(), i.correct])),
         },
       ],
     });
@@ -94,6 +108,40 @@ export function KanbanEditor({ step, color, onSave }: Props) {
       isDirty={isDirty}
       validationError={validationError}
     >
+      {/* Toggle mode libre (panier) */}
+      <label className="flex items-start gap-3 p-3 rounded-xl bg-gray-50 cursor-pointer select-none">
+        <input
+          type="checkbox"
+          checked={freeMode}
+          onChange={(e) => setFreeMode(e.target.checked)}
+          className="mt-0.5 w-4 h-4 accent-[#2A8970]"
+        />
+        <span>
+          <span className="flex items-center gap-1.5 text-sm font-bold text-[#1A1A1A]">
+            <Backpack size={14} style={{ color }} />
+            Mode libre (panier)
+          </span>
+          <span className="block text-xs text-gray-500 mt-0.5">
+            Pas de bonne/mauvaise réponse : l&apos;élève choisit librement au moins <b>{minRequired}</b> item(s)
+            dans la 1ère catégorie (« {categories[0] || "…"} ») pour valider. Idéal pour un panier d&apos;activités préférées.
+          </span>
+          {freeMode && (
+            <span className="flex items-center gap-2 mt-2">
+              <span className="text-xs font-semibold text-gray-600">Minimum requis :</span>
+              <input
+                type="number"
+                min={1}
+                max={items.length || 1}
+                value={minRequired}
+                onChange={(e) => setMinRequired(Math.max(1, Number(e.target.value) || 1))}
+                onClick={(e) => e.stopPropagation()}
+                className="w-16 px-2 py-1 rounded-lg bg-white border border-gray-200 text-sm text-center outline-none focus:ring-2 focus:ring-[#2A8970]/30"
+              />
+            </span>
+          )}
+        </span>
+      </label>
+
       <div className="grid grid-cols-1 md:grid-cols-5 gap-5">
         {/* Catégories — 2/5 */}
         <div className="md:col-span-2 space-y-3">
@@ -149,25 +197,27 @@ export function KanbanEditor({ step, color, onSave }: Props) {
                     placeholder="Saisis une affirmation..."
                     className={INPUT_CLASS}
                   />
-                  <div className="flex items-center gap-2">
-                    <span className="text-[11px] font-semibold text-gray-500">Bonne réponse :</span>
-                    <div className="flex flex-wrap gap-1.5">
-                      {categories.map((c) => (
-                        <button
-                          key={c}
-                          onClick={() => updateItem(idx, { correct: c })}
-                          className={`px-2.5 py-1 text-[11px] font-bold rounded-md transition-all ${
-                            item.correct === c
-                              ? "text-white shadow-sm"
-                              : "bg-white text-gray-500 border border-gray-200 hover:border-gray-300"
-                          }`}
-                          style={item.correct === c ? { background: color } : {}}
-                        >
-                          {c || "—"}
-                        </button>
-                      ))}
+                  {!freeMode && (
+                    <div className="flex items-center gap-2">
+                      <span className="text-[11px] font-semibold text-gray-500">Bonne réponse :</span>
+                      <div className="flex flex-wrap gap-1.5">
+                        {categories.map((c) => (
+                          <button
+                            key={c}
+                            onClick={() => updateItem(idx, { correct: c })}
+                            className={`px-2.5 py-1 text-[11px] font-bold rounded-md transition-all ${
+                              item.correct === c
+                                ? "text-white shadow-sm"
+                                : "bg-white text-gray-500 border border-gray-200 hover:border-gray-300"
+                            }`}
+                            style={item.correct === c ? { background: color } : {}}
+                          >
+                            {c || "—"}
+                          </button>
+                        ))}
+                      </div>
                     </div>
-                  </div>
+                  )}
                 </div>
                 <button onClick={() => removeItem(idx)} className={ICON_BUTTON_CLASS} aria-label="Supprimer">
                   <Trash2 size={14} />
