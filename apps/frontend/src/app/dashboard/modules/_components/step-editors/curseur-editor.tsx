@@ -3,7 +3,7 @@
 import { useMemo, useState } from "react";
 import { Trash2, Plus, MessageSquare, Target } from "lucide-react";
 import { EditorShell, SectionHeader, Field, INPUT_CLASS, TEXTAREA_CLASS, ICON_BUTTON_CLASS } from "./editor-shell";
-import { shortId, type AdminStep, type AdminGameData, type CurseurItem, type CurseurMode } from "@/lib/steps-admin";
+import { shortId, curseurDisplayValue, type AdminStep, type AdminGameData, type CurseurItem, type CurseurMode } from "@/lib/steps-admin";
 
 interface Props {
   step: AdminStep;
@@ -22,9 +22,12 @@ function itemsFromStep(step: AdminStep): CurseurItem[] {
       mode: it.mode === "estimation" ? "estimation" : "opinion",
       target: typeof it.target === "number" ? it.target : 50,
       tolerance: typeof it.tolerance === "number" ? it.tolerance : 15,
+      valueMin: typeof it.valueMin === "number" ? it.valueMin : 0,
+      valueMax: typeof it.valueMax === "number" ? it.valueMax : 100,
+      unit: it.unit ?? "",
     }));
   }
-  return [{ id: shortId(), text: "", leftLabel: "Pas du tout", rightLabel: "Tout à fait", mode: "opinion", target: 50, tolerance: 15 }];
+  return [{ id: shortId(), text: "", leftLabel: "Pas du tout", rightLabel: "Tout à fait", mode: "opinion", target: 50, tolerance: 15, valueMin: 0, valueMax: 100, unit: "" }];
 }
 
 export function CurseurEditor({ step, color, onSave }: Props) {
@@ -54,9 +57,15 @@ export function CurseurEditor({ step, color, onSave }: Props) {
               leftLabel: it.leftLabel.trim(),
               rightLabel: it.rightLabel.trim(),
               mode: it.mode,
-              // Cible/tolérance uniquement pertinentes en mode estimation.
+              // Cible/tolérance/bornes uniquement pertinentes en mode estimation.
               ...(it.mode === "estimation"
-                ? { target: it.target ?? 50, tolerance: it.tolerance ?? 15 }
+                ? {
+                    target: it.target ?? 50,
+                    tolerance: it.tolerance ?? 15,
+                    valueMin: it.valueMin ?? 0,
+                    valueMax: it.valueMax ?? 100,
+                    unit: it.unit?.trim() || undefined,
+                  }
                 : {}),
             })),
           },
@@ -67,7 +76,10 @@ export function CurseurEditor({ step, color, onSave }: Props) {
   }
 
   function addItem() {
-    setItems((xs) => [...xs, { id: shortId(), text: "", leftLabel: "Pas du tout", rightLabel: "Tout à fait", mode: "opinion", target: 50, tolerance: 15 }]);
+    setItems((xs) => [
+      ...xs,
+      { id: shortId(), text: "", leftLabel: "Pas du tout", rightLabel: "Tout à fait", mode: "opinion", target: 50, tolerance: 15, valueMin: 0, valueMax: 100, unit: "" },
+    ]);
   }
   function update(id: string, patch: Partial<CurseurItem>) {
     setItems((xs) => xs.map((it) => (it.id === id ? { ...it, ...patch } : it)));
@@ -139,11 +151,41 @@ export function CurseurEditor({ step, color, onSave }: Props) {
             </div>
 
             {it.mode === "estimation" && (
-              <div className="space-y-2 pt-1 border-t border-gray-200">
+              <div className="space-y-3 pt-1 border-t border-gray-200">
+                {/* Bornes réelles de l'échelle : c'est ce qui permet d'afficher une
+                    vraie valeur ("62 min") à l'élève plutôt qu'un pourcentage muet. */}
+                <div className="grid grid-cols-3 gap-2">
+                  <Field label="Valeur à gauche">
+                    <input
+                      type="number"
+                      value={it.valueMin ?? 0}
+                      onChange={(e) => update(it.id, { valueMin: Number(e.target.value) || 0 })}
+                      className={INPUT_CLASS}
+                    />
+                  </Field>
+                  <Field label="Valeur à droite">
+                    <input
+                      type="number"
+                      value={it.valueMax ?? 100}
+                      onChange={(e) => update(it.id, { valueMax: Number(e.target.value) || 0 })}
+                      className={INPUT_CLASS}
+                    />
+                  </Field>
+                  <Field label="Unité">
+                    <input
+                      type="text"
+                      value={it.unit ?? ""}
+                      onChange={(e) => update(it.id, { unit: e.target.value })}
+                      placeholder="min, ans, h…"
+                      className={INPUT_CLASS}
+                    />
+                  </Field>
+                </div>
+
                 <div className="flex items-center justify-between">
-                  <span className="text-[11px] font-bold uppercase tracking-wider text-gray-500">Bonne zone</span>
-                  <span className="text-[11px] font-mono text-gray-500">
-                    {Math.max(0, (it.target ?? 50) - (it.tolerance ?? 15))} – {Math.min(100, (it.target ?? 50) + (it.tolerance ?? 15))} / 100
+                  <span className="text-[11px] font-bold uppercase tracking-wider text-gray-500">Bonne réponse</span>
+                  <span className="text-[11px] font-mono font-bold" style={{ color: "#0D9488" }}>
+                    {curseurDisplayValue(it, it.target ?? 50)}
                   </span>
                 </div>
                 <input
@@ -154,30 +196,24 @@ export function CurseurEditor({ step, color, onSave }: Props) {
                   onChange={(e) => update(it.id, { target: Number(e.target.value) })}
                   className="w-full accent-[#0D9488]"
                 />
-                <div className="grid grid-cols-2 gap-2">
-                  <Field label="Cible (0–100)">
-                    <input
-                      type="number"
-                      min={0}
-                      max={100}
-                      value={it.target ?? 50}
-                      onChange={(e) => update(it.id, { target: Math.max(0, Math.min(100, Number(e.target.value) || 0)) })}
-                      className={INPUT_CLASS}
-                    />
-                  </Field>
-                  <Field label="Tolérance (±)">
-                    <input
-                      type="number"
-                      min={1}
-                      max={50}
-                      value={it.tolerance ?? 15}
-                      onChange={(e) => update(it.id, { tolerance: Math.max(1, Math.min(50, Number(e.target.value) || 1)) })}
-                      className={INPUT_CLASS}
-                    />
-                  </Field>
+
+                <div className="flex items-center justify-between">
+                  <span className="text-[11px] font-bold uppercase tracking-wider text-gray-500">Tolérance acceptée</span>
+                  <span className="text-[11px] font-mono text-gray-500">
+                    ± {Math.round(((it.tolerance ?? 15) / 100) * ((it.valueMax ?? 100) - (it.valueMin ?? 0)))} {it.unit ?? ""}
+                  </span>
                 </div>
+                <input
+                  type="range"
+                  min={1}
+                  max={50}
+                  value={it.tolerance ?? 15}
+                  onChange={(e) => update(it.id, { tolerance: Number(e.target.value) })}
+                  className="w-full accent-gray-400"
+                />
+
                 <p className="text-[11px] text-gray-400">
-                  0 = tout à gauche, 100 = tout à droite. La réponse est juste si le curseur tombe dans la zone.
+                  Zone acceptée : {curseurDisplayValue(it, Math.max(0, (it.target ?? 50) - (it.tolerance ?? 15)))} – {curseurDisplayValue(it, Math.min(100, (it.target ?? 50) + (it.tolerance ?? 15)))}
                 </p>
               </div>
             )}

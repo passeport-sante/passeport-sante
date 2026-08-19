@@ -6,6 +6,7 @@ import Link from "next/link";
 import { ArrowLeft } from "lucide-react";
 import { getGuestStudentId, submitQuizResponse } from "@/lib/modules";
 import { goToNextStep, gameProgress, type FlowStep } from "@/lib/step-flow";
+import { curseurDisplayValue } from "@/lib/steps-admin";
 
 type Mode = "opinion" | "estimation";
 interface Item {
@@ -16,6 +17,9 @@ interface Item {
   mode: Mode;
   target?: number;
   tolerance?: number;
+  valueMin?: number;
+  valueMax?: number;
+  unit?: string;
 }
 
 interface StepData {
@@ -154,28 +158,45 @@ export function CurseurGame({ step }: { step: StepData }) {
           </div>
 
           {!answered ? (
-            <input
-              type="range"
-              min={0}
-              max={100}
-              value={value}
-              onChange={(e) => setValue(Number(e.target.value))}
-              className="w-full h-3 cursor-pointer"
-              style={{ accentColor: "#fff" }}
-            />
+            <div className="relative pt-8">
+              {/* Bulle de valeur, suit le pouce : sans elle on glisse "à l'aveugle". */}
+              <div
+                className="absolute -top-1 -translate-x-1/2 px-2.5 py-1 rounded-lg text-xs font-black shadow whitespace-nowrap"
+                style={{ left: `${value}%`, background: "#fff", color: primaryColor }}
+              >
+                {item ? curseurDisplayValue(item, value) : value}
+              </div>
+              <input
+                type="range"
+                min={0}
+                max={100}
+                value={value}
+                onChange={(e) => setValue(Number(e.target.value))}
+                className="w-full h-3 cursor-pointer"
+                style={{ accentColor: "#fff" }}
+              />
+            </div>
           ) : (
             // Piste statique révélée : zone correcte (estimation) + marqueur de l'élève.
-            <div className="relative h-3 rounded-full bg-white/25">
-              {isEstimation && (
-                <div
-                  className="absolute h-full rounded-full"
-                  style={{ left: `${zoneMin}%`, width: `${zoneMax - zoneMin}%`, background: "rgba(255,255,255,0.85)" }}
-                />
-              )}
+            <div className="relative pt-8">
               <div
-                className="absolute -top-1.5 w-6 h-6 rounded-full border-2 border-white shadow"
-                style={{ left: `calc(${value}% - 12px)`, background: isEstimation ? (correct ? "#16A34A" : "#DC2626") : primaryColor }}
-              />
+                className="absolute -top-1 -translate-x-1/2 px-2.5 py-1 rounded-lg text-xs font-black shadow whitespace-nowrap"
+                style={{ left: `${value}%`, background: "#fff", color: isEstimation ? (correct ? "#16A34A" : "#DC2626") : primaryColor }}
+              >
+                {item ? curseurDisplayValue(item, value) : value}
+              </div>
+              <div className="relative h-3 rounded-full bg-white/25">
+                {isEstimation && (
+                  <div
+                    className="absolute h-full rounded-full"
+                    style={{ left: `${zoneMin}%`, width: `${zoneMax - zoneMin}%`, background: "rgba(255,255,255,0.85)" }}
+                  />
+                )}
+                <div
+                  className="absolute -top-1.5 w-6 h-6 rounded-full border-2 border-white shadow"
+                  style={{ left: `calc(${value}% - 12px)`, background: isEstimation ? (correct ? "#16A34A" : "#DC2626") : primaryColor }}
+                />
+              </div>
             </div>
           )}
         </div>
@@ -185,7 +206,9 @@ export function CurseurGame({ step }: { step: StepData }) {
           <div className="w-full max-w-xl bg-white/95 rounded-2xl px-6 py-4 shadow-lg text-center space-y-1">
             {isEstimation ? (
               <p className="font-black text-sm" style={{ color: correct ? "#16A34A" : "#DC2626" }}>
-                {correct ? "Dans la bonne zone ✓" : "À côté — regarde la zone en clair"}
+                {correct
+                  ? "Dans la bonne zone ✓"
+                  : `À côté — la bonne réponse est autour de ${item ? curseurDisplayValue(item, target) : target}`}
               </p>
             ) : (
               <p className="font-black text-sm" style={{ color: primaryColor }}>Merci, ton avis compte 💬</p>

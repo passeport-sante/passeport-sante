@@ -451,7 +451,22 @@ export type CurseurItem = {
   // Estimation uniquement : cible et tolérance sur l'échelle 0–100.
   target?: number;
   tolerance?: number;
+  // Bornes réelles affichées pendant le glissement (ex. 0 → 120, unité "min").
+  // Sans elles, la bulle affiche juste un pourcentage — moins parlant pour l'élève.
+  valueMin?: number;
+  valueMax?: number;
+  unit?: string;
 };
+
+// Convertit une position 0–100 en valeur réelle affichable (ex. "62 min").
+// Sans bornes définies, retombe sur un pourcentage.
+export function curseurDisplayValue(it: CurseurItem, pos: number): string {
+  if (typeof it.valueMin === "number" && typeof it.valueMax === "number") {
+    const real = Math.round(it.valueMin + (pos / 100) * (it.valueMax - it.valueMin));
+    return it.unit ? `${real} ${it.unit}` : String(real);
+  }
+  return `${Math.round(pos)} %`;
+}
 
 // ── Dialogue interactif : types partagés éditeur ⇆ jeu ───────────────────────
 
