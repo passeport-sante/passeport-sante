@@ -17,6 +17,7 @@ import {
 import { AdminModuleCard } from "./_components/admin-module-card";
 import { DeleteModuleModal } from "./_components/delete-module-modal";
 import { ManageCategoriesModal } from "./_components/manage-categories-modal";
+import { getToken, decodeJwt, type UserRole } from "@/lib/auth";
 
 type StatusFilter = "all" | "active" | "inactive";
 type SortKey = "recent" | "alpha" | "steps";
@@ -36,6 +37,13 @@ export default function AdminModulesPage() {
   const [manageCategories, setManageCategories] = useState(false);
   const [importing, setImporting] = useState(false);
   const importInputRef = useRef<HTMLInputElement>(null);
+
+  // Le collaborateur voit tous les modules mais ne peut que les tester.
+  const [canManage, setCanManage] = useState(false);
+  useEffect(() => {
+    const role = decodeJwt<{ role?: UserRole }>(getToken())?.role;
+    setCanManage(role === "ADMIN");
+  }, []);
 
   async function refresh() {
     try {
@@ -143,42 +151,44 @@ export default function AdminModulesPage() {
             Créez et personnalisez les contenus pédagogiques
           </p>
         </div>
-        <div className="flex items-center gap-2">
-          <input
-            ref={importInputRef}
-            type="file"
-            accept="application/json,.json"
-            className="hidden"
-            onChange={(e) => {
-              const f = e.target.files?.[0];
-              if (f) handleImportFile(f);
-              e.target.value = "";
-            }}
-          />
-          <button
-            onClick={() => importInputRef.current?.click()}
-            disabled={importing}
-            className="flex items-center gap-2 px-4 py-2.5 text-sm font-semibold rounded-xl border border-gray-200 text-gray-600 hover:bg-gray-50 transition-colors disabled:opacity-50"
-          >
-            {importing ? <Loader2 size={16} className="animate-spin" /> : <Upload size={16} />}
-            Importer
-          </button>
-          <button
-            onClick={() => setManageCategories(true)}
-            className="flex items-center gap-2 px-4 py-2.5 text-sm font-semibold rounded-xl border border-gray-200 text-gray-600 hover:bg-gray-50 transition-colors"
-          >
-            <FolderCog size={16} />
-            Catégories
-          </button>
-          <Link
-            href="/dashboard/modules/new"
-            className="flex items-center gap-2 px-5 py-2.5 text-white text-sm font-semibold rounded-xl hover:opacity-90 transition-opacity"
-            style={{ background: "linear-gradient(135deg, #1B6B8A, #2A8970)" }}
-          >
-            <Plus size={17} />
-            Nouveau module
-          </Link>
-        </div>
+        {canManage && (
+          <div className="flex items-center gap-2">
+            <input
+              ref={importInputRef}
+              type="file"
+              accept="application/json,.json"
+              className="hidden"
+              onChange={(e) => {
+                const f = e.target.files?.[0];
+                if (f) handleImportFile(f);
+                e.target.value = "";
+              }}
+            />
+            <button
+              onClick={() => importInputRef.current?.click()}
+              disabled={importing}
+              className="flex items-center gap-2 px-4 py-2.5 text-sm font-semibold rounded-xl border border-gray-200 text-gray-600 hover:bg-gray-50 transition-colors disabled:opacity-50"
+            >
+              {importing ? <Loader2 size={16} className="animate-spin" /> : <Upload size={16} />}
+              Importer
+            </button>
+            <button
+              onClick={() => setManageCategories(true)}
+              className="flex items-center gap-2 px-4 py-2.5 text-sm font-semibold rounded-xl border border-gray-200 text-gray-600 hover:bg-gray-50 transition-colors"
+            >
+              <FolderCog size={16} />
+              Catégories
+            </button>
+            <Link
+              href="/dashboard/modules/new"
+              className="flex items-center gap-2 px-5 py-2.5 text-white text-sm font-semibold rounded-xl hover:opacity-90 transition-opacity"
+              style={{ background: "linear-gradient(135deg, #1B6B8A, #2A8970)" }}
+            >
+              <Plus size={17} />
+              Nouveau module
+            </Link>
+          </div>
+        )}
       </div>
 
       {/* Stats row */}
@@ -256,13 +266,14 @@ export default function AdminModulesPage() {
           {error}
         </div>
       ) : filtered.length === 0 ? (
-        <EmptyState onReset={() => { setQuery(""); setCategoryId("all"); setStatus("all"); }} hasFilters={!!query || categoryId !== "all" || status !== "all"} />
+        <EmptyState canManage={canManage} onReset={() => { setQuery(""); setCategoryId("all"); setStatus("all"); }} hasFilters={!!query || categoryId !== "all" || status !== "all"} />
       ) : (
         <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-4">
           {filtered.map((m) => (
             <AdminModuleCard
               key={m.id}
               module={m}
+              canManage={canManage}
               onDuplicate={handleDuplicate}
               onToggleActive={handleToggleActive}
               onDelete={(mod) => setToDelete(mod)}
@@ -347,7 +358,7 @@ function FilterChip({
   );
 }
 
-function EmptyState({ onReset, hasFilters }: { onReset: () => void; hasFilters: boolean }) {
+function EmptyState({ onReset, hasFilters, canManage }: { onReset: () => void; hasFilters: boolean; canManage: boolean }) {
   return (
     <div className="bg-white rounded-xl border border-dashed border-gray-200 p-12 text-center">
       <div className="w-12 h-12 rounded-xl bg-[#EBF4F8] flex items-center justify-center mx-auto mb-4">
@@ -370,14 +381,16 @@ function EmptyState({ onReset, hasFilters }: { onReset: () => void; hasFilters: 
             Réinitialiser
           </button>
         )}
-        <Link
-          href="/dashboard/modules/new"
-          className="inline-flex items-center gap-2 px-5 py-2 text-white text-sm font-semibold rounded-xl"
-          style={{ background: "linear-gradient(135deg, #1B6B8A, #2A8970)" }}
-        >
-          <Plus size={15} />
-          Nouveau module
-        </Link>
+        {canManage && (
+          <Link
+            href="/dashboard/modules/new"
+            className="inline-flex items-center gap-2 px-5 py-2 text-white text-sm font-semibold rounded-xl"
+            style={{ background: "linear-gradient(135deg, #1B6B8A, #2A8970)" }}
+          >
+            <Plus size={15} />
+            Nouveau module
+          </Link>
+        )}
       </div>
     </div>
   );

@@ -6,7 +6,7 @@ function auth(token: string) {
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 
-export type UserRole = "ADMIN" | "TRAINER";
+export type UserRole = "ADMIN" | "TRAINER" | "COLLABORATEUR";
 
 export type AccountUser = {
   id: string;

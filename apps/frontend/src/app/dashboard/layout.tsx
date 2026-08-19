@@ -31,10 +31,16 @@ const NAV_ADMIN: NavItem[] = [
   { href: "/dashboard/comptes", label: "Comptes", exact: false, adminOnly: true },
 ];
 
+// Collaborateur : Sessions (avec ses sous-onglets) + Modules (en lecture/test), mais pas de Comptes.
+const NAV_COLLABORATEUR: NavItem[] = [
+  { href: "/dashboard", label: "Sessions", exact: false, group: SESSION_GROUP },
+  { href: "/dashboard/modules", label: "Modules", exact: false },
+];
+
 type UserProfile = {
   name: string;
   email: string;
-  role?: "ADMIN" | "TRAINER";
+  role?: "ADMIN" | "TRAINER" | "COLLABORATEUR";
   organization?: { name: string };
 };
 
@@ -70,10 +76,23 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
 
   useEffect(() => {
     if (!user) return;
-    if (
-      (pathname.startsWith("/dashboard/modules") || pathname.startsWith("/dashboard/comptes")) &&
-      user.role !== "ADMIN"
-    ) {
+    const isAdmin = user.role === "ADMIN";
+    const isCollab = user.role === "COLLABORATEUR";
+
+    // Comptes : admin seulement.
+    if (pathname.startsWith("/dashboard/comptes") && !isAdmin) {
+      router.replace("/dashboard");
+      return;
+    }
+    if (pathname.startsWith("/dashboard/modules")) {
+      if (isAdmin) return;
+      // Collaborateur : uniquement la liste (consultation + test), pas la création ni l'édition.
+      if (isCollab) {
+        const isCreateOrEdit = pathname.startsWith("/dashboard/modules/new") || pathname.endsWith("/edit");
+        if (isCreateOrEdit) router.replace("/dashboard/modules");
+        return;
+      }
+      // Établissement (TRAINER) : pas d'accès aux modules.
       router.replace("/dashboard");
     }
   }, [user, pathname, router]);
@@ -110,7 +129,9 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
   }
 
   const isAdmin = user?.role === "ADMIN";
-  const visibleNav = isAdmin ? NAV_ADMIN : NAV_TRAINER;
+  const isCollaborateur = user?.role === "COLLABORATEUR";
+  const visibleNav = isAdmin ? NAV_ADMIN : isCollaborateur ? NAV_COLLABORATEUR : NAV_TRAINER;
+  const roleLabel = isAdmin ? "Administrateur" : isCollaborateur ? "Collaborateur" : "Établissement";
 
   return (
     <div className="min-h-screen bg-[#F0F4F8]">
@@ -182,7 +203,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
               {user && (
                 <div className="text-left leading-tight hidden sm:block">
                   <p className="text-xs font-bold text-[#1A1A1A]">{user.name}</p>
-                  <p className="text-[10px] text-gray-400">{isAdmin ? "Administrateur" : "Établissement"}</p>
+                  <p className="text-[10px] text-gray-400">{roleLabel}</p>
                 </div>
               )}
               <ChevronDown
@@ -224,7 +245,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
         </div>
       </header>
 
-      {isAdmin && SESSION_GROUP.includes(pathname) && (
+      {(isAdmin || isCollaborateur) && SESSION_GROUP.includes(pathname) && (
         <div className="bg-white border-b border-gray-100">
           <div className="brand-container flex flex-wrap items-center justify-center gap-1 py-2">
             {SESSION_TABS.map((tab) => {

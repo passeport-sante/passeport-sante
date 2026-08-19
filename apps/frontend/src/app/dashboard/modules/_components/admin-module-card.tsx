@@ -14,6 +14,7 @@ import {
   Clock,
   Download,
   Loader2,
+  Play,
 } from "lucide-react";
 import type { AdminModule } from "@/lib/modules-admin";
 import { mascotteUrl } from "@/lib/mascotte";
@@ -21,12 +22,14 @@ import { downloadModuleExport } from "@/lib/module-export";
 
 interface Props {
   module: AdminModule;
+  // false pour un collaborateur : lecture seule, il peut uniquement tester.
+  canManage?: boolean;
   onDuplicate: (id: string) => void;
   onToggleActive: (m: AdminModule) => void;
   onDelete: (m: AdminModule) => void;
 }
 
-export function AdminModuleCard({ module, onDuplicate, onToggleActive, onDelete }: Props) {
+export function AdminModuleCard({ module, canManage = true, onDuplicate, onToggleActive, onDelete }: Props) {
   const [menuOpen, setMenuOpen] = useState(false);
   const [exporting, setExporting] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
@@ -104,6 +107,7 @@ export function AdminModuleCard({ module, onDuplicate, onToggleActive, onDelete 
               </span>
             )}
 
+            {canManage && (
             <div className="relative" ref={menuRef}>
               <button
                 onClick={() => setMenuOpen((o) => !o)}
@@ -160,6 +164,7 @@ export function AdminModuleCard({ module, onDuplicate, onToggleActive, onDelete 
                 </div>
               )}
             </div>
+            )}
           </div>
         </div>
 
@@ -194,15 +199,27 @@ export function AdminModuleCard({ module, onDuplicate, onToggleActive, onDelete 
           )}
         </div>
 
-        {/* CTA modifier */}
-        <Link
-          href={`/dashboard/modules/${module.id}/edit`}
-          className="mt-auto inline-flex items-center justify-center gap-1.5 px-4 py-2 text-white text-sm font-semibold rounded-xl hover:opacity-90 transition-opacity"
-          style={{ background: color }}
-        >
-          <Pencil size={13} />
-          Modifier
-        </Link>
+        {/* CTA : Modifier (admin) ou Tester (collaborateur) */}
+        {canManage ? (
+          <Link
+            href={`/dashboard/modules/${module.id}/edit`}
+            className="mt-auto inline-flex items-center justify-center gap-1.5 px-4 py-2 text-white text-sm font-semibold rounded-xl hover:opacity-90 transition-opacity"
+            style={{ background: color }}
+          >
+            <Pencil size={13} />
+            Modifier
+          </Link>
+        ) : (
+          <Link
+            href={`/modules/${module.slug}`}
+            target="_blank"
+            className="mt-auto inline-flex items-center justify-center gap-1.5 px-4 py-2 text-white text-sm font-semibold rounded-xl hover:opacity-90 transition-opacity"
+            style={{ background: color }}
+          >
+            <Play size={13} />
+            Tester
+          </Link>
+        )}
       </div>
     </div>
   );

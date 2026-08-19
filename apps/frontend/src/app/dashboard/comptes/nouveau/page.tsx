@@ -85,23 +85,26 @@ export default function NouveauComptePage() {
         {/* ── Rôle ── */}
         <div className="space-y-2">
           <label className="text-sm font-bold text-gray-700">Rôle</label>
-          <div className="grid grid-cols-2 gap-3">
-            {(["TRAINER", "ADMIN"] as UserRole[]).map((r) => (
+          <div className="grid grid-cols-3 gap-3">
+            {(["TRAINER", "COLLABORATEUR", "ADMIN"] as UserRole[]).map((r) => (
               <button
                 key={r}
                 type="button"
                 onClick={() => setRole(r)}
-                className={`flex items-center gap-3 px-4 py-3 rounded-2xl border-2 text-sm font-semibold transition-all ${
+                className={`flex items-center gap-2 px-4 py-3 rounded-2xl border-2 text-sm font-semibold transition-all ${
                   role === r
                     ? "border-[#1B6B8A] bg-[#EBF4F8] text-[#1B6B8A]"
                     : "border-gray-200 text-gray-500 hover:border-gray-300"
                 }`}
               >
                 {r === "ADMIN" ? <Shield size={16} className="text-amber-500" /> : <User size={16} />}
-                {r === "TRAINER" ? "Établissement" : "Administrateur"}
+                {r === "TRAINER" ? "Établissement" : r === "COLLABORATEUR" ? "Collaborateur" : "Administrateur"}
               </button>
             ))}
           </div>
+          <p className="text-xs text-gray-400">
+            Le collaborateur voit et teste tous les modules (même non publiés), sans pouvoir les modifier ni gérer les comptes.
+          </p>
         </div>
 
         {/* ── Nom ── */}

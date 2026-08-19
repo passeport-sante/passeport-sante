@@ -13,12 +13,22 @@ import {
   type AccountUser, type Organization,
 } from "@/lib/admin-users";
 
-function RoleBadge({ role }: { role: "ADMIN" | "TRAINER" }) {
-  return role === "ADMIN" ? (
-    <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-semibold bg-amber-100 text-amber-700">
-      <Shield size={11} /> Admin
-    </span>
-  ) : (
+function RoleBadge({ role }: { role: "ADMIN" | "TRAINER" | "COLLABORATEUR" }) {
+  if (role === "ADMIN") {
+    return (
+      <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-semibold bg-amber-100 text-amber-700">
+        <Shield size={11} /> Admin
+      </span>
+    );
+  }
+  if (role === "COLLABORATEUR") {
+    return (
+      <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-semibold bg-violet-100 text-violet-700">
+        <User size={11} /> Collaborateur
+      </span>
+    );
+  }
+  return (
     <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-semibold bg-blue-100 text-[#1B6B8A]">
       <User size={11} /> Établissement
     </span>
