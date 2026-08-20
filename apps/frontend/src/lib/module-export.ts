@@ -153,12 +153,15 @@ function renderGame(gameType: GameType, data: ExportGameData): string {
       const items = (q.items as Json[]) ?? [];
       const rows = items
         .map((it) => {
+          const unit = it.unit ? ` ${esc(String(it.unit))}` : "";
+          if (String(it.mode) === "precis") {
+            return `<tr><td>${esc(it.text)}</td><td>Précis</td><td class="correct">${esc(it.target ?? 0)}${unit} (exact, pas de marge)</td></tr>`;
+          }
           if (String(it.mode) === "estimation") {
             const t = Number(it.target ?? 50);
             const tol = Number(it.tolerance ?? 15);
             const vmin = Number(it.valueMin ?? 0);
             const vmax = Number(it.valueMax ?? 100);
-            const unit = it.unit ? ` ${esc(String(it.unit))}` : "";
             const toReal = (pos: number) => Math.round(vmin + (pos / 100) * (vmax - vmin));
             return `<tr><td>${esc(it.text)}</td><td>Estimation</td><td class="correct">zone ${toReal(Math.max(0, t - tol))}${unit} – ${toReal(Math.min(100, t + tol))}${unit}</td></tr>`;
           }

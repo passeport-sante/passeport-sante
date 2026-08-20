@@ -6,9 +6,9 @@ import Link from "next/link";
 import { ArrowLeft } from "lucide-react";
 import { getGuestStudentId, submitQuizResponse } from "@/lib/modules";
 import { goToNextStep, gameProgress, type FlowStep } from "@/lib/step-flow";
-import { curseurDisplayValue } from "@/lib/steps-admin";
+import { curseurDisplayValue, curseurPercentToReal, curseurStepPercent } from "@/lib/steps-admin";
 
-type Mode = "opinion" | "estimation";
+type Mode = "opinion" | "estimation" | "precis";
 interface Item {
   id: string;
   text: string;
@@ -20,6 +20,20 @@ interface Item {
   valueMin?: number;
   valueMax?: number;
   unit?: string;
+  step?: number;
+}
+
+// Ticks de la règle graduée (mode "precis") — positions en % le long de la piste.
+// Plafonné pour éviter un mur de traits sur une échelle très large.
+function preciseTicks(item: Item): number[] {
+  const min = item.valueMin ?? 0;
+  const max = item.valueMax ?? 100;
+  const step = item.step ?? 1;
+  const range = max - min;
+  if (range <= 0 || step <= 0) return [];
+  const count = Math.round(range / step) + 1;
+  if (count > 41) return [];
+  return Array.from({ length: count }, (_, i) => (i * step * 100) / range);
 }
 
 interface StepData {
@@ -42,7 +56,7 @@ export function CurseurGame({ step }: { step: StepData }) {
 
   const items = step.gameData?.[0]?.questionData?.items ?? [];
   const total = items.length;
-  const estimationCount = items.filter((it) => it.mode === "estimation").length;
+  const scoredCount = items.filter((it) => it.mode !== "opinion").length;
 
   const [index, setIndex] = useState(0);
   const [value, setValue] = useState(50);
@@ -56,13 +70,30 @@ export function CurseurGame({ step }: { step: StepData }) {
 
   const item = items[index];
   const isLast = index === total - 1;
+  const isEstimation = item?.mode === "estimation";
+  const isPrecis = item?.mode === "precis";
 
+  // Estimation : une zone acceptée (cible ± tolérance, en %).
   const target = item?.target ?? 50;
   const tol = item?.tolerance ?? 15;
   const zoneMin = Math.max(0, target - tol);
   const zoneMax = Math.min(100, target + tol);
-  const isEstimation = item?.mode === "estimation";
-  const correct = isEstimation && value >= zoneMin && value <= zoneMax;
+
+  // Precis : une échelle graduée, une seule valeur réelle exacte attendue —
+  // on compare après avoir calé sur le pas, pour absorber le flottant du slider.
+  const preciseTarget = item?.target ?? item?.valueMin ?? 0;
+  const preciseTargetPct = item ? (preciseTarget - (item.valueMin ?? 0)) / ((item.valueMax ?? 100) - (item.valueMin ?? 0) || 1) * 100 : 0;
+  const preciseSelectedReal = item
+    ? (() => {
+        const min = item.valueMin ?? 0;
+        const step = item.step ?? 1;
+        const real = curseurPercentToReal(item, value);
+        return Math.round((real - min) / step) * step + min;
+      })()
+    : 0;
+  const preciseCorrect = isPrecis && Math.abs(preciseSelectedReal - preciseTarget) < (item?.step ?? 1) / 2;
+
+  const correct = isEstimation ? value >= zoneMin && value <= zoneMax : isPrecis ? preciseCorrect : false;
 
   function validate() {
     if (answered || !item) return;
@@ -75,7 +106,7 @@ export function CurseurGame({ step }: { step: StepData }) {
         stepId: step.id,
         moduleId: step.module.id,
         userAnswer: { itemId: item.id, value, mode: item.mode },
-        isCorrect: isEstimation ? correct : true,
+        isCorrect: item.mode === "opinion" ? true : correct,
       }).catch(() => {});
     }
   }
@@ -114,9 +145,9 @@ export function CurseurGame({ step }: { step: StepData }) {
       <div className="min-h-screen flex flex-col" style={{ background: `linear-gradient(160deg, ${primaryColor} 0%, ${bottomColor} 100%)` }}>
         {Header}
         <main className="flex-1 flex flex-col items-center justify-center gap-6 px-4 md:px-8 py-8 text-center">
-          <div className="text-7xl">{estimationCount > 0 ? "🎯" : "💬"}</div>
+          <div className="text-7xl">{scoredCount > 0 ? "🎯" : "💬"}</div>
           <h2 className="text-2xl md:text-3xl font-black text-white">
-            {estimationCount > 0 ? `${score} / ${estimationCount} estimation${estimationCount > 1 ? "s" : ""} juste${score > 1 ? "s" : ""}` : "Merci pour tes réponses !"}
+            {scoredCount > 0 ? `${score} / ${scoredCount} bonne${score > 1 ? "s" : ""} réponse${score > 1 ? "s" : ""}` : "Merci pour tes réponses !"}
           </h2>
           <button
             onClick={() => goToNextStep(router, step.module.slug, step.module.steps, step.order)}
@@ -147,6 +178,9 @@ export function CurseurGame({ step }: { step: StepData }) {
           {isEstimation && (
             <p className="text-xs font-black uppercase tracking-widest mb-2" style={{ color: primaryColor }}>Estimation</p>
           )}
+          {isPrecis && (
+            <p className="text-xs font-black uppercase tracking-widest mb-2" style={{ color: primaryColor }}>Échelle précise — une seule bonne réponse</p>
+          )}
           <p className="text-gray-800 text-lg font-semibold leading-relaxed">{item?.text}</p>
         </div>
 
@@ -166,10 +200,23 @@ export function CurseurGame({ step }: { step: StepData }) {
               >
                 {item ? curseurDisplayValue(item, value) : value}
               </div>
+              {/* Graduations de la règle (mode précis uniquement) */}
+              {isPrecis && item && (
+                <div className="relative h-2 mb-1">
+                  {preciseTicks(item).map((pct, i) => (
+                    <div
+                      key={i}
+                      className="absolute top-0 w-px h-2 bg-white/40"
+                      style={{ left: `${pct}%` }}
+                    />
+                  ))}
+                </div>
+              )}
               <input
                 type="range"
                 min={0}
                 max={100}
+                step={isPrecis && item ? curseurStepPercent(item) : 1}
                 value={value}
                 onChange={(e) => setValue(Number(e.target.value))}
                 className="w-full h-3 cursor-pointer"
@@ -177,14 +224,21 @@ export function CurseurGame({ step }: { step: StepData }) {
               />
             </div>
           ) : (
-            // Piste statique révélée : zone correcte (estimation) + marqueur de l'élève.
+            // Piste statique révélée : zone/valeur correcte + marqueur de l'élève.
             <div className="relative pt-8">
               <div
                 className="absolute -top-1 -translate-x-1/2 px-2.5 py-1 rounded-lg text-xs font-black shadow whitespace-nowrap"
-                style={{ left: `${value}%`, background: "#fff", color: isEstimation ? (correct ? "#16A34A" : "#DC2626") : primaryColor }}
+                style={{ left: `${value}%`, background: "#fff", color: isEstimation || isPrecis ? (correct ? "#16A34A" : "#DC2626") : primaryColor }}
               >
                 {item ? curseurDisplayValue(item, value) : value}
               </div>
+              {isPrecis && item && (
+                <div className="relative h-2 mb-1">
+                  {preciseTicks(item).map((pct, i) => (
+                    <div key={i} className="absolute top-0 w-px h-2 bg-white/40" style={{ left: `${pct}%` }} />
+                  ))}
+                </div>
+              )}
               <div className="relative h-3 rounded-full bg-white/25">
                 {isEstimation && (
                   <div
@@ -192,9 +246,16 @@ export function CurseurGame({ step }: { step: StepData }) {
                     style={{ left: `${zoneMin}%`, width: `${zoneMax - zoneMin}%`, background: "rgba(255,255,255,0.85)" }}
                   />
                 )}
+                {isPrecis && !correct && (
+                  // La bonne réponse, isolée (pas de zone : une seule valeur compte).
+                  <div
+                    className="absolute -top-1.5 w-6 h-6 rounded-full border-2 border-white"
+                    style={{ left: `calc(${preciseTargetPct}% - 12px)`, background: "#16A34A" }}
+                  />
+                )}
                 <div
                   className="absolute -top-1.5 w-6 h-6 rounded-full border-2 border-white shadow"
-                  style={{ left: `calc(${value}% - 12px)`, background: isEstimation ? (correct ? "#16A34A" : "#DC2626") : primaryColor }}
+                  style={{ left: `calc(${value}% - 12px)`, background: isEstimation || isPrecis ? (correct ? "#16A34A" : "#DC2626") : primaryColor }}
                 />
               </div>
             </div>
@@ -209,6 +270,12 @@ export function CurseurGame({ step }: { step: StepData }) {
                 {correct
                   ? "Dans la bonne zone ✓"
                   : `À côté — la bonne réponse est autour de ${item ? curseurDisplayValue(item, target) : target}`}
+              </p>
+            ) : isPrecis ? (
+              <p className="font-black text-sm" style={{ color: correct ? "#16A34A" : "#DC2626" }}>
+                {correct
+                  ? "Exact ✓"
+                  : `La bonne réponse exacte est ${item?.target ?? preciseTarget} ${item?.unit ?? ""}`}
               </p>
             ) : (
               <p className="font-black text-sm" style={{ color: primaryColor }}>Merci, ton avis compte 💬</p>

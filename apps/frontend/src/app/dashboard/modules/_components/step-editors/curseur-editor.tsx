@@ -1,9 +1,15 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import { Trash2, Plus, MessageSquare, Target } from "lucide-react";
+import { Trash2, Plus, MessageSquare, Target, Ruler } from "lucide-react";
 import { EditorShell, SectionHeader, Field, INPUT_CLASS, TEXTAREA_CLASS, ICON_BUTTON_CLASS } from "./editor-shell";
 import { shortId, curseurDisplayValue, type AdminStep, type AdminGameData, type CurseurItem, type CurseurMode } from "@/lib/steps-admin";
+
+const MODE_META: Record<CurseurMode, { label: string; icon: typeof MessageSquare }> = {
+  opinion: { label: "Opinion", icon: MessageSquare },
+  estimation: { label: "Estimation", icon: Target },
+  precis: { label: "Précis", icon: Ruler },
+};
 
 interface Props {
   step: AdminStep;
@@ -19,15 +25,16 @@ function itemsFromStep(step: AdminStep): CurseurItem[] {
       text: it.text ?? "",
       leftLabel: it.leftLabel ?? "Pas du tout",
       rightLabel: it.rightLabel ?? "Tout à fait",
-      mode: it.mode === "estimation" ? "estimation" : "opinion",
-      target: typeof it.target === "number" ? it.target : 50,
+      mode: it.mode === "estimation" || it.mode === "precis" ? it.mode : "opinion",
+      target: typeof it.target === "number" ? it.target : it.mode === "precis" ? 0 : 50,
       tolerance: typeof it.tolerance === "number" ? it.tolerance : 15,
       valueMin: typeof it.valueMin === "number" ? it.valueMin : 0,
       valueMax: typeof it.valueMax === "number" ? it.valueMax : 100,
       unit: it.unit ?? "",
+      step: typeof it.step === "number" ? it.step : 1,
     }));
   }
-  return [{ id: shortId(), text: "", leftLabel: "Pas du tout", rightLabel: "Tout à fait", mode: "opinion", target: 50, tolerance: 15, valueMin: 0, valueMax: 100, unit: "" }];
+  return [{ id: shortId(), text: "", leftLabel: "Pas du tout", rightLabel: "Tout à fait", mode: "opinion", target: 50, tolerance: 15, valueMin: 0, valueMax: 100, unit: "", step: 1 }];
 }
 
 export function CurseurEditor({ step, color, onSave }: Props) {
@@ -40,6 +47,14 @@ export function CurseurEditor({ step, color, onSave }: Props) {
     for (const [i, it] of items.entries()) {
       if (!it.text.trim()) return `Affirmation ${i + 1} : le texte est vide`;
       if (!it.leftLabel.trim() || !it.rightLabel.trim()) return `Affirmation ${i + 1} : les deux extrémités doivent être nommées`;
+      if (it.mode === "precis") {
+        const min = it.valueMin ?? 0;
+        const max = it.valueMax ?? 100;
+        if (max <= min) return `Affirmation ${i + 1} : la valeur de droite doit être supérieure à celle de gauche`;
+        const target = it.target ?? min;
+        if (target < min || target > max) return `Affirmation ${i + 1} : la bonne réponse doit être comprise dans l'échelle`;
+        if (!it.step || it.step <= 0) return `Affirmation ${i + 1} : le pas de graduation doit être positif`;
+      }
     }
     return null;
   }, [items]);
@@ -57,7 +72,6 @@ export function CurseurEditor({ step, color, onSave }: Props) {
               leftLabel: it.leftLabel.trim(),
               rightLabel: it.rightLabel.trim(),
               mode: it.mode,
-              // Cible/tolérance/bornes uniquement pertinentes en mode estimation.
               ...(it.mode === "estimation"
                 ? {
                     target: it.target ?? 50,
@@ -66,7 +80,16 @@ export function CurseurEditor({ step, color, onSave }: Props) {
                     valueMax: it.valueMax ?? 100,
                     unit: it.unit?.trim() || undefined,
                   }
-                : {}),
+                : it.mode === "precis"
+                  ? {
+                      // Precis : target en valeur RÉELLE (pas en %), aucune tolérance.
+                      target: it.target ?? it.valueMin ?? 0,
+                      valueMin: it.valueMin ?? 0,
+                      valueMax: it.valueMax ?? 100,
+                      unit: it.unit?.trim() || undefined,
+                      step: it.step ?? 1,
+                    }
+                  : {}),
             })),
           },
           correctAnswer: {},
@@ -78,7 +101,7 @@ export function CurseurEditor({ step, color, onSave }: Props) {
   function addItem() {
     setItems((xs) => [
       ...xs,
-      { id: shortId(), text: "", leftLabel: "Pas du tout", rightLabel: "Tout à fait", mode: "opinion", target: 50, tolerance: 15, valueMin: 0, valueMax: 100, unit: "" },
+      { id: shortId(), text: "", leftLabel: "Pas du tout", rightLabel: "Tout à fait", mode: "opinion", target: 50, tolerance: 15, valueMin: 0, valueMax: 100, unit: "", step: 1 },
     ]);
   }
   function update(id: string, patch: Partial<CurseurItem>) {
@@ -102,7 +125,9 @@ export function CurseurEditor({ step, color, onSave }: Props) {
     >
       <SectionHeader title="Affirmations" count={items.length} onAdd={addItem} addLabel="Affirmation" color={color} />
       <p className="text-[11px] text-gray-400 -mt-2">
-        <b>Opinion</b> = pas de bonne réponse (l&apos;élève donne son avis). <b>Estimation</b> = le curseur doit tomber dans la bonne zone.
+        <b>Opinion</b> = pas de bonne réponse (l&apos;élève donne son avis). <b>Estimation</b> = le curseur doit tomber dans une
+        zone acceptée (fait approximatif, ex. une durée moyenne). <b>Précis</b> = une échelle graduée avec une seule bonne
+        réponse exacte, sans marge (ex. un nombre d&apos;années fixe).
       </p>
 
       <div className="space-y-4">
@@ -113,20 +138,23 @@ export function CurseurEditor({ step, color, onSave }: Props) {
                 N° {idx + 1}
               </span>
               <div className="flex items-center gap-1">
-                {(["opinion", "estimation"] as CurseurMode[]).map((m) => (
-                  <button
-                    key={m}
-                    type="button"
-                    onClick={() => update(it.id, { mode: m })}
-                    className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-lg text-[10px] font-bold transition-colors ${
-                      it.mode === m ? "text-white" : "bg-white text-gray-400 border border-gray-200 hover:text-gray-600"
-                    }`}
-                    style={it.mode === m ? { background: color } : undefined}
-                  >
-                    {m === "opinion" ? <MessageSquare size={11} /> : <Target size={11} />}
-                    {m === "opinion" ? "Opinion" : "Estimation"}
-                  </button>
-                ))}
+                {(["opinion", "estimation", "precis"] as CurseurMode[]).map((m) => {
+                  const Icon = MODE_META[m].icon;
+                  return (
+                    <button
+                      key={m}
+                      type="button"
+                      onClick={() => update(it.id, { mode: m })}
+                      className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-lg text-[10px] font-bold transition-colors ${
+                        it.mode === m ? "text-white" : "bg-white text-gray-400 border border-gray-200 hover:text-gray-600"
+                      }`}
+                      style={it.mode === m ? { background: color } : undefined}
+                    >
+                      <Icon size={11} />
+                      {MODE_META[m].label}
+                    </button>
+                  );
+                })}
                 <button onClick={() => removeItem(it.id)} className={ICON_BUTTON_CLASS} aria-label="Supprimer">
                   <Trash2 size={14} />
                 </button>
@@ -214,6 +242,68 @@ export function CurseurEditor({ step, color, onSave }: Props) {
 
                 <p className="text-[11px] text-gray-400">
                   Zone acceptée : {curseurDisplayValue(it, Math.max(0, (it.target ?? 50) - (it.tolerance ?? 15)))} – {curseurDisplayValue(it, Math.min(100, (it.target ?? 50) + (it.tolerance ?? 15)))}
+                </p>
+              </div>
+            )}
+
+            {it.mode === "precis" && (
+              <div className="space-y-3 pt-1 border-t border-gray-200">
+                {/* Échelle graduée : contrairement à l'estimation, il n'y a qu'UNE
+                    seule bonne réponse exacte — pas de zone de tolérance. */}
+                <div className="grid grid-cols-4 gap-2">
+                  <Field label="Valeur à gauche">
+                    <input
+                      type="number"
+                      value={it.valueMin ?? 0}
+                      onChange={(e) => update(it.id, { valueMin: Number(e.target.value) || 0 })}
+                      className={INPUT_CLASS}
+                    />
+                  </Field>
+                  <Field label="Valeur à droite">
+                    <input
+                      type="number"
+                      value={it.valueMax ?? 100}
+                      onChange={(e) => update(it.id, { valueMax: Number(e.target.value) || 0 })}
+                      className={INPUT_CLASS}
+                    />
+                  </Field>
+                  <Field label="Pas">
+                    <input
+                      type="number"
+                      min={0.1}
+                      step={0.1}
+                      value={it.step ?? 1}
+                      onChange={(e) => update(it.id, { step: Math.max(0.1, Number(e.target.value) || 1) })}
+                      className={INPUT_CLASS}
+                    />
+                  </Field>
+                  <Field label="Unité">
+                    <input
+                      type="text"
+                      value={it.unit ?? ""}
+                      onChange={(e) => update(it.id, { unit: e.target.value })}
+                      placeholder="ans, min…"
+                      className={INPUT_CLASS}
+                    />
+                  </Field>
+                </div>
+
+                <Field label="La bonne réponse (valeur exacte)">
+                  <input
+                    type="number"
+                    min={it.valueMin ?? 0}
+                    max={it.valueMax ?? 100}
+                    step={it.step ?? 1}
+                    value={it.target ?? it.valueMin ?? 0}
+                    onChange={(e) => update(it.id, { target: Number(e.target.value) })}
+                    className={INPUT_CLASS}
+                  />
+                </Field>
+
+                <p className="text-[11px] text-gray-400">
+                  L&apos;élève verra une règle graduée par pas de {it.step ?? 1} {it.unit ?? ""} entre {it.valueMin ?? 0} et{" "}
+                  {it.valueMax ?? 100} {it.unit ?? ""} : seule la valeur exacte ({it.target ?? it.valueMin ?? 0} {it.unit ?? ""})
+                  sera acceptée.
                 </p>
               </div>
             )}

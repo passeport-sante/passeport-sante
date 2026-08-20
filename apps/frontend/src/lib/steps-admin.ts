@@ -432,6 +432,7 @@ export function defaultGameDataFor(gameType: GameType): AdminGameData[] {
             items: [
               { id: "i1", text: "« Bouger, c'est réservé aux sportifs. » Es-tu d'accord ?", leftLabel: "Pas du tout", rightLabel: "Tout à fait", mode: "opinion" },
               { id: "i2", text: "Combien d'heures de sommeil par nuit à ton âge ?", leftLabel: "6 h", rightLabel: "11 h", mode: "estimation", target: 60, tolerance: 15 },
+              { id: "i3", text: "Combien d'années d'études faut-il pour devenir dentiste ?", leftLabel: "0 an", rightLabel: "12 ans", mode: "precis", valueMin: 0, valueMax: 12, unit: "ans", step: 1, target: 6 },
             ],
           },
           correctAnswer: {},
@@ -490,7 +491,12 @@ export type SwipeCard = {
 
 // ── Curseur d'accord : types partagés éditeur ⇆ jeu ──────────────────────────
 
-export type CurseurMode = "opinion" | "estimation";
+// "opinion" : pas de bonne réponse. "estimation" : une zone acceptée (cible ±
+// tolérance), pour les faits qui ont une vraie marge dans la réalité (ex. temps
+// d'écran moyen). "precis" : une échelle graduée avec UNE seule bonne réponse
+// exacte (ex. années d'études) — inadapté d'accepter une marge sur un fait qui
+// n'en a pas.
+export type CurseurMode = "opinion" | "estimation" | "precis";
 
 export type CurseurItem = {
   id: string;
@@ -498,7 +504,10 @@ export type CurseurItem = {
   leftLabel: string;
   rightLabel: string;
   mode: CurseurMode;
-  // Estimation uniquement : cible et tolérance sur l'échelle 0–100.
+  // Estimation : cible et tolérance en POURCENTAGE (0–100) sur l'échelle.
+  // Precis : `target` est en revanche la valeur RÉELLE exacte attendue (ex. 6
+  // pour "6 ans") — pas de tolérance, `valueMin`/`valueMax`/`unit` deviennent
+  // obligatoires puisqu'ils définissent la graduation elle-même.
   target?: number;
   tolerance?: number;
   // Bornes réelles affichées pendant le glissement (ex. 0 → 120, unité "min").
@@ -506,6 +515,8 @@ export type CurseurItem = {
   valueMin?: number;
   valueMax?: number;
   unit?: string;
+  // Precis uniquement : pas de la graduation en unité réelle (ex. 1 = années entières).
+  step?: number;
 };
 
 // Convertit une position 0–100 en valeur réelle affichable (ex. "62 min").
@@ -516,6 +527,30 @@ export function curseurDisplayValue(it: CurseurItem, pos: number): string {
     return it.unit ? `${real} ${it.unit}` : String(real);
   }
   return `${Math.round(pos)} %`;
+}
+
+// ── Mode "precis" : conversions entre position curseur (0–100) et valeur réelle ─
+
+export function curseurRealToPercent(it: CurseurItem, real: number): number {
+  const min = it.valueMin ?? 0;
+  const max = it.valueMax ?? 100;
+  if (max === min) return 0;
+  return ((real - min) / (max - min)) * 100;
+}
+
+export function curseurPercentToReal(it: CurseurItem, pos: number): number {
+  const min = it.valueMin ?? 0;
+  const max = it.valueMax ?? 100;
+  return min + (pos / 100) * (max - min);
+}
+
+// Pas de graduation converti en pourcentage, pour le `step` du <input type=range>.
+export function curseurStepPercent(it: CurseurItem): number {
+  const min = it.valueMin ?? 0;
+  const max = it.valueMax ?? 100;
+  const step = it.step ?? 1;
+  if (max === min) return 1;
+  return Math.max(0.1, (step / (max - min)) * 100);
 }
 
 // ── Dialogue interactif : types partagés éditeur ⇆ jeu ───────────────────────

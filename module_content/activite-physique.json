@@ -1,0 +1,281 @@
+{
+  "title": "Bouge, c'est pas que le sport",
+  "description": "Découvre pourquoi et comment bouger au quotidien : 1 heure par jour, ça se cumule, et l'activité physique n'est pas réservée aux sportifs.",
+  "duration": 25,
+  "category": "Activité physique",
+  "colorPrimary": "#EA580C",
+  "colorSecondary": "#7C2D12",
+  "isActive": false,
+  "steps": [
+    {
+      "kind": "CONTENT",
+      "content": { "contentType": "VIDEO", "title": "Pourquoi bouger ?", "videoUrl": "", "caption": "Pour bien commencer, regarde cette vidéo." }
+    },
+    {
+      "kind": "GAME",
+      "gameType": "SWIPE",
+      "content": { "title": "Vrai ou Faux ?", "instructions": "Balaye à droite pour Vrai, à gauche pour Faux" },
+      "gameData": [
+        {
+          "questionData": {
+            "cards": [
+              { "id": "s1", "text": "Faire du sport, c'est forcément en club.", "answer": "faux", "explanation": "Marcher, danser, faire du vélo pour se déplacer : tout mouvement compte." },
+              { "id": "s2", "text": "Rester assis longtemps est mauvais, même si on fait du sport.", "answer": "vrai", "explanation": "Il faut couper les temps assis régulièrement." },
+              { "id": "s3", "text": "Il faut faire toute son heure d'activité d'un seul coup.", "answer": "faux", "explanation": "Elle se cumule : plusieurs petits moments dans la journée suffisent." },
+              { "id": "s4", "text": "Monter les escaliers, c'est de l'activité physique.", "answer": "vrai", "explanation": "Oui ! Les petits gestes du quotidien comptent aussi." },
+              { "id": "s5", "text": "Bouger améliore aussi le sommeil et l'humeur.", "answer": "vrai", "explanation": "L'activité physique réduit le stress et aide à mieux dormir." },
+              { "id": "s6", "text": "Passer 4 h devant un écran, ça compte comme de l'activité.", "answer": "faux", "explanation": "Au contraire, c'est du temps sédentaire, à limiter." }
+            ]
+          },
+          "correctAnswer": {}
+        }
+      ]
+    },
+    {
+      "kind": "CONTENT",
+      "content": {
+        "contentType": "INFO",
+        "title": "Bouger, c'est pas que le sport",
+        "body": "L'activité physique, c'est TOUT mouvement du corps : marcher pour aller au collège, monter les escaliers, danser, jouer dehors, faire du vélo, jardiner, aider à faire le ménage…\n\nPas besoin d'être un champion : l'objectif, c'est de bouger un peu plus et de rester assis un peu moins."
+      }
+    },
+    {
+      "kind": "GAME",
+      "gameType": "KANBAN",
+      "content": { "title": "Ça bouge ou pas ?", "instructions": "Range chaque situation dans la bonne colonne" },
+      "gameData": [
+        {
+          "questionData": {
+            "categories": ["Activité physique", "Sédentaire"],
+            "items": [
+              "Monter les escaliers",
+              "Aller au collège à pied ou à vélo",
+              "Danser dans ta chambre",
+              "Jouer au foot à la récré",
+              "Faire du jardinage",
+              "Passer l'aspirateur ou faire le ménage",
+              "Aider à porter les courses",
+              "Rester assis 2 h devant la console",
+              "Regarder une série allongé",
+              "Faire ses devoirs assis longtemps"
+            ]
+          },
+          "correctAnswer": {
+            "Monter les escaliers": "Activité physique",
+            "Aller au collège à pied ou à vélo": "Activité physique",
+            "Danser dans ta chambre": "Activité physique",
+            "Jouer au foot à la récré": "Activité physique",
+            "Faire du jardinage": "Activité physique",
+            "Passer l'aspirateur ou faire le ménage": "Activité physique",
+            "Aider à porter les courses": "Activité physique",
+            "Rester assis 2 h devant la console": "Sédentaire",
+            "Regarder une série allongé": "Sédentaire",
+            "Faire ses devoirs assis longtemps": "Sédentaire"
+          }
+        }
+      ]
+    },
+    {
+      "kind": "CONTENT",
+      "gameType": "KANBAN",
+      "content": {
+        "title": "Ton sac d'activités",
+        "instructions": "Choisis au moins 4 activités que tu aimes ou que tu pourrais faire",
+        "freeMode": true,
+        "minRequired": 4
+      },
+      "gameData": [
+        {
+          "questionData": {
+            "categories": ["Mon sac", "Pas pour moi"],
+            "items": [
+              "Monter les escaliers",
+              "Tâches ménagères",
+              "Jardinage",
+              "Basket",
+              "Vélo",
+              "Se balader / marcher",
+              "Danser",
+              "Trottinette",
+              "Jeux dehors avec des copains",
+              "Natation"
+            ]
+          },
+          "correctAnswer": {}
+        }
+      ]
+    },
+    {
+      "kind": "GAME",
+      "gameType": "CURSEUR",
+      "content": { "title": "Ton avis, tes estimations", "instructions": "Déplace le curseur puis valide" },
+      "gameData": [
+        {
+          "questionData": {
+            "items": [
+              { "id": "i1", "text": "« Bouger, c'est réservé aux sportifs. » Es-tu d'accord ?", "leftLabel": "Pas du tout", "rightLabel": "Tout à fait", "mode": "opinion" },
+              { "id": "i2", "text": "Sur une journée d'école, tu te sens plutôt…", "leftLabel": "Immobile", "rightLabel": "Toujours en mouvement", "mode": "opinion" },
+              { "id": "i3", "text": "Combien de minutes d'activité physique par jour sont conseillées à ton âge ?", "leftLabel": "0 min", "rightLabel": "120 min", "mode": "estimation", "target": 50, "tolerance": 12, "valueMin": 0, "valueMax": 120, "unit": "min" },
+              { "id": "i4", "text": "En moyenne, combien d'heures par jour les jeunes passent-ils devant un écran ?", "leftLabel": "0 h", "rightLabel": "8 h", "mode": "estimation", "target": 47, "tolerance": 12, "valueMin": 0, "valueMax": 8, "unit": "h" }
+            ]
+          },
+          "correctAnswer": {}
+        }
+      ]
+    },
+    {
+      "kind": "CONTENT",
+      "content": {
+        "contentType": "INFO",
+        "title": "Le sais-tu ?",
+        "body": "En France, seul 1 garçon sur 2 et 1 fille sur 3 (6-17 ans) bougent assez (au moins 1 h par jour).\n\nEt en moyenne, les jeunes passent 3 à 4 h 30 par jour devant un écran. Couper ce temps, c'est déjà agir pour sa santé."
+      }
+    },
+    {
+      "kind": "GAME",
+      "gameType": "SCENARIO",
+      "content": { "title": "Bouge malin", "instructions": "Choisis la meilleure réaction", "shieldMode": false },
+      "gameData": [
+        {
+          "questionData": {
+            "situation": "Tu as 2 heures de devoirs ce soir.",
+            "choices": [
+              { "id": "a", "text": "Je fais une petite pause active toutes les 30 min", "points": 0 },
+              { "id": "b", "text": "Je reste assis sans bouger jusqu'au bout", "points": 0 }
+            ]
+          },
+          "correctAnswer": { "choiceId": "a", "explanation": "Rester assis très longtemps est mauvais, même si tu fais du sport. Coupe avec de petites pauses." }
+        },
+        {
+          "questionData": {
+            "situation": "Il pleut, impossible de sortir.",
+            "choices": [
+              { "id": "a", "text": "Je danse ou je fais des exercices dans ma chambre", "points": 0 },
+              { "id": "b", "text": "J'attends qu'il fasse beau", "points": 0 }
+            ]
+          },
+          "correctAnswer": { "choiceId": "a", "explanation": "On peut bouger partout, même à la maison." }
+        },
+        {
+          "questionData": {
+            "situation": "Le week-end, tu enchaînes 4 h de jeux vidéo d'affilée.",
+            "choices": [
+              { "id": "a", "text": "Je coupe régulièrement pour bouger", "points": 0 },
+              { "id": "b", "text": "Je reste jusqu'au bout", "points": 0 }
+            ]
+          },
+          "correctAnswer": { "choiceId": "a", "explanation": "Les jeunes passent en moyenne 3 à 4 h 30 par jour devant un écran — couper ce temps, c'est déjà agir." }
+        }
+      ]
+    },
+    {
+      "kind": "CONTENT",
+      "gameType": "CORPS",
+      "content": { "title": "Les bienfaits, où ça agit ?", "instructions": "Clique un bienfait puis la zone du corps correspondante" },
+      "gameData": [
+        {
+          "questionData": {
+            "benefits": [
+              { "id": "b1", "text": "Moins de stress, meilleur moral", "zoneId": "tete" },
+              { "id": "b2", "text": "Cœur plus endurant", "zoneId": "coeur" },
+              { "id": "b3", "text": "Meilleur souffle", "zoneId": "poumons" },
+              { "id": "b4", "text": "Muscles plus forts", "zoneId": "muscles" },
+              { "id": "b5", "text": "Os plus solides", "zoneId": "os" },
+              { "id": "b6", "text": "Meilleures défenses immunitaires", "zoneId": "corps" }
+            ]
+          },
+          "correctAnswer": {}
+        }
+      ]
+    },
+    {
+      "kind": "CONTENT",
+      "gameType": "DIALOGUE",
+      "content": { "title": "Une journée en mouvement", "instructions": "Fais tes choix et vois quelle journée tu construis" },
+      "gameData": [
+        {
+          "questionData": {
+            "startId": "d1",
+            "scenes": [
+              { "id": "d1", "text": "Le matin, tu dois aller au collège (15 min de trajet). Comment y vas-tu ?", "choices": [
+                { "id": "c1", "text": "À pied ou à vélo", "goto": "d2a" },
+                { "id": "c2", "text": "En voiture jusqu'à la porte", "goto": "d2b" }
+              ] },
+              { "id": "d2a", "text": "Super, tu as déjà bougé ce matin ! C'est la récré.", "choices": [
+                { "id": "c3", "text": "Je joue / bouge avec les copains", "goto": "d3good" },
+                { "id": "c4", "text": "Je reste assis sur mon téléphone", "goto": "d3low" }
+              ] },
+              { "id": "d2b", "text": "Pas grave, tu pourras bouger plus tard. C'est la récré.", "choices": [
+                { "id": "c5", "text": "Je joue / bouge avec les copains", "goto": "d3good" },
+                { "id": "c6", "text": "Je reste assis sur mon téléphone", "goto": "d3low" }
+              ] },
+              { "id": "d3good", "text": "Tu as déjà bien bougé aujourd'hui. Ce soir ?", "choices": [
+                { "id": "c7", "text": "Un tour dehors ou du sport", "goto": "e_active" },
+                { "id": "c8", "text": "Direct devant les écrans", "goto": "e_moyenne" }
+              ] },
+              { "id": "d3low", "text": "Tu n'as pas beaucoup bougé aujourd'hui. Ce soir ?", "choices": [
+                { "id": "c9", "text": "Je vais bouger un peu", "goto": "e_moyenne" },
+                { "id": "c10", "text": "Écrans jusqu'au soir", "goto": "e_faible" }
+              ] }
+            ],
+            "endings": [
+              { "id": "e_active", "text": "Journée active réussie ! Tu as cumulé ton heure sans même t'en rendre compte. 💪", "tone": "good" },
+              { "id": "e_moyenne", "text": "Journée moyenne — rejoue et essaie de bouger un peu plus souvent.", "tone": "neutral" },
+              { "id": "e_faible", "text": "Journée très sédentaire… rejoue pour voir comme c'est facile de bouger plus.", "tone": "bad" }
+            ]
+          },
+          "correctAnswer": { "bestEndingId": "e_active" }
+        }
+      ]
+    },
+    {
+      "kind": "GAME",
+      "gameType": "QUIZ",
+      "content": { "title": "Le grand quiz", "instructions": "Coche toutes les bonnes réponses" },
+      "gameData": [
+        {
+          "questionData": {
+            "questions": [
+              { "id": "q1", "text": "Bouger, ça fait du bien à…", "options": [
+                { "id": "a", "text": "ton cœur" },
+                { "id": "b", "text": "tes muscles et tes os" },
+                { "id": "c", "text": "ton moral et ton sommeil" },
+                { "id": "d", "text": "rien du tout" }
+              ] },
+              { "id": "q2", "text": "La sédentarité (rester assis longtemps)…", "options": [
+                { "id": "a", "text": "est mauvaise même si tu fais du sport" },
+                { "id": "b", "text": "n'est pas grave si tu fais du sport" }
+              ] },
+              { "id": "q3", "text": "L'activité physique, c'est…", "options": [
+                { "id": "a", "text": "marcher ou faire du vélo pour se déplacer" },
+                { "id": "b", "text": "danser" },
+                { "id": "c", "text": "jouer dehors" },
+                { "id": "d", "text": "seulement le sport en club" }
+              ] },
+              { "id": "q4", "text": "Pour atteindre 1 h par jour…", "options": [
+                { "id": "a", "text": "je peux additionner plusieurs petits moments" },
+                { "id": "b", "text": "il faut tout faire d'un seul coup" }
+              ] }
+            ]
+          },
+          "correctAnswer": {
+            "answers": {
+              "q1": ["a", "b", "c"],
+              "q2": ["a"],
+              "q3": ["a", "b", "c"],
+              "q4": ["a"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "kind": "CONTENT",
+      "content": { "contentType": "IMAGE", "title": "Bouge 1 heure par jour", "imageUrl": "", "caption": "Ton affiche récap." }
+    },
+    {
+      "kind": "CONTENT",
+      "content": { "contentType": "VIDEO", "title": "Bravo !", "videoUrl": "", "caption": "Une dernière vidéo pour rester motivé." }
+    }
+  ]
+}
