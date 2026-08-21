@@ -25,9 +25,6 @@ interface StepData {
   };
 }
 
-// Primitives d'une zone : chaque zone peut être composée de plusieurs formes
-// simples (ex. le cœur = 2 cercles + un triangle, l'os = une barre + 4 têtes
-// rondes) pour rester lisible sans jamais tracer de contour complexe à la main.
 type Prim =
   | { shape: "circle"; cx: number; cy: number; r: number }
   | { shape: "ellipse"; cx: number; cy: number; rx: number; ry: number }
@@ -37,6 +34,7 @@ type Prim =
 interface ZoneRegion {
   zoneId: BodyZoneId;
   center: { x: number; y: number };
+  idleFill: string;
   parts: Prim[];
 }
 
@@ -58,62 +56,46 @@ function boneParts(cx: number, cy: number): Prim[] {
   ];
 }
 
-// Centre du corps : x=110. Chaque zone paire (gauche/droite) est déclarée deux
-// fois avec le même zoneId : cliquer l'une ou l'autre compte pour cette zone.
-// Les zones "organes" (cœur, poumons) sont ajoutées APRÈS les pectoraux dans le
-// tableau pour rester cliquables par-dessus, comme sur un vrai schéma en coupe.
+// 8 zones (+ "corps entier" en bouton à part) : chaque famille a sa propre
+// teinte pastel au repos pour rester lisible d'un coup d'œil, plutôt que des
+// blocs blancs qui se confondent entre eux et avec le fond.
+const ORGAN = "#FCA5A5"; // cœur / poumons — rosé
+const LUNG = "#93C5FD"; // poumons — bleu doux
+const MUSCLE = "#FDE1B8"; // pectoraux / bras / abdos / jambes — crème chaud
+const BONE = "#E5E7EB"; // os — gris clair
+const SKIN = "#FBD8B4"; // tête
+
 const ZONE_REGIONS: ZoneRegion[] = [
-  { zoneId: "tete", center: { x: 110, y: 40 }, parts: [{ shape: "circle", cx: 110, cy: 40, r: 25 }] },
+  { zoneId: "tete", center: { x: 100, y: 42 }, idleFill: SKIN, parts: [{ shape: "circle", cx: 100, cy: 42, r: 26 }] },
 
-  { zoneId: "trapezes", center: { x: 84, y: 72 }, parts: [{ shape: "ellipse", cx: 84, cy: 72, rx: 11, ry: 13 }] },
-  { zoneId: "trapezes", center: { x: 136, y: 72 }, parts: [{ shape: "ellipse", cx: 136, cy: 72, rx: 11, ry: 13 }] },
+  { zoneId: "poumons", center: { x: 90, y: 108 }, idleFill: LUNG, parts: [{ shape: "ellipse", cx: 90, cy: 108, rx: 8, ry: 24 }] },
+  { zoneId: "poumons", center: { x: 110, y: 108 }, idleFill: LUNG, parts: [{ shape: "ellipse", cx: 110, cy: 108, rx: 8, ry: 24 }] },
+  { zoneId: "coeur", center: { x: 98, y: 116 }, idleFill: ORGAN, parts: heartParts(98, 116) },
 
-  { zoneId: "epaules", center: { x: 62, y: 92 }, parts: [{ shape: "circle", cx: 62, cy: 92, r: 15 }] },
-  { zoneId: "epaules", center: { x: 158, y: 92 }, parts: [{ shape: "circle", cx: 158, cy: 92, r: 15 }] },
+  { zoneId: "pectoraux", center: { x: 68, y: 118 }, idleFill: MUSCLE, parts: [{ shape: "ellipse", cx: 68, cy: 118, rx: 13, ry: 19 }] },
+  { zoneId: "pectoraux", center: { x: 132, y: 118 }, idleFill: MUSCLE, parts: [{ shape: "ellipse", cx: 132, cy: 118, rx: 13, ry: 19 }] },
 
-  { zoneId: "pectoraux", center: { x: 88, y: 122 }, parts: [{ shape: "ellipse", cx: 88, cy: 122, rx: 19, ry: 23 }] },
-  { zoneId: "pectoraux", center: { x: 132, y: 122 }, parts: [{ shape: "ellipse", cx: 132, cy: 122, rx: 19, ry: 23 }] },
+  { zoneId: "bras", center: { x: 43, y: 136 }, idleFill: MUSCLE, parts: [{ shape: "ellipse", cx: 43, cy: 136, rx: 14, ry: 30 }] },
+  { zoneId: "bras", center: { x: 157, y: 136 }, idleFill: MUSCLE, parts: [{ shape: "ellipse", cx: 157, cy: 136, rx: 14, ry: 30 }] },
 
-  { zoneId: "poumons", center: { x: 96, y: 104 }, parts: [{ shape: "ellipse", cx: 96, cy: 104, rx: 8, ry: 16 }] },
-  { zoneId: "poumons", center: { x: 124, y: 104 }, parts: [{ shape: "ellipse", cx: 124, cy: 104, rx: 8, ry: 16 }] },
-  { zoneId: "coeur", center: { x: 105, y: 122 }, parts: heartParts(105, 122) },
+  { zoneId: "abdos", center: { x: 100, y: 178 }, idleFill: MUSCLE, parts: [{ shape: "ellipse", cx: 100, cy: 178, rx: 24, ry: 30 }] },
 
-  { zoneId: "biceps", center: { x: 48, y: 140 }, parts: [{ shape: "ellipse", cx: 48, cy: 140, rx: 13, ry: 23 }] },
-  { zoneId: "biceps", center: { x: 172, y: 140 }, parts: [{ shape: "ellipse", cx: 172, cy: 140, rx: 13, ry: 23 }] },
-  { zoneId: "triceps", center: { x: 34, y: 140 }, parts: [{ shape: "ellipse", cx: 34, cy: 140, rx: 6, ry: 20 }] },
-  { zoneId: "triceps", center: { x: 186, y: 140 }, parts: [{ shape: "ellipse", cx: 186, cy: 140, rx: 6, ry: 20 }] },
+  { zoneId: "jambes", center: { x: 81, y: 290 }, idleFill: MUSCLE, parts: [{ shape: "ellipse", cx: 81, cy: 290, rx: 14, ry: 58 }] },
+  { zoneId: "jambes", center: { x: 119, y: 290 }, idleFill: MUSCLE, parts: [{ shape: "ellipse", cx: 119, cy: 290, rx: 14, ry: 58 }] },
 
-  { zoneId: "abdos", center: { x: 110, y: 185 }, parts: [{ shape: "ellipse", cx: 110, cy: 185, rx: 26, ry: 32 }] },
-  { zoneId: "obliques", center: { x: 78, y: 185 }, parts: [{ shape: "ellipse", cx: 78, cy: 185, rx: 9, ry: 26 }] },
-  { zoneId: "obliques", center: { x: 142, y: 185 }, parts: [{ shape: "ellipse", cx: 142, cy: 185, rx: 9, ry: 26 }] },
-
-  { zoneId: "avant_bras", center: { x: 40, y: 215 }, parts: [{ shape: "ellipse", cx: 40, cy: 215, rx: 11, ry: 28 }] },
-  { zoneId: "avant_bras", center: { x: 180, y: 215 }, parts: [{ shape: "ellipse", cx: 180, cy: 215, rx: 11, ry: 28 }] },
-
-  { zoneId: "fessiers", center: { x: 90, y: 245 }, parts: [{ shape: "ellipse", cx: 90, cy: 245, rx: 15, ry: 16 }] },
-  { zoneId: "fessiers", center: { x: 130, y: 245 }, parts: [{ shape: "ellipse", cx: 130, cy: 245, rx: 15, ry: 16 }] },
-
-  { zoneId: "quadriceps", center: { x: 90, y: 300 }, parts: [{ shape: "ellipse", cx: 90, cy: 300, rx: 15, ry: 38 }] },
-  { zoneId: "quadriceps", center: { x: 130, y: 300 }, parts: [{ shape: "ellipse", cx: 130, cy: 300, rx: 15, ry: 38 }] },
-  { zoneId: "ischios", center: { x: 74, y: 300 }, parts: [{ shape: "ellipse", cx: 74, cy: 300, rx: 6, ry: 34 }] },
-  { zoneId: "ischios", center: { x: 146, y: 300 }, parts: [{ shape: "ellipse", cx: 146, cy: 300, rx: 6, ry: 34 }] },
-
-  { zoneId: "mollets", center: { x: 90, y: 365 }, parts: [{ shape: "ellipse", cx: 90, cy: 365, rx: 12, ry: 28 }] },
-  { zoneId: "mollets", center: { x: 130, y: 365 }, parts: [{ shape: "ellipse", cx: 130, cy: 365, rx: 12, ry: 28 }] },
-
-  { zoneId: "os", center: { x: 90, y: 400 }, parts: boneParts(90, 400) },
-  { zoneId: "os", center: { x: 130, y: 400 }, parts: boneParts(130, 400) },
+  { zoneId: "os", center: { x: 81, y: 355 }, idleFill: BONE, parts: boneParts(81, 355) },
+  { zoneId: "os", center: { x: 119, y: 355 }, idleFill: BONE, parts: boneParts(119, 355) },
 ];
 
-// Silhouette statique en arrière-plan (non cliquable) : blocs arrondis qui se
-// chevauchent (épaules, hanches, bras, jambes) plutôt qu'un simple rectangle.
+// Silhouette statique en arrière-plan (non cliquable), en trait plus soutenu
+// que les zones pour que le contour du corps reste net derrière les couleurs.
 const SILHOUETTE = {
-  shoulders: { x: 54, y: 60, width: 112, height: 120, rx: 42 },
-  hips: { x: 72, y: 150, width: 76, height: 90, rx: 30 },
-  armLeft: { x: 28, y: 85, width: 40, height: 150, rx: 20 },
-  armRight: { x: 152, y: 85, width: 40, height: 150, rx: 20 },
-  legLeft: { x: 68, y: 235, width: 48, height: 180, rx: 24 },
-  legRight: { x: 104, y: 235, width: 48, height: 180, rx: 24 },
+  shoulders: { x: 56, y: 66, width: 88, height: 100, rx: 36 },
+  hips: { x: 70, y: 140, width: 60, height: 80, rx: 26 },
+  armLeft: { x: 30, y: 82, width: 26, height: 150, rx: 13 },
+  armRight: { x: 144, y: 82, width: 26, height: 150, rx: 13 },
+  legLeft: { x: 66, y: 208, width: 30, height: 165, rx: 15 },
+  legRight: { x: 104, y: 208, width: 30, height: 165, rx: 15 },
 };
 
 function renderPrim(part: Prim, key: string, extraProps: { fill: string; stroke: string; strokeWidth: number }) {
@@ -136,8 +118,6 @@ export function CorpsGame({ step }: { step: StepData }) {
   const total = benefits.length;
 
   const [selectedId, setSelectedId] = useState<string | null>(null);
-  // Zones déjà trouvées pour le bienfait EN COURS de sélection (remises à zéro
-  // à chaque changement de bienfait sélectionné).
   const [foundForSelected, setFoundForSelected] = useState<Set<BodyZoneId>>(new Set());
   const [solvedIds, setSolvedIds] = useState<Set<string>>(new Set());
   const [wrongZone, setWrongZone] = useState<BodyZoneId | null>(null);
@@ -164,13 +144,12 @@ export function CorpsGame({ step }: { step: StepData }) {
       setTimeout(() => setWrongZone(null), 500);
       return;
     }
-    if (foundForSelected.has(zoneId)) return; // déjà trouvée pour ce bienfait
+    if (foundForSelected.has(zoneId)) return;
 
     const next = new Set(foundForSelected);
     next.add(zoneId);
 
     if (next.size >= selectedBenefit.zoneIds.length) {
-      // Toutes les zones de ce bienfait ont été trouvées.
       const nextSolved = new Set(solvedIds);
       nextSolved.add(selectedBenefit.id);
       setSolvedIds(nextSolved);
@@ -219,9 +198,8 @@ export function CorpsGame({ step }: { step: StepData }) {
 
         <div className="flex flex-col md:flex-row items-center gap-6 md:gap-10 w-full max-w-3xl justify-center">
           {/* Corps */}
-          <svg viewBox="0 0 220 430" className="w-48 md:w-64 shrink-0" role="img" aria-label="Schéma détaillé du corps humain">
-            {/* Silhouette statique, non cliquable */}
-            <g fill="rgba(255,255,255,0.10)" stroke="rgba(255,255,255,0.3)" strokeWidth={2}>
+          <svg viewBox="0 0 200 400" className="w-44 md:w-56 shrink-0" role="img" aria-label="Schéma du corps humain">
+            <g fill="rgba(255,255,255,0.16)" stroke="rgba(255,255,255,0.4)" strokeWidth={2}>
               <rect {...SILHOUETTE.legLeft} />
               <rect {...SILHOUETTE.legRight} />
               <rect {...SILHOUETTE.armLeft} />
@@ -234,23 +212,22 @@ export function CorpsGame({ step }: { step: StepData }) {
               const solved = solvedZones.has(region.zoneId);
               const found = foundForSelected.has(region.zoneId);
               const wrong = wrongZone === region.zoneId;
-              const fill = wrong ? "#DC2626" : solved ? "#16A34A" : found ? "#F59E0B" : "rgba(255,255,255,0.9)";
+              const fill = wrong ? "#DC2626" : solved ? "#16A34A" : found ? "#F59E0B" : region.idleFill;
               return (
                 <g
                   key={i}
                   onClick={() => clickZone(region.zoneId)}
                   className="cursor-pointer transition-colors duration-200"
-                  style={{ opacity: selectedId ? 1 : 0.85 }}
                 >
                   {region.parts.map((part, j) =>
-                    renderPrim(part, `${i}-${j}`, { fill, stroke: "#fff", strokeWidth: 1.25 })
+                    renderPrim(part, `${i}-${j}`, { fill, stroke: "#fff", strokeWidth: 1.5 })
                   )}
                   {(solved || found) && (
                     <text
                       x={region.center.x}
                       y={region.center.y + 4}
                       textAnchor="middle"
-                      fontSize={11}
+                      fontSize={12}
                       fill="#fff"
                       className="pointer-events-none select-none"
                     >

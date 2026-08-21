@@ -172,10 +172,8 @@ function renderGame(gameType: GameType, data: ExportGameData): string {
     }
     case "CORPS": {
       const zoneLabels: Record<string, string> = {
-        tete: "Tête / Cerveau", coeur: "Cœur", poumons: "Poumons", os: "Os", corps: "Corps entier",
-        trapezes: "Trapèzes", epaules: "Épaules (deltoïdes)", pectoraux: "Pectoraux", biceps: "Biceps",
-        triceps: "Triceps", avant_bras: "Avant-bras", abdos: "Abdominaux", obliques: "Obliques",
-        fessiers: "Fessiers", quadriceps: "Quadriceps", ischios: "Ischio-jambiers", mollets: "Mollets",
+        tete: "Tête / Cerveau", coeur: "Cœur", poumons: "Poumons", pectoraux: "Pectoraux",
+        bras: "Bras", abdos: "Abdominaux", jambes: "Jambes", os: "Os", corps: "Corps entier",
       };
       const benefits = (q.benefits as Json[]) ?? [];
       const rows = benefits
