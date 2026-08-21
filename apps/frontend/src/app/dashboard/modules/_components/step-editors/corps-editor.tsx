@@ -11,16 +11,24 @@ interface Props {
   onSave: (payload: { content: { title?: string; instructions?: string }; gameData: AdminGameData[] }) => Promise<void>;
 }
 
+// Compat : d'anciens bienfaits pouvaient stocker `zoneId` (une seule zone,
+// singulier) avant le passage aux bienfaits multi-zones.
+type LegacyBenefit = { id?: string; text?: string; zoneId?: BodyZoneId; zoneIds?: BodyZoneId[] };
+
 function benefitsFromStep(step: AdminStep): CorpsBenefit[] {
-  const qd = step.gameData?.[0]?.questionData as { benefits?: CorpsBenefit[] } | undefined;
+  const qd = step.gameData?.[0]?.questionData as { benefits?: LegacyBenefit[] } | undefined;
   if (qd?.benefits?.length) {
-    return qd.benefits.map((b) => ({
-      id: b.id ?? shortId(),
-      text: b.text ?? "",
-      zoneId: BODY_ZONES.some((z) => z.id === b.zoneId) ? b.zoneId : "tete",
-    }));
+    return qd.benefits.map((b) => {
+      const raw = b.zoneIds?.length ? b.zoneIds : b.zoneId ? [b.zoneId] : [];
+      const zoneIds = raw.filter((id) => BODY_ZONES.some((z) => z.id === id));
+      return {
+        id: b.id ?? shortId(),
+        text: b.text ?? "",
+        zoneIds: zoneIds.length ? zoneIds : ["tete"],
+      };
+    });
   }
-  return [{ id: shortId(), text: "", zoneId: "tete" }];
+  return [{ id: shortId(), text: "", zoneIds: ["tete"] }];
 }
 
 export function CorpsEditor({ step, color, onSave }: Props) {
@@ -43,7 +51,7 @@ export function CorpsEditor({ step, color, onSave }: Props) {
         {
           ...(step.gameData?.[0]?.id ? { id: step.gameData[0].id } : {}),
           questionData: {
-            benefits: benefits.map((b) => ({ id: b.id, text: b.text.trim(), zoneId: b.zoneId })),
+            benefits: benefits.map((b) => ({ id: b.id, text: b.text.trim(), zoneIds: b.zoneIds })),
           },
           correctAnswer: {},
         },
@@ -52,13 +60,23 @@ export function CorpsEditor({ step, color, onSave }: Props) {
   }
 
   function addBenefit() {
-    setBenefits((bs) => [...bs, { id: shortId(), text: "", zoneId: "tete" }]);
+    setBenefits((bs) => [...bs, { id: shortId(), text: "", zoneIds: ["tete"] }]);
   }
   function update(id: string, patch: Partial<CorpsBenefit>) {
     setBenefits((bs) => bs.map((b) => (b.id === id ? { ...b, ...patch } : b)));
   }
   function removeBenefit(id: string) {
     setBenefits((bs) => bs.filter((b) => b.id !== id));
+  }
+  function toggleZone(benefitId: string, zoneId: BodyZoneId) {
+    setBenefits((bs) =>
+      bs.map((b) => {
+        if (b.id !== benefitId) return b;
+        const has = b.zoneIds.includes(zoneId);
+        const next = has ? b.zoneIds.filter((z) => z !== zoneId) : [...b.zoneIds, zoneId];
+        return { ...b, zoneIds: next.length ? next : b.zoneIds };
+      })
+    );
   }
 
   return (
@@ -75,7 +93,7 @@ export function CorpsEditor({ step, color, onSave }: Props) {
     >
       <SectionHeader title="Bienfaits" count={benefits.length} onAdd={addBenefit} addLabel="Bienfait" color={color} />
       <p className="text-[11px] text-gray-400 -mt-2">
-        Le schéma du corps est fixe (6 zones). Pour chaque bienfait, choisis la zone où l&apos;élève doit le placer.
+        Le schéma du corps est fixe. Pour chaque bienfait, coche une ou plusieurs zones — si tu en coches plusieurs, l&apos;élève devra toutes les trouver pour valider ce bienfait.
       </p>
 
       <div className="space-y-3">
@@ -100,12 +118,12 @@ export function CorpsEditor({ step, color, onSave }: Props) {
 
             <div className="flex flex-wrap gap-1.5">
               {BODY_ZONES.map((z) => {
-                const active = b.zoneId === z.id;
+                const active = b.zoneIds.includes(z.id);
                 return (
                   <button
                     key={z.id}
                     type="button"
-                    onClick={() => update(b.id, { zoneId: z.id as BodyZoneId })}
+                    onClick={() => toggleZone(b.id, z.id)}
                     className={`inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-xs font-bold transition-colors ${
                       active ? "text-white" : "bg-white text-gray-500 border border-gray-200 hover:border-gray-300"
                     }`}
@@ -117,6 +135,9 @@ export function CorpsEditor({ step, color, onSave }: Props) {
                 );
               })}
             </div>
+            {b.zoneIds.length > 1 && (
+              <p className="text-[10px] text-gray-400">{b.zoneIds.length} zones à trouver pour ce bienfait</p>
+            )}
           </div>
         ))}
       </div>

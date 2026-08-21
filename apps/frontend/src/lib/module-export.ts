@@ -172,13 +172,20 @@ function renderGame(gameType: GameType, data: ExportGameData): string {
     }
     case "CORPS": {
       const zoneLabels: Record<string, string> = {
-        tete: "Tête / Cerveau", coeur: "Cœur", poumons: "Poumons", muscles: "Muscles", os: "Os", corps: "Corps entier",
+        tete: "Tête / Cerveau", coeur: "Cœur", poumons: "Poumons", os: "Os", corps: "Corps entier",
+        trapezes: "Trapèzes", epaules: "Épaules (deltoïdes)", pectoraux: "Pectoraux", biceps: "Biceps",
+        triceps: "Triceps", avant_bras: "Avant-bras", abdos: "Abdominaux", obliques: "Obliques",
+        fessiers: "Fessiers", quadriceps: "Quadriceps", ischios: "Ischio-jambiers", mollets: "Mollets",
       };
       const benefits = (q.benefits as Json[]) ?? [];
       const rows = benefits
-        .map((b) => `<tr><td>${esc(b.text)}</td><td class="correct">${esc(zoneLabels[String(b.zoneId)] ?? String(b.zoneId))}</td></tr>`)
+        .map((b) => {
+          const raw = (b.zoneIds as Json[] | undefined) ?? (b.zoneId ? [b.zoneId] : []);
+          const labels = raw.map((z) => zoneLabels[String(z)] ?? String(z)).join(", ");
+          return `<tr><td>${esc(b.text)}</td><td class="correct">${esc(labels)}</td></tr>`;
+        })
         .join("");
-      return `<table><thead><tr><th>Bienfait</th><th>Zone du corps</th></tr></thead><tbody>${rows}</tbody></table>`;
+      return `<table><thead><tr><th>Bienfait</th><th>Zone(s) du corps</th></tr></thead><tbody>${rows}</tbody></table>`;
     }
     case "DIALOGUE": {
       const scenes = (q.scenes as Json[]) ?? [];

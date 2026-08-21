@@ -443,12 +443,12 @@ export function defaultGameDataFor(gameType: GameType): AdminGameData[] {
         {
           questionData: {
             benefits: [
-              { id: "b1", text: "Moins de stress, meilleur moral", zoneId: "tete" },
-              { id: "b2", text: "Cœur plus endurant", zoneId: "coeur" },
-              { id: "b3", text: "Meilleur souffle", zoneId: "poumons" },
-              { id: "b4", text: "Muscles plus forts", zoneId: "muscles" },
-              { id: "b5", text: "Os plus solides", zoneId: "os" },
-              { id: "b6", text: "Meilleures défenses immunitaires", zoneId: "corps" },
+              { id: "b1", text: "Moins de stress, meilleur moral", zoneIds: ["tete"] },
+              { id: "b2", text: "Cœur plus endurant", zoneIds: ["coeur"] },
+              { id: "b3", text: "Meilleur souffle", zoneIds: ["poumons"] },
+              { id: "b4", text: "Jambes plus fortes", zoneIds: ["quadriceps", "mollets"] },
+              { id: "b5", text: "Os plus solides", zoneIds: ["os"] },
+              { id: "b6", text: "Meilleures défenses immunitaires", zoneIds: ["corps"] },
             ],
           },
           correctAnswer: {},
@@ -460,22 +460,52 @@ export function defaultGameDataFor(gameType: GameType): AdminGameData[] {
 // ── Corps humain : zones fixes partagées éditeur ⇆ jeu ───────────────────────
 // Zones volontairement figées (pas d'éditeur de coordonnées) : un seul schéma,
 // simple à saisir côté admin, cohérent pour tous les modules qui l'utilisent.
+// Un bienfait peut cibler PLUSIEURS zones (ex. "jambes plus fortes" = quadriceps
+// + mollets) : l'élève doit alors trouver toutes les zones avant que ce soit validé.
 
-export type BodyZoneId = "tete" | "coeur" | "poumons" | "muscles" | "os" | "corps";
+export type BodyZoneId =
+  | "tete"
+  | "coeur"
+  | "poumons"
+  | "os"
+  | "corps"
+  | "trapezes"
+  | "epaules"
+  | "pectoraux"
+  | "biceps"
+  | "triceps"
+  | "avant_bras"
+  | "abdos"
+  | "obliques"
+  | "fessiers"
+  | "quadriceps"
+  | "ischios"
+  | "mollets";
 
 export const BODY_ZONES: { id: BodyZoneId; label: string; emoji: string }[] = [
   { id: "tete", label: "Tête / Cerveau", emoji: "🧠" },
   { id: "coeur", label: "Cœur", emoji: "❤️" },
   { id: "poumons", label: "Poumons", emoji: "🫁" },
-  { id: "muscles", label: "Muscles", emoji: "💪" },
   { id: "os", label: "Os", emoji: "🦴" },
   { id: "corps", label: "Corps entier", emoji: "✨" },
+  { id: "trapezes", label: "Trapèzes", emoji: "💪" },
+  { id: "epaules", label: "Épaules (deltoïdes)", emoji: "💪" },
+  { id: "pectoraux", label: "Pectoraux", emoji: "💪" },
+  { id: "biceps", label: "Biceps", emoji: "💪" },
+  { id: "triceps", label: "Triceps", emoji: "💪" },
+  { id: "avant_bras", label: "Avant-bras", emoji: "💪" },
+  { id: "abdos", label: "Abdominaux", emoji: "💪" },
+  { id: "obliques", label: "Obliques", emoji: "💪" },
+  { id: "fessiers", label: "Fessiers", emoji: "💪" },
+  { id: "quadriceps", label: "Quadriceps", emoji: "💪" },
+  { id: "ischios", label: "Ischio-jambiers", emoji: "💪" },
+  { id: "mollets", label: "Mollets", emoji: "💪" },
 ];
 
 export type CorpsBenefit = {
   id: string;
   text: string;
-  zoneId: BodyZoneId;
+  zoneIds: BodyZoneId[];
 };
 
 // ── Vrai/Faux à balayer (Swipe) : types partagés éditeur ⇆ jeu ───────────────
