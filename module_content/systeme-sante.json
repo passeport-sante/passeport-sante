@@ -1,0 +1,207 @@
+{
+  "title": "Le système de santé, à quoi ça sert ?",
+  "description": "Carte Vitale, dossier médical, remboursements, établissements de santé et tes droits en tant que patient — comprendre comment fonctionne le système de santé en France.",
+  "duration": 20,
+  "category": "Système de santé",
+  "colorPrimary": "#1B6B8A",
+  "colorSecondary": "#0F3B4C",
+  "isActive": false,
+  "steps": [
+    {
+      "kind": "CONTENT",
+      "content": { "contentType": "VIDEO", "title": "À quoi sert le système de santé ?", "videoUrl": "https://www.youtube.com/watch?v=unViGMfngyE", "caption": "Pour bien commencer, regarde cette vidéo." }
+    },
+    {
+      "kind": "GAME",
+      "gameType": "QUIZ",
+      "content": { "title": "Sécu, carte Vitale, dossier médical", "instructions": "Réponds à toutes les questions" },
+      "gameData": [
+        {
+          "questionData": {
+            "questions": [
+              { "id": "q1", "text": "Les soins sont totalement gratuits en France.", "options": [
+                { "id": "a", "text": "Vrai" },
+                { "id": "b", "text": "Faux" }
+              ] },
+              { "id": "q2", "text": "La carte Vitale contient mon dossier médical.", "options": [
+                { "id": "a", "text": "Vrai" },
+                { "id": "b", "text": "Faux" }
+              ] },
+              { "id": "q3", "text": "Le dossier médical et la carte Vitale, c'est la même chose.", "options": [
+                { "id": "a", "text": "Vrai" },
+                { "id": "b", "text": "Faux" }
+              ] },
+              { "id": "q4", "text": "Avec la carte Vitale, on est remboursé en environ 5 jours.", "options": [
+                { "id": "a", "text": "Vrai" },
+                { "id": "b", "text": "Faux" }
+              ] }
+            ]
+          },
+          "correctAnswer": {
+            "answers": { "q1": ["b"], "q2": ["b"], "q3": ["b"], "q4": ["a"] }
+          }
+        }
+      ]
+    },
+    {
+      "kind": "CONTENT",
+      "content": {
+        "contentType": "INFO",
+        "title": "La carte Vitale, c'est quoi ?",
+        "body": "Une carte à puce nominative et gratuite, qui t'accompagne dans tous tes soins.\n\nElle ne contient AUCUNE information médicale (pas tes antécédents, pas tes maladies) : juste des données administratives (identité, numéro de Sécurité sociale). Elle sert uniquement à accélérer tes remboursements."
+      }
+    },
+    {
+      "kind": "CONTENT",
+      "content": {
+        "contentType": "INFO",
+        "title": "Le dossier médical, c'est quoi ?",
+        "body": "C'est ton historique de santé : consultations, traitements, allergies… gardé par tes médecins.\n\nIl est confidentiel, protégé par le secret médical — ce n'est pas la même chose que la carte Vitale, qui ne contient rien de tout ça."
+      }
+    },
+    {
+      "kind": "GAME",
+      "gameType": "CURSEUR",
+      "content": { "title": "Combien la Sécu rembourse-t-elle ?", "instructions": "Place le curseur sur le bon pourcentage" },
+      "gameData": [
+        {
+          "questionData": {
+            "items": [
+              { "id": "i1", "text": "Quel pourcentage la Sécurité sociale rembourse-t-elle pour une consultation chez le médecin ?", "leftLabel": "0 %", "rightLabel": "100 %", "mode": "precis", "valueMin": 0, "valueMax": 100, "unit": "%", "step": 10, "target": 70 },
+              { "id": "i2", "text": "Et pour une hospitalisation ?", "leftLabel": "0 %", "rightLabel": "100 %", "mode": "precis", "valueMin": 0, "valueMax": 100, "unit": "%", "step": 10, "target": 80 },
+              { "id": "i3", "text": "Et pour une séance de kinésithérapie ?", "leftLabel": "0 %", "rightLabel": "100 %", "mode": "precis", "valueMin": 0, "valueMax": 100, "unit": "%", "step": 10, "target": 60 }
+            ]
+          },
+          "correctAnswer": {}
+        }
+      ]
+    },
+    {
+      "kind": "GAME",
+      "gameType": "KANBAN",
+      "content": { "title": "Où aller ?", "instructions": "Classe chaque situation dans le bon endroit" },
+      "gameData": [
+        {
+          "questionData": {
+            "categories": ["Infirmerie scolaire", "Pharmacie", "Cabinet médical", "Hôpital"],
+            "items": [
+              "Je me suis coupé le doigt à la récré, ce n'est pas très grave",
+              "J'ai un rhume, il me faut un médicament",
+              "J'ai mal aux dents depuis plusieurs jours",
+              "Un accident grave vient d'arriver, il faut agir vite"
+            ]
+          },
+          "correctAnswer": {
+            "Je me suis coupé le doigt à la récré, ce n'est pas très grave": "Infirmerie scolaire",
+            "J'ai un rhume, il me faut un médicament": "Pharmacie",
+            "J'ai mal aux dents depuis plusieurs jours": "Cabinet médical",
+            "Un accident grave vient d'arriver, il faut agir vite": "Hôpital"
+          }
+        }
+      ]
+    },
+    {
+      "kind": "GAME",
+      "gameType": "SCENARIO",
+      "content": { "title": "La fracture de Léo", "instructions": "Choisis la bonne réponse", "shieldMode": false },
+      "gameData": [
+        {
+          "questionData": {
+            "situation": "Léo s'est cassé la jambe au foot (SAMU, urgences, bloc opératoire, kiné...). Est-ce que ses parents doivent payer toute la facture ?",
+            "choices": [
+              { "id": "a", "text": "Non — la Sécu et leur mutuelle prennent en charge l'essentiel, il reste une petite part", "points": 0 },
+              { "id": "b", "text": "Oui, tout est à leur charge", "points": 0 },
+              { "id": "c", "text": "Non, absolument tout est gratuit", "points": 0 }
+            ]
+          },
+          "correctAnswer": {
+            "choiceId": "a",
+            "explanation": "L'hôpital coûte réellement cher (souvent 800 à 1500 € pour quelques jours), mais grâce à la Sécu (80 % remboursés) et à la mutuelle, la famille ne paie qu'une petite partie — dont le forfait journalier hospitalier de 23 €/jour, qui reste toujours dû."
+          }
+        }
+      ]
+    },
+    {
+      "kind": "CONTENT",
+      "content": {
+        "contentType": "INFO",
+        "title": "Tes droits en tant que patient",
+        "body": "Même mineur·e, tu as des droits :\n\n- être informé·e de ce qu'on va te faire\n- donner ton avis sur les soins\n- dans certaines situations, demander que ça reste confidentiel\n\nSi quelque chose te dérange ou que tu ne comprends pas, tu peux toujours en parler à un adulte de confiance."
+      }
+    },
+    {
+      "kind": "CONTENT",
+      "gameType": "KANBAN",
+      "content": { "title": "Qui paie quoi ?", "instructions": "Classe chaque élément dans la bonne catégorie" },
+      "gameData": [
+        {
+          "questionData": {
+            "categories": ["Sécurité sociale", "Reste à charge"],
+            "items": [
+              "70 % d'une consultation chez le médecin",
+              "Les 30 % restants d'une consultation (ticket modérateur)",
+              "80 % d'une hospitalisation",
+              "Le forfait journalier hospitalier (23 €/jour)",
+              "Une chambre individuelle « confort »"
+            ]
+          },
+          "correctAnswer": {
+            "70 % d'une consultation chez le médecin": "Sécurité sociale",
+            "Les 30 % restants d'une consultation (ticket modérateur)": "Reste à charge",
+            "80 % d'une hospitalisation": "Sécurité sociale",
+            "Le forfait journalier hospitalier (23 €/jour)": "Reste à charge",
+            "Une chambre individuelle « confort »": "Reste à charge"
+          }
+        }
+      ]
+    },
+    {
+      "kind": "GAME",
+      "gameType": "QUIZ",
+      "content": { "title": "Le grand quiz du système de santé", "instructions": "Coche toutes les bonnes réponses" },
+      "gameData": [
+        {
+          "questionData": {
+            "questions": [
+              { "id": "q1", "text": "La Sécurité sociale rembourse…", "options": [
+                { "id": "a", "text": "une grande partie des consultations" },
+                { "id": "b", "text": "une grande partie de l'hospitalisation" },
+                { "id": "c", "text": "la totalité de tous les soins, toujours" }
+              ] },
+              { "id": "q2", "text": "Pour un simple rhume, le bon réflexe c'est d'aller…", "options": [
+                { "id": "a", "text": "à la pharmacie" },
+                { "id": "b", "text": "aux urgences de l'hôpital" }
+              ] },
+              { "id": "q3", "text": "En tant que patient, tu as le droit de…", "options": [
+                { "id": "a", "text": "être informé·e" },
+                { "id": "b", "text": "donner ton avis" },
+                { "id": "c", "text": "demander la confidentialité dans certaines situations" },
+                { "id": "d", "text": "rester silencieux·se sans jamais poser de questions" }
+              ] },
+              { "id": "q4", "text": "La carte Vitale contient…", "options": [
+                { "id": "a", "text": "mes infos administratives (identité, numéro de Sécu)" },
+                { "id": "b", "text": "mon dossier médical complet" }
+              ] }
+            ]
+          },
+          "correctAnswer": {
+            "answers": {
+              "q1": ["a", "b"],
+              "q2": ["a"],
+              "q3": ["a", "b", "c"],
+              "q4": ["a"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "kind": "CONTENT",
+      "content": { "contentType": "IMAGE", "title": "Le système de santé en un coup d'œil", "imageUrl": "", "caption": "Ton affiche récap." }
+    },
+    {
+      "kind": "CONTENT",
+      "content": { "contentType": "VIDEO", "title": "Bravo !", "videoUrl": "", "caption": "Une dernière vidéo pour retenir l'essentiel." }
+    }
+  ]
+}

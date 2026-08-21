@@ -1,0 +1,185 @@
+{
+  "title": "L'hygiène, mode d'emploi",
+  "description": "Dents, mains, peau, sommeil, linge : les bons gestes du quotidien, sans culpabiliser, pour se sentir bien dans son corps.",
+  "duration": 20,
+  "category": "Hygiène",
+  "colorPrimary": "#2CA58D",
+  "colorSecondary": "#1B7A68",
+  "isActive": false,
+  "steps": [
+    {
+      "kind": "CONTENT",
+      "content": { "contentType": "VIDEO", "title": "L'hygiène, à quoi ça sert ?", "videoUrl": "https://www.youtube.com/watch?v=37jQrCOmjYM", "caption": "Pour bien commencer, regarde cette vidéo." }
+    },
+    {
+      "kind": "GAME",
+      "gameType": "QUIZ",
+      "content": { "title": "Bien s'occuper de ses dents", "instructions": "Réponds à toutes les questions" },
+      "gameData": [
+        {
+          "questionData": {
+            "questions": [
+              { "id": "q1", "text": "Il faut se brosser les dents au moins 2 fois par jour.", "options": [
+                { "id": "a", "text": "Vrai" },
+                { "id": "b", "text": "Faux" }
+              ] },
+              { "id": "q2", "text": "Se brosser les dents très fort les nettoie mieux.", "options": [
+                { "id": "a", "text": "Vrai" },
+                { "id": "b", "text": "Faux" }
+              ] },
+              { "id": "q3", "text": "Le fluor aide à protéger les dents contre les caries.", "options": [
+                { "id": "a", "text": "Vrai" },
+                { "id": "b", "text": "Faux" }
+              ] },
+              { "id": "q4", "text": "Si aucune dent ne fait mal, pas besoin d'aller chez le dentiste.", "options": [
+                { "id": "a", "text": "Vrai" },
+                { "id": "b", "text": "Faux" }
+              ] }
+            ]
+          },
+          "correctAnswer": {
+            "answers": { "q1": ["a"], "q2": ["b"], "q3": ["a"], "q4": ["b"] }
+          }
+        }
+      ]
+    },
+    {
+      "kind": "CONTENT",
+      "content": {
+        "contentType": "INFO",
+        "title": "Peau et boutons : ce qui se passe à la puberté",
+        "body": "À la puberté, une hormone présente chez les filles comme chez les garçons (la testostérone) stimule les glandes qui produisent le sébum. La peau devient plus grasse, ce qui peut donner des boutons : ce n'est PAS un manque d'hygiène, c'est hormonal !\n\nÀ faire : nettoyer son visage matin et soir avec un produit doux, ne jamais percer ni gratter un bouton (risque de cicatrice ou d'infection), hydrater sa peau.\n\nSi l'acné devient importante ou pèse sur le moral, il existe des solutions (y compris en pharmacie sans ordonnance) — et un médecin peut toujours aider."
+      }
+    },
+    {
+      "kind": "GAME",
+      "gameType": "SWIPE",
+      "content": { "title": "Les bons réflexes des mains", "instructions": "Balaye à droite pour Vrai, à gauche pour Faux" },
+      "gameData": [
+        {
+          "questionData": {
+            "cards": [
+              { "id": "c1", "text": "Les mains sont un des principaux moyens de transmission des microbes.", "answer": "vrai", "explanation": "C'est pour ça que se laver les mains est le premier geste barrière contre les maladies courantes (rhume, gastro...)." },
+              { "id": "c2", "text": "Le gel hydroalcoolique est toujours plus efficace que le savon.", "answer": "faux", "explanation": "Un lavage classique à l'eau et au savon est tout aussi efficace." },
+              { "id": "c3", "text": "Il faut se laver les mains avant de manger.", "answer": "vrai", "explanation": "Et aussi après les toilettes, après s'être mouché ou avoir toussé, et au retour d'un lieu public." },
+              { "id": "c4", "text": "Si mes mains ont l'air propres, pas besoin de les laver.", "answer": "faux", "explanation": "Les microbes sont invisibles à l'œil nu — l'aspect ne dit rien de la propreté réelle." },
+              { "id": "c5", "text": "Se laver les mains, c'est surtout utile en hiver.", "answer": "faux", "explanation": "C'est utile toute l'année, contre tous les microbes qui se transmettent par contact." },
+              { "id": "c6", "text": "Se moucher puis serrer la main d'un copain sans se laver les mains, ce n'est pas grave.", "answer": "faux", "explanation": "C'est justement l'un des moments où le lavage des mains compte le plus." }
+            ]
+          },
+          "correctAnswer": {}
+        }
+      ]
+    },
+    {
+      "kind": "CONTENT",
+      "content": {
+        "contentType": "INFO",
+        "title": "Bien dormir, ça compte aussi",
+        "body": "À l'adolescence, le corps a besoin d'environ 9h de sommeil par nuit (8h minimum). Beaucoup de collégiens et lycéens accumulent une dette de sommeil en semaine.\n\nÀ cet âge, il est normal de se coucher un peu plus tard que quand on était petit : c'est un vrai phénomène biologique (le corps décale son horloge interne), pas un manque de volonté.\n\nPour bien dormir : éviter les écrans après 22h (ils retardent l'endormissement), pas de téléphone ni de notifications au lit, profiter de la lumière du jour le matin."
+      }
+    },
+    {
+      "kind": "GAME",
+      "gameType": "CURSEUR",
+      "content": { "title": "Tous les combien de temps ?", "instructions": "Place le curseur sur la bonne fréquence" },
+      "gameData": [
+        {
+          "questionData": {
+            "items": [
+              { "id": "i1", "text": "Tous les combien de temps faut-il changer de sous-vêtements et de chaussettes ?", "leftLabel": "Tous les jours", "rightLabel": "Une fois par semaine", "mode": "precis", "valueMin": 1, "valueMax": 7, "unit": "jour(s)", "step": 1, "target": 1 },
+              { "id": "i2", "text": "Tous les combien d'utilisations faut-il laver une serviette de bain ?", "leftLabel": "1 utilisation", "rightLabel": "10 utilisations", "mode": "estimation", "valueMin": 1, "valueMax": 10, "unit": "utilisation(s)", "target": 28, "tolerance": 15 },
+              { "id": "i3", "text": "Tous les combien de temps faut-il laver ses draps ?", "leftLabel": "1 semaine", "rightLabel": "4 semaines", "mode": "estimation", "valueMin": 1, "valueMax": 4, "unit": "semaine(s)", "target": 17, "tolerance": 20 }
+            ]
+          },
+          "correctAnswer": {}
+        }
+      ]
+    },
+    {
+      "kind": "CONTENT",
+      "content": {
+        "contentType": "INFO",
+        "title": "Les poux, ce n'est pas une question de propreté",
+        "body": "Les poux n'ont RIEN à voir avec l'hygiène : n'importe qui peut en attraper, même en se lavant très régulièrement. Ils se transmettent par contact direct entre cheveux, ou en partageant brosses, bonnets ou écharpes.\n\nCe n'est pas grave, il n'y a pas de honte à en avoir, et il n'y a aucune obligation d'être exclu du collège. Le bon réflexe : ne pas partager ses affaires qui touchent les cheveux, vérifier si ça gratte, et traiter rapidement si besoin."
+      }
+    },
+    {
+      "kind": "GAME",
+      "gameType": "SCENARIO",
+      "content": { "title": "Léa se pose des questions", "instructions": "Choisis la réponse qui te semble la plus juste", "shieldMode": true },
+      "gameData": [
+        {
+          "questionData": {
+            "situation": "Depuis quelques mois, Léa transpire plus qu'avant et ça la gêne un peu. Une amie lui dit qu'elle est « trop jeune » pour utiliser un déodorant. Qu'en penses-tu ?",
+            "choices": [
+              { "id": "a", "text": "C'est normal, le corps change à la puberté — elle peut utiliser un déodorant doux si elle en ressent le besoin", "points": 2 },
+              { "id": "b", "text": "Une toilette quotidienne au savon doux suffit largement, avec ou sans déodorant", "points": 2 },
+              { "id": "c", "text": "Si ça l'inquiète, elle peut en parler à un adulte de confiance", "points": 2 }
+            ]
+          },
+          "correctAnswer": {
+            "choiceId": "a",
+            "explanation": "Il n'existe pas d'âge officiel pour commencer à utiliser un déodorant — ça dépend de chacun·e, de la puberté de chacun·e. Une toilette quotidienne reste le geste de base, et rien n'empêche d'ajouter un déodorant doux si le besoin s'en fait sentir."
+          }
+        }
+      ]
+    },
+    {
+      "kind": "CONTENT",
+      "content": {
+        "contentType": "INFO",
+        "title": "Et l'hygiène intime ?",
+        "body": "L'hygiène intime et les questions liées à la puberté et au corps sont abordées plus en détail pendant les séances d'éducation à la vie affective et relationnelle (EVARS), obligatoires au collège. N'hésite pas à poser tes questions à ce moment-là, ou à un adulte de confiance."
+      }
+    },
+    {
+      "kind": "GAME",
+      "gameType": "QUIZ",
+      "content": { "title": "Le grand quiz de l'hygiène", "instructions": "Coche toutes les bonnes réponses" },
+      "gameData": [
+        {
+          "questionData": {
+            "questions": [
+              { "id": "q1", "text": "Pour bien se brosser les dents, il faut…", "options": [
+                { "id": "a", "text": "un dentifrice au fluor" },
+                { "id": "b", "text": "brosser au moins 2 fois par jour" },
+                { "id": "c", "text": "brosser aussi fort que possible" }
+              ] },
+              { "id": "q2", "text": "L'acné à l'adolescence, c'est…", "options": [
+                { "id": "a", "text": "dû aux hormones" },
+                { "id": "b", "text": "dû à un manque d'hygiène" }
+              ] },
+              { "id": "q3", "text": "Se laver les mains est particulièrement important…", "options": [
+                { "id": "a", "text": "avant de manger" },
+                { "id": "b", "text": "après être allé aux toilettes" },
+                { "id": "c", "text": "après avoir toussé ou s'être mouché" },
+                { "id": "d", "text": "seulement en hiver" }
+              ] },
+              { "id": "q4", "text": "Avoir des poux, c'est…", "options": [
+                { "id": "a", "text": "un manque de propreté" },
+                { "id": "b", "text": "quelque chose qui peut arriver à n'importe qui" }
+              ] }
+            ]
+          },
+          "correctAnswer": {
+            "answers": {
+              "q1": ["a", "b"],
+              "q2": ["a"],
+              "q3": ["a", "b", "c"],
+              "q4": ["b"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "kind": "CONTENT",
+      "content": { "contentType": "IMAGE", "title": "L'hygiène en un coup d'œil", "imageUrl": "", "caption": "Ton affiche récap." }
+    },
+    {
+      "kind": "CONTENT",
+      "content": { "contentType": "VIDEO", "title": "Bravo !", "videoUrl": "", "caption": "Une dernière vidéo pour retenir l'essentiel." }
+    }
+  ]
+}

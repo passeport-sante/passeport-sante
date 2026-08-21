@@ -61,7 +61,7 @@ export function AdminModuleCard({ module, canManage = true, onDuplicate, onToggl
   const mascotteSrc = mascotteUrl(module.mascotte, "thumb");
 
   return (
-    <div className="group relative bg-white rounded-xl border border-gray-200 overflow-hidden flex flex-col hover:border-gray-300 transition-colors">
+    <div className="group relative bg-white rounded-xl border border-gray-200 flex flex-col hover:border-gray-300 transition-colors">
       <div className="p-5 flex flex-col gap-4 flex-1">
         {/* Header : icône, titre, statut, menu */}
         <div className="flex items-start gap-3">

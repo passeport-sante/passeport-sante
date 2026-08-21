@@ -271,6 +271,29 @@
     },
     {
       "kind": "CONTENT",
+      "gameType": "SCENARIO",
+      "content": { "title": "Ton défi de la semaine", "instructions": "Choisis un défi que tu te sens capable de tenir", "shieldMode": true },
+      "gameData": [
+        {
+          "questionData": {
+            "situation": "Bouger plus, c'est possible ! Choisis UN défi que tu te sens capable de tenir cette semaine.",
+            "choices": [
+              { "id": "a", "text": "Aller à pied ou à vélo au collège au moins 2 fois cette semaine", "points": 2 },
+              { "id": "b", "text": "Monter les escaliers au lieu de prendre l'ascenseur", "points": 2 },
+              { "id": "c", "text": "Faire une pause active de 5 minutes pendant mes devoirs", "points": 2 },
+              { "id": "d", "text": "Proposer un jeu dehors à mes copains à la récré", "points": 2 },
+              { "id": "e", "text": "Aider à la maison (jardinage, ménage) au moins une fois", "points": 2 }
+            ]
+          },
+          "correctAnswer": {
+            "choiceId": "a",
+            "explanation": "Peu importe ton choix : la clé, c'est de VRAIMENT le tenir cette semaine. Un petit défi tenu vaut mieux qu'un grand oublié."
+          }
+        }
+      ]
+    },
+    {
+      "kind": "CONTENT",
       "content": { "contentType": "IMAGE", "title": "Bouge 1 heure par jour", "imageUrl": "", "caption": "Ton affiche récap." }
     },
     {
