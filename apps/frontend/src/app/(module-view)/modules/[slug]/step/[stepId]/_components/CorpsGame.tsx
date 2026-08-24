@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useRef } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
 import Image from "next/image";
@@ -85,10 +85,22 @@ const HOTSPOTS: { zoneId: BodyZoneId; x: number; y: number }[] = [
   { zoneId: "os", x: 61, y: 80 },
 ];
 
+// Légende affichée aux élèves : la couleur d'un point donne une famille
+// (organe / muscle / os) sans révéler quelle zone précise c'est.
+const LEGEND: { color: string; label: string }[] = [
+  { color: ZONE_COLOR.tete!, label: "Tête / Cerveau" },
+  { color: ZONE_COLOR.coeur!, label: "Cœur" },
+  { color: ZONE_COLOR.poumons!, label: "Poumons" },
+  { color: ZONE_COLOR.bras!, label: "Muscles" },
+  { color: ZONE_COLOR.os!, label: "Os" },
+];
+
 export function CorpsGame({ step }: { step: StepData }) {
   const router = useRouter();
   const searchParams = useSearchParams();
   const calibrate = searchParams.get("calibrate") === "1";
+  const imageRef = useRef<HTMLDivElement>(null);
+  const draggingIndex = useRef<number | null>(null);
 
   const benefits = normalizeBenefits(step.gameData?.[0]?.questionData?.benefits ?? []);
   const total = benefits.length;
@@ -97,6 +109,9 @@ export function CorpsGame({ step }: { step: StepData }) {
   const [foundForSelected, setFoundForSelected] = useState<Set<BodyZoneId>>(new Set());
   const [solvedIds, setSolvedIds] = useState<Set<string>>(new Set());
   const [wrongZone, setWrongZone] = useState<BodyZoneId | null>(null);
+  // Copie modifiable des points, éditée en mode calibrage (glisser-déposer).
+  const [points, setPoints] = useState(HOTSPOTS);
+  const [copied, setCopied] = useState(false);
 
   const primaryColor = step.module.colorPrimary ?? "#E11D48";
   const bottomColor = step.module.colorSecondary ?? "#3f0d16";
@@ -146,13 +161,40 @@ export function CorpsGame({ step }: { step: StepData }) {
     }
   }
 
-  function handleCalibrateClick(e: React.MouseEvent<HTMLDivElement>) {
+  function clampPct(v: number) {
+    return Math.min(100, Math.max(0, v));
+  }
+
+  function updatePointFromEvent(index: number, clientX: number, clientY: number) {
+    const rect = imageRef.current?.getBoundingClientRect();
+    if (!rect) return;
+    const x = clampPct(((clientX - rect.left) / rect.width) * 100);
+    const y = clampPct(((clientY - rect.top) / rect.height) * 100);
+    setPoints((prev) => prev.map((p, i) => (i === index ? { ...p, x, y } : p)));
+  }
+
+  function startDrag(index: number) {
     if (!calibrate) return;
-    const rect = e.currentTarget.getBoundingClientRect();
-    const x = ((e.clientX - rect.left) / rect.width) * 100;
-    const y = ((e.clientY - rect.top) / rect.height) * 100;
-    // eslint-disable-next-line no-console
-    console.log(`{ x: ${x.toFixed(1)}, y: ${y.toFixed(1)} }`);
+    draggingIndex.current = index;
+  }
+
+  function handlePointerMove(e: React.PointerEvent<HTMLDivElement>) {
+    if (draggingIndex.current === null) return;
+    updatePointFromEvent(draggingIndex.current, e.clientX, e.clientY);
+  }
+
+  function stopDrag() {
+    draggingIndex.current = null;
+  }
+
+  function copyConfig() {
+    const code = points
+      .map((p) => `  { zoneId: "${p.zoneId}", x: ${p.x.toFixed(1)}, y: ${p.y.toFixed(1)} },`)
+      .join("\n");
+    navigator.clipboard.writeText(code).then(() => {
+      setCopied(true);
+      setTimeout(() => setCopied(false), 1500);
+    });
   }
 
   const Header = (
@@ -179,43 +221,69 @@ export function CorpsGame({ step }: { step: StepData }) {
       <main className="flex-1 flex flex-col items-center justify-center gap-6 px-4 md:px-8 py-6">
         <div className="flex items-center gap-2">
           <span className="text-white/70 text-xs font-bold">{solvedIds.size}/{total} placés</span>
-          {calibrate && <span className="text-amber-300 text-xs font-bold">· Mode calibrage : ouvre la console</span>}
+          {calibrate && <span className="text-amber-300 text-xs font-bold">· Mode calibrage : glisse les points</span>}
         </div>
+
+        {calibrate && (
+          <button
+            onClick={copyConfig}
+            className="px-4 py-2 rounded-xl bg-white text-gray-900 text-xs font-bold shadow-md"
+          >
+            {copied ? "Copié ✓" : "Copier la config"}
+          </button>
+        )}
 
         <div className="flex flex-col md:flex-row items-center gap-6 md:gap-10 w-full max-w-3xl justify-center">
           {/* Corps */}
-          <div
-            className="relative w-48 md:w-60 aspect-[3143/7792] shrink-0 bg-white rounded-3xl shadow-xl p-2 overflow-hidden"
-            onClick={handleCalibrateClick}
-          >
-            <div className="relative w-full h-full">
-              <Image src={CORPS_IMAGE_URL} alt="Schéma du corps humain" fill className="object-contain pointer-events-none select-none" priority />
+          <div className="flex flex-col items-center gap-3 shrink-0">
+            <div
+              ref={imageRef}
+              className="relative w-48 md:w-60 aspect-[3143/7792] bg-white rounded-3xl shadow-xl p-2 overflow-hidden touch-none"
+              onPointerMove={handlePointerMove}
+              onPointerUp={stopDrag}
+              onPointerLeave={stopDrag}
+            >
+              <div className="relative w-full h-full">
+                <Image src={CORPS_IMAGE_URL} alt="Schéma du corps humain" fill className="object-contain pointer-events-none select-none" priority />
+              </div>
+
+              {points.map((h, i) => {
+                const solved = solvedZones.has(h.zoneId);
+                const found = foundForSelected.has(h.zoneId);
+                const wrong = wrongZone === h.zoneId;
+                const bg = wrong ? "#DC2626" : solved ? "#16A34A" : found ? "#F59E0B" : (ZONE_COLOR[h.zoneId] ?? "#D1D5DB");
+                return (
+                  <button
+                    key={i}
+                    onPointerDown={() => startDrag(i)}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      if (!calibrate) clickZone(h.zoneId);
+                    }}
+                    aria-label={BODY_ZONES.find((z) => z.id === h.zoneId)?.label ?? h.zoneId}
+                    className={`absolute w-6 h-6 md:w-7 md:h-7 -translate-x-1/2 -translate-y-1/2 rounded-full border-2 border-white shadow-md transition-all ${calibrate ? "cursor-grab active:cursor-grabbing ring-2 ring-white/80" : ""}`}
+                    style={{ left: `${h.x}%`, top: `${h.y}%`, background: bg }}
+                  >
+                    {(solved || found) && <Check size={14} className="text-white mx-auto" />}
+                    {calibrate && (
+                      <span className="absolute top-full left-1/2 -translate-x-1/2 mt-0.5 text-[9px] font-bold text-white bg-black/60 px-1 rounded whitespace-nowrap">
+                        {h.zoneId}
+                      </span>
+                    )}
+                  </button>
+                );
+              })}
             </div>
 
-            {!calibrate && HOTSPOTS.map((h, i) => {
-              const solved = solvedZones.has(h.zoneId);
-              const found = foundForSelected.has(h.zoneId);
-              const wrong = wrongZone === h.zoneId;
-              const bg = wrong ? "#DC2626" : solved ? "#16A34A" : found ? "#F59E0B" : (ZONE_COLOR[h.zoneId] ?? "#D1D5DB");
-              return (
-                <button
-                  key={i}
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    clickZone(h.zoneId);
-                  }}
-                  aria-label={BODY_ZONES.find((z) => z.id === h.zoneId)?.label ?? h.zoneId}
-                  className="absolute w-6 h-6 md:w-7 md:h-7 -translate-x-1/2 -translate-y-1/2 rounded-full border-2 border-white shadow-md transition-all"
-                  style={{
-                    left: `${h.x}%`,
-                    top: `${h.y}%`,
-                    background: bg,
-                  }}
-                >
-                  {(solved || found) && <Check size={14} className="text-white mx-auto" />}
-                </button>
-              );
-            })}
+            {/* Légende des couleurs, pour que les élèves comprennent ce que représente un point */}
+            <div className="flex flex-wrap justify-center gap-x-3 gap-y-1 max-w-[240px]">
+              {LEGEND.map((l) => (
+                <span key={l.label} className="inline-flex items-center gap-1.5 text-[10px] font-semibold text-white/70">
+                  <span className="w-2.5 h-2.5 rounded-full border border-white/50" style={{ background: l.color }} />
+                  {l.label}
+                </span>
+              ))}
+            </div>
           </div>
 
           {/* Liste des bienfaits + zone "corps entier" */}
