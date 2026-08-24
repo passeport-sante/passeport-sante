@@ -65,6 +65,40 @@ function heartParts(cx: number, cy: number): Prim[] {
   ];
 }
 
+// Membre effilé (bras/jambe) : plus large en haut, plus étroit en bas, capuchons
+// arrondis aux deux bouts. Construit à partir de primitives déjà sûres
+// (polygone + cercles), pour éviter les tracés de courbes hasardeux.
+function limbParts(topCx: number, topY: number, topR: number, botCx: number, botY: number, botR: number): Prim[] {
+  return [
+    {
+      shape: "polygon",
+      points: `${topCx - topR},${topY} ${topCx + topR},${topY} ${botCx + botR},${botY} ${botCx - botR},${botY}`,
+    },
+    { shape: "circle", cx: topCx, cy: topY, r: topR },
+    { shape: "circle", cx: botCx, cy: botY, r: botR },
+  ];
+}
+
+// Profil du torse (moitié droite, du cou à l'entrejambe) : décalage horizontal
+// depuis le centre (x=100) + hauteur. Répété en miroir pour la moitié gauche,
+// ce qui garantit une silhouette parfaitement symétrique.
+const TORSO_PROFILE: { dx: number; y: number }[] = [
+  { dx: 10, y: 64 }, // cou
+  { dx: 44, y: 78 }, // épaule
+  { dx: 40, y: 105 }, // poitrine
+  { dx: 30, y: 140 }, // amorce de taille
+  { dx: 24, y: 168 }, // taille
+  { dx: 30, y: 190 }, // amorce de hanche
+  { dx: 34, y: 205 }, // hanche
+  { dx: 8, y: 215 }, // entrejambe
+];
+
+function torsoPolygonPoints(): string {
+  const right = TORSO_PROFILE.map((p) => `${100 + p.dx},${p.y}`);
+  const left = [...TORSO_PROFILE].reverse().map((p) => `${100 - p.dx},${p.y}`);
+  return [...right, ...left].join(" ");
+}
+
 function boneParts(cx: number, cy: number): Prim[] {
   return [
     { shape: "rect", x: cx - 4, y: cy - 14, width: 8, height: 28, rx: 4 },
@@ -106,24 +140,25 @@ const ZONE_REGIONS: ZoneRegion[] = [
   { zoneId: "os", center: { x: 119, y: 355 }, idleFill: BONE, parts: boneParts(119, 355) },
 ];
 
-// Silhouette statique en arrière-plan (non cliquable), en trait plus soutenu
-// que les zones pour que le contour du corps reste net derrière les couleurs.
-const SILHOUETTE = {
-  shoulders: { x: 56, y: 66, width: 88, height: 100, rx: 36 },
-  hips: { x: 70, y: 140, width: 60, height: 80, rx: 26 },
-  armLeft: { x: 30, y: 82, width: 26, height: 150, rx: 13 },
-  armRight: { x: 144, y: 82, width: 26, height: 150, rx: 13 },
-  legLeft: { x: 66, y: 208, width: 30, height: 165, rx: 15 },
-  legRight: { x: 104, y: 208, width: 30, height: 165, rx: 15 },
-};
+// Silhouette statique en arrière-plan (non cliquable) : un torse à la vraie
+// forme de sablier (épaules → taille → hanches) plutôt que des rectangles
+// empilés, et des membres effilés plutôt que des tubes à section constante.
+const SILHOUETTE_ARMS: Prim[] = [
+  ...limbParts(150, 82, 15, 150, 218, 10), // bras droit
+  ...limbParts(50, 82, 15, 50, 218, 10), // bras gauche
+];
+const SILHOUETTE_LEGS: Prim[] = [
+  ...limbParts(119, 210, 17, 119, 365, 11), // jambe droite
+  ...limbParts(81, 210, 17, 81, 365, 11), // jambe gauche
+];
 
 // Petites touches décoratives (non cliquables) pour que le schéma ressemble à
 // un vrai petit personnage plutôt qu'à un diagramme froid : mains, pieds, visage.
 const HANDS_FEET = [
-  { cx: 43, cy: 228, r: 9 }, // main gauche
-  { cx: 157, cy: 228, r: 9 }, // main droite
-  { cx: 81, cy: 368, r: 10 }, // pied gauche
-  { cx: 119, cy: 368, r: 10 }, // pied droit
+  { cx: 50, cy: 224, r: 9 }, // main gauche
+  { cx: 150, cy: 224, r: 9 }, // main droite
+  { cx: 81, cy: 370, r: 10 }, // pied gauche
+  { cx: 119, cy: 370, r: 10 }, // pied droit
 ];
 
 function renderPrim(part: Prim, key: string, extraProps: { fill: string; stroke: string; strokeWidth: number }) {
@@ -233,13 +268,10 @@ export function CorpsGame({ step }: { step: StepData }) {
               </filter>
             </defs>
 
-            <g fill="rgba(255,255,255,0.14)" stroke="rgba(255,255,255,0.45)" strokeWidth={2.5}>
-              <rect {...SILHOUETTE.legLeft} />
-              <rect {...SILHOUETTE.legRight} />
-              <rect {...SILHOUETTE.armLeft} />
-              <rect {...SILHOUETTE.armRight} />
-              <rect {...SILHOUETTE.shoulders} />
-              <rect {...SILHOUETTE.hips} />
+            <g fill="rgba(255,255,255,0.14)" stroke="rgba(255,255,255,0.45)" strokeWidth={2.5} strokeLinejoin="round">
+              {SILHOUETTE_LEGS.map((p, i) => renderPrim(p, `leg-${i}`, { fill: "rgba(255,255,255,0.14)", stroke: "rgba(255,255,255,0.45)", strokeWidth: 2.5 }))}
+              {SILHOUETTE_ARMS.map((p, i) => renderPrim(p, `arm-${i}`, { fill: "rgba(255,255,255,0.14)", stroke: "rgba(255,255,255,0.45)", strokeWidth: 2.5 }))}
+              <polygon points={torsoPolygonPoints()} />
             </g>
 
             <g filter="url(#corps-shadow)">
