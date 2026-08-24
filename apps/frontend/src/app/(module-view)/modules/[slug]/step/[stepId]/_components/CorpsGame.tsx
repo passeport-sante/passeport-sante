@@ -224,6 +224,16 @@ export function CorpsGame({ step }: { step: StepData }) {
           {calibrate && <span className="text-amber-300 text-xs font-bold">· Mode calibrage : glisse les points</span>}
         </div>
 
+        {/* Légende des couleurs — en haut, bien visible, avant de jouer */}
+        <div className="flex flex-wrap justify-center gap-x-4 gap-y-1.5 bg-black/15 rounded-2xl px-4 py-2.5 max-w-lg">
+          {LEGEND.map((l) => (
+            <span key={l.label} className="inline-flex items-center gap-2 text-sm font-bold text-white">
+              <span className="w-3.5 h-3.5 rounded-full border border-white/60 shrink-0" style={{ background: l.color }} />
+              {l.label}
+            </span>
+          ))}
+        </div>
+
         {calibrate && (
           <button
             onClick={copyConfig}
@@ -273,16 +283,6 @@ export function CorpsGame({ step }: { step: StepData }) {
                   </button>
                 );
               })}
-            </div>
-
-            {/* Légende des couleurs, pour que les élèves comprennent ce que représente un point */}
-            <div className="flex flex-wrap justify-center gap-x-3 gap-y-1 max-w-[240px]">
-              {LEGEND.map((l) => (
-                <span key={l.label} className="inline-flex items-center gap-1.5 text-[10px] font-semibold text-white/70">
-                  <span className="w-2.5 h-2.5 rounded-full border border-white/50" style={{ background: l.color }} />
-                  {l.label}
-                </span>
-              ))}
             </div>
           </div>
 
