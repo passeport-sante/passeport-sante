@@ -1,8 +1,9 @@
 "use client";
 
 import { useState } from "react";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
+import Image from "next/image";
 import { ArrowLeft, Check } from "lucide-react";
 import { getGuestStudentId, submitQuizResponse } from "@/lib/modules";
 import { goToNextStep, gameProgress, type FlowStep } from "@/lib/step-flow";
@@ -44,138 +45,35 @@ interface StepData {
   };
 }
 
-type Prim =
-  | { shape: "circle"; cx: number; cy: number; r: number }
-  | { shape: "ellipse"; cx: number; cy: number; rx: number; ry: number }
-  | { shape: "rect"; x: number; y: number; width: number; height: number; rx: number }
-  | { shape: "polygon"; points: string };
+// Illustration partagée par tous les modules (schéma fixe, pas d'upload par
+// module), fournie par l'utilisateur.
+const CORPS_IMAGE_URL = "/assets/corps/corps-humain.jpg";
 
-interface ZoneRegion {
-  zoneId: BodyZoneId;
-  center: { x: number; y: number };
-  idleFill: string;
-  parts: Prim[];
-}
-
-function heartParts(cx: number, cy: number): Prim[] {
-  return [
-    { shape: "circle", cx: cx - 6, cy: cy - 3, r: 7 },
-    { shape: "circle", cx: cx + 6, cy: cy - 3, r: 7 },
-    { shape: "polygon", points: `${cx - 12},${cy - 2} ${cx + 12},${cy - 2} ${cx},${cy + 14}` },
-  ];
-}
-
-// Membre effilé (bras/jambe) : plus large en haut, plus étroit en bas, capuchons
-// arrondis aux deux bouts. Construit à partir de primitives déjà sûres
-// (polygone + cercles), pour éviter les tracés de courbes hasardeux.
-function limbParts(topCx: number, topY: number, topR: number, botCx: number, botY: number, botR: number): Prim[] {
-  return [
-    {
-      shape: "polygon",
-      points: `${topCx - topR},${topY} ${topCx + topR},${topY} ${botCx + botR},${botY} ${botCx - botR},${botY}`,
-    },
-    { shape: "circle", cx: topCx, cy: topY, r: topR },
-    { shape: "circle", cx: botCx, cy: botY, r: botR },
-  ];
-}
-
-// Profil du torse (moitié droite, du cou à l'entrejambe) : décalage horizontal
-// depuis le centre (x=100) + hauteur. Répété en miroir pour la moitié gauche,
-// ce qui garantit une silhouette parfaitement symétrique.
-const TORSO_PROFILE: { dx: number; y: number }[] = [
-  { dx: 10, y: 64 }, // cou
-  { dx: 44, y: 78 }, // épaule
-  { dx: 40, y: 105 }, // poitrine
-  { dx: 30, y: 140 }, // amorce de taille
-  { dx: 24, y: 168 }, // taille
-  { dx: 30, y: 190 }, // amorce de hanche
-  { dx: 34, y: 205 }, // hanche
-  { dx: 8, y: 215 }, // entrejambe
+// Position d'un point cliquable en % de l'image (indépendant de la taille
+// d'écran). Une zone peut avoir plusieurs points (gauche/droite) : cliquer
+// l'un ou l'autre compte pour cette zone. Positions estimées visuellement —
+// affiner avec ?calibrate=1 (clique sur l'image, les coordonnées s'affichent
+// dans la console).
+const HOTSPOTS: { zoneId: BodyZoneId; x: number; y: number }[] = [
+  { zoneId: "tete", x: 50, y: 6 },
+  { zoneId: "poumons", x: 44, y: 23 },
+  { zoneId: "poumons", x: 56, y: 23 },
+  { zoneId: "coeur", x: 48, y: 27 },
+  { zoneId: "pectoraux", x: 35, y: 26 },
+  { zoneId: "pectoraux", x: 65, y: 26 },
+  { zoneId: "bras", x: 15, y: 38 },
+  { zoneId: "bras", x: 85, y: 38 },
+  { zoneId: "abdos", x: 50, y: 40 },
+  { zoneId: "jambes", x: 39, y: 60 },
+  { zoneId: "jambes", x: 61, y: 60 },
+  { zoneId: "os", x: 39, y: 80 },
+  { zoneId: "os", x: 61, y: 80 },
 ];
-
-function torsoPolygonPoints(): string {
-  const right = TORSO_PROFILE.map((p) => `${100 + p.dx},${p.y}`);
-  const left = [...TORSO_PROFILE].reverse().map((p) => `${100 - p.dx},${p.y}`);
-  return [...right, ...left].join(" ");
-}
-
-function boneParts(cx: number, cy: number): Prim[] {
-  return [
-    { shape: "rect", x: cx - 4, y: cy - 14, width: 8, height: 28, rx: 4 },
-    { shape: "circle", cx: cx - 5, cy: cy - 14, r: 5.5 },
-    { shape: "circle", cx: cx + 5, cy: cy - 14, r: 5.5 },
-    { shape: "circle", cx: cx - 5, cy: cy + 14, r: 5.5 },
-    { shape: "circle", cx: cx + 5, cy: cy + 14, r: 5.5 },
-  ];
-}
-
-// 8 zones (+ "corps entier" en bouton à part) : chaque famille a sa propre
-// teinte pastel au repos pour rester lisible d'un coup d'œil, plutôt que des
-// blocs blancs qui se confondent entre eux et avec le fond.
-const ORGAN = "#FCA5A5"; // cœur / poumons — rosé
-const LUNG = "#93C5FD"; // poumons — bleu doux
-const MUSCLE = "#FDE1B8"; // pectoraux / bras / abdos / jambes — crème chaud
-const BONE = "#E5E7EB"; // os — gris clair
-const SKIN = "#FBD8B4"; // tête
-
-const ZONE_REGIONS: ZoneRegion[] = [
-  { zoneId: "tete", center: { x: 100, y: 42 }, idleFill: SKIN, parts: [{ shape: "circle", cx: 100, cy: 42, r: 26 }] },
-
-  { zoneId: "poumons", center: { x: 90, y: 108 }, idleFill: LUNG, parts: [{ shape: "ellipse", cx: 90, cy: 108, rx: 8, ry: 24 }] },
-  { zoneId: "poumons", center: { x: 110, y: 108 }, idleFill: LUNG, parts: [{ shape: "ellipse", cx: 110, cy: 108, rx: 8, ry: 24 }] },
-  { zoneId: "coeur", center: { x: 98, y: 116 }, idleFill: ORGAN, parts: heartParts(98, 116) },
-
-  { zoneId: "pectoraux", center: { x: 68, y: 118 }, idleFill: MUSCLE, parts: [{ shape: "ellipse", cx: 68, cy: 118, rx: 13, ry: 19 }] },
-  { zoneId: "pectoraux", center: { x: 132, y: 118 }, idleFill: MUSCLE, parts: [{ shape: "ellipse", cx: 132, cy: 118, rx: 13, ry: 19 }] },
-
-  { zoneId: "bras", center: { x: 43, y: 136 }, idleFill: MUSCLE, parts: [{ shape: "ellipse", cx: 43, cy: 136, rx: 14, ry: 30 }] },
-  { zoneId: "bras", center: { x: 157, y: 136 }, idleFill: MUSCLE, parts: [{ shape: "ellipse", cx: 157, cy: 136, rx: 14, ry: 30 }] },
-
-  { zoneId: "abdos", center: { x: 100, y: 178 }, idleFill: MUSCLE, parts: [{ shape: "ellipse", cx: 100, cy: 178, rx: 24, ry: 30 }] },
-
-  { zoneId: "jambes", center: { x: 81, y: 290 }, idleFill: MUSCLE, parts: [{ shape: "ellipse", cx: 81, cy: 290, rx: 14, ry: 58 }] },
-  { zoneId: "jambes", center: { x: 119, y: 290 }, idleFill: MUSCLE, parts: [{ shape: "ellipse", cx: 119, cy: 290, rx: 14, ry: 58 }] },
-
-  { zoneId: "os", center: { x: 81, y: 355 }, idleFill: BONE, parts: boneParts(81, 355) },
-  { zoneId: "os", center: { x: 119, y: 355 }, idleFill: BONE, parts: boneParts(119, 355) },
-];
-
-// Silhouette statique en arrière-plan (non cliquable) : un torse à la vraie
-// forme de sablier (épaules → taille → hanches) plutôt que des rectangles
-// empilés, et des membres effilés plutôt que des tubes à section constante.
-const SILHOUETTE_ARMS: Prim[] = [
-  ...limbParts(150, 82, 15, 150, 218, 10), // bras droit
-  ...limbParts(50, 82, 15, 50, 218, 10), // bras gauche
-];
-const SILHOUETTE_LEGS: Prim[] = [
-  ...limbParts(119, 210, 17, 119, 365, 11), // jambe droite
-  ...limbParts(81, 210, 17, 81, 365, 11), // jambe gauche
-];
-
-// Petites touches décoratives (non cliquables) pour que le schéma ressemble à
-// un vrai petit personnage plutôt qu'à un diagramme froid : mains, pieds, visage.
-const HANDS_FEET = [
-  { cx: 50, cy: 224, r: 9 }, // main gauche
-  { cx: 150, cy: 224, r: 9 }, // main droite
-  { cx: 81, cy: 370, r: 10 }, // pied gauche
-  { cx: 119, cy: 370, r: 10 }, // pied droit
-];
-
-function renderPrim(part: Prim, key: string, extraProps: { fill: string; stroke: string; strokeWidth: number }) {
-  switch (part.shape) {
-    case "circle":
-      return <circle key={key} cx={part.cx} cy={part.cy} r={part.r} {...extraProps} />;
-    case "ellipse":
-      return <ellipse key={key} cx={part.cx} cy={part.cy} rx={part.rx} ry={part.ry} {...extraProps} />;
-    case "rect":
-      return <rect key={key} x={part.x} y={part.y} width={part.width} height={part.height} rx={part.rx} {...extraProps} />;
-    case "polygon":
-      return <polygon key={key} points={part.points} {...extraProps} />;
-  }
-}
 
 export function CorpsGame({ step }: { step: StepData }) {
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const calibrate = searchParams.get("calibrate") === "1";
 
   const benefits = normalizeBenefits(step.gameData?.[0]?.questionData?.benefits ?? []);
   const total = benefits.length;
@@ -233,6 +131,15 @@ export function CorpsGame({ step }: { step: StepData }) {
     }
   }
 
+  function handleCalibrateClick(e: React.MouseEvent<HTMLDivElement>) {
+    if (!calibrate) return;
+    const rect = e.currentTarget.getBoundingClientRect();
+    const x = ((e.clientX - rect.left) / rect.width) * 100;
+    const y = ((e.clientY - rect.top) / rect.height) * 100;
+    // eslint-disable-next-line no-console
+    console.log(`{ x: ${x.toFixed(1)}, y: ${y.toFixed(1)} }`);
+  }
+
   const Header = (
     <header className="shrink-0 flex items-center justify-between gap-3 px-4 md:px-8 py-4 md:py-5 bg-white">
       <Link href={`/modules/${step.module.slug}`} className="flex items-center gap-2 md:gap-3 text-gray-700 hover:opacity-70 transition-opacity shrink-0">
@@ -257,68 +164,44 @@ export function CorpsGame({ step }: { step: StepData }) {
       <main className="flex-1 flex flex-col items-center justify-center gap-6 px-4 md:px-8 py-6">
         <div className="flex items-center gap-2">
           <span className="text-white/70 text-xs font-bold">{solvedIds.size}/{total} placés</span>
+          {calibrate && <span className="text-amber-300 text-xs font-bold">· Mode calibrage : ouvre la console</span>}
         </div>
 
         <div className="flex flex-col md:flex-row items-center gap-6 md:gap-10 w-full max-w-3xl justify-center">
           {/* Corps */}
-          <svg viewBox="0 0 200 400" className="w-44 md:w-56 shrink-0" role="img" aria-label="Schéma du corps humain">
-            <defs>
-              <filter id="corps-shadow" x="-50%" y="-50%" width="200%" height="200%">
-                <feDropShadow dx="0" dy="2" stdDeviation="2.5" floodColor="#000" floodOpacity="0.18" />
-              </filter>
-            </defs>
+          <div
+            className="relative w-48 md:w-60 aspect-[3143/7792] shrink-0 bg-white rounded-3xl shadow-xl p-2 overflow-hidden"
+            onClick={handleCalibrateClick}
+          >
+            <div className="relative w-full h-full">
+              <Image src={CORPS_IMAGE_URL} alt="Schéma du corps humain" fill className="object-contain pointer-events-none select-none" priority />
+            </div>
 
-            <g fill="rgba(255,255,255,0.14)" stroke="rgba(255,255,255,0.45)" strokeWidth={2.5} strokeLinejoin="round">
-              {SILHOUETTE_LEGS.map((p, i) => renderPrim(p, `leg-${i}`, { fill: "rgba(255,255,255,0.14)", stroke: "rgba(255,255,255,0.45)", strokeWidth: 2.5 }))}
-              {SILHOUETTE_ARMS.map((p, i) => renderPrim(p, `arm-${i}`, { fill: "rgba(255,255,255,0.14)", stroke: "rgba(255,255,255,0.45)", strokeWidth: 2.5 }))}
-              <polygon points={torsoPolygonPoints()} />
-            </g>
-
-            <g filter="url(#corps-shadow)">
-              {ZONE_REGIONS.map((region, i) => {
-                const solved = solvedZones.has(region.zoneId);
-                const found = foundForSelected.has(region.zoneId);
-                const wrong = wrongZone === region.zoneId;
-                const fill = wrong ? "#DC2626" : solved ? "#16A34A" : found ? "#F59E0B" : region.idleFill;
-                return (
-                  <g
-                    key={i}
-                    onClick={() => clickZone(region.zoneId)}
-                    className="cursor-pointer transition-colors duration-200"
-                  >
-                    {region.parts.map((part, j) =>
-                      renderPrim(part, `${i}-${j}`, { fill, stroke: "#fff", strokeWidth: 2 })
-                    )}
-                    {region.zoneId === "tete" && (
-                      <g className="pointer-events-none">
-                        <circle cx={92} cy={38} r={2.6} fill="#3f2a1f" />
-                        <circle cx={108} cy={38} r={2.6} fill="#3f2a1f" />
-                        <path d="M90,49 Q100,55 110,49" stroke="#3f2a1f" strokeWidth={2.2} fill="none" strokeLinecap="round" />
-                      </g>
-                    )}
-                    {(solved || found) && (
-                      <text
-                        x={region.center.x}
-                        y={region.center.y + 4}
-                        textAnchor="middle"
-                        fontSize={12}
-                        fill="#fff"
-                        className="pointer-events-none select-none"
-                      >
-                        ✓
-                      </text>
-                    )}
-                  </g>
-                );
-              })}
-            </g>
-
-            <g fill="rgba(255,255,255,0.5)" stroke="rgba(255,255,255,0.7)" strokeWidth={1.5} className="pointer-events-none">
-              {HANDS_FEET.map((h, i) => (
-                <circle key={i} cx={h.cx} cy={h.cy} r={h.r} />
-              ))}
-            </g>
-          </svg>
+            {!calibrate && HOTSPOTS.map((h, i) => {
+              const solved = solvedZones.has(h.zoneId);
+              const found = foundForSelected.has(h.zoneId);
+              const wrong = wrongZone === h.zoneId;
+              const bg = wrong ? "#DC2626" : solved ? "#16A34A" : found ? "#F59E0B" : "rgba(27,107,138,0.5)";
+              return (
+                <button
+                  key={i}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    clickZone(h.zoneId);
+                  }}
+                  aria-label={BODY_ZONES.find((z) => z.id === h.zoneId)?.label ?? h.zoneId}
+                  className="absolute w-6 h-6 md:w-7 md:h-7 -translate-x-1/2 -translate-y-1/2 rounded-full border-2 border-white shadow-md transition-all"
+                  style={{
+                    left: `${h.x}%`,
+                    top: `${h.y}%`,
+                    background: bg,
+                  }}
+                >
+                  {(solved || found) && <Check size={14} className="text-white mx-auto" />}
+                </button>
+              );
+            })}
+          </div>
 
           {/* Liste des bienfaits + zone "corps entier" */}
           <div className="flex flex-col gap-4 w-full max-w-sm">
