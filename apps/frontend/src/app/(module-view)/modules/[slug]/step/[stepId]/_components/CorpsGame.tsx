@@ -6,15 +6,34 @@ import Link from "next/link";
 import { ArrowLeft, Check } from "lucide-react";
 import { getGuestStudentId, submitQuizResponse } from "@/lib/modules";
 import { goToNextStep, gameProgress, type FlowStep } from "@/lib/step-flow";
-import { BODY_ZONES, type BodyZoneId } from "@/lib/steps-admin";
+import { BODY_ZONES, normalizeBodyZoneId, type BodyZoneId } from "@/lib/steps-admin";
 
-interface Benefit { id: string; text: string; zoneIds: BodyZoneId[] }
+interface Benefit { id: string; text: string; zoneIds: BodyZoneId[]; matchAny: boolean }
+
+// Le schéma du corps a changé plusieurs fois (zones génériques → détaillées →
+// regroupées) : du contenu jamais réédité peut encore stocker l'ancien format
+// (`zoneId` singulier, ou des ids de zones qui n'existent plus). On normalise
+// systématiquement à la lecture pour que ça marche quand même dans le jeu.
+type RawBenefit = { id?: string; text?: string; zoneId?: string; zoneIds?: string[]; matchAny?: boolean };
+
+function normalizeBenefits(raw: RawBenefit[]): Benefit[] {
+  return raw.map((b, i) => {
+    const rawZones = b.zoneIds?.length ? b.zoneIds : b.zoneId ? [b.zoneId] : [];
+    const zoneIds = Array.from(new Set(rawZones.map(normalizeBodyZoneId)));
+    return {
+      id: b.id ?? `b${i}`,
+      text: b.text ?? "",
+      zoneIds: zoneIds.length ? zoneIds : ["corps"],
+      matchAny: b.matchAny ?? false,
+    };
+  });
+}
 
 interface StepData {
   id: string;
   order: number;
   content: { title: string; instructions: string };
-  gameData: { questionData: { benefits: Benefit[] } }[];
+  gameData: { questionData: { benefits: RawBenefit[] } }[];
   module: {
     id: string;
     slug: string;
@@ -98,6 +117,15 @@ const SILHOUETTE = {
   legRight: { x: 104, y: 208, width: 30, height: 165, rx: 15 },
 };
 
+// Petites touches décoratives (non cliquables) pour que le schéma ressemble à
+// un vrai petit personnage plutôt qu'à un diagramme froid : mains, pieds, visage.
+const HANDS_FEET = [
+  { cx: 43, cy: 228, r: 9 }, // main gauche
+  { cx: 157, cy: 228, r: 9 }, // main droite
+  { cx: 81, cy: 368, r: 10 }, // pied gauche
+  { cx: 119, cy: 368, r: 10 }, // pied droit
+];
+
 function renderPrim(part: Prim, key: string, extraProps: { fill: string; stroke: string; strokeWidth: number }) {
   switch (part.shape) {
     case "circle":
@@ -114,7 +142,7 @@ function renderPrim(part: Prim, key: string, extraProps: { fill: string; stroke:
 export function CorpsGame({ step }: { step: StepData }) {
   const router = useRouter();
 
-  const benefits = step.gameData?.[0]?.questionData?.benefits ?? [];
+  const benefits = normalizeBenefits(step.gameData?.[0]?.questionData?.benefits ?? []);
   const total = benefits.length;
 
   const [selectedId, setSelectedId] = useState<string | null>(null);
@@ -149,7 +177,7 @@ export function CorpsGame({ step }: { step: StepData }) {
     const next = new Set(foundForSelected);
     next.add(zoneId);
 
-    if (next.size >= selectedBenefit.zoneIds.length) {
+    if (selectedBenefit.matchAny || next.size >= selectedBenefit.zoneIds.length) {
       const nextSolved = new Set(solvedIds);
       nextSolved.add(selectedBenefit.id);
       setSolvedIds(nextSolved);
@@ -199,7 +227,13 @@ export function CorpsGame({ step }: { step: StepData }) {
         <div className="flex flex-col md:flex-row items-center gap-6 md:gap-10 w-full max-w-3xl justify-center">
           {/* Corps */}
           <svg viewBox="0 0 200 400" className="w-44 md:w-56 shrink-0" role="img" aria-label="Schéma du corps humain">
-            <g fill="rgba(255,255,255,0.16)" stroke="rgba(255,255,255,0.4)" strokeWidth={2}>
+            <defs>
+              <filter id="corps-shadow" x="-50%" y="-50%" width="200%" height="200%">
+                <feDropShadow dx="0" dy="2" stdDeviation="2.5" floodColor="#000" floodOpacity="0.18" />
+              </filter>
+            </defs>
+
+            <g fill="rgba(255,255,255,0.14)" stroke="rgba(255,255,255,0.45)" strokeWidth={2.5}>
               <rect {...SILHOUETTE.legLeft} />
               <rect {...SILHOUETTE.legRight} />
               <rect {...SILHOUETTE.armLeft} />
@@ -208,35 +242,50 @@ export function CorpsGame({ step }: { step: StepData }) {
               <rect {...SILHOUETTE.hips} />
             </g>
 
-            {ZONE_REGIONS.map((region, i) => {
-              const solved = solvedZones.has(region.zoneId);
-              const found = foundForSelected.has(region.zoneId);
-              const wrong = wrongZone === region.zoneId;
-              const fill = wrong ? "#DC2626" : solved ? "#16A34A" : found ? "#F59E0B" : region.idleFill;
-              return (
-                <g
-                  key={i}
-                  onClick={() => clickZone(region.zoneId)}
-                  className="cursor-pointer transition-colors duration-200"
-                >
-                  {region.parts.map((part, j) =>
-                    renderPrim(part, `${i}-${j}`, { fill, stroke: "#fff", strokeWidth: 1.5 })
-                  )}
-                  {(solved || found) && (
-                    <text
-                      x={region.center.x}
-                      y={region.center.y + 4}
-                      textAnchor="middle"
-                      fontSize={12}
-                      fill="#fff"
-                      className="pointer-events-none select-none"
-                    >
-                      ✓
-                    </text>
-                  )}
-                </g>
-              );
-            })}
+            <g filter="url(#corps-shadow)">
+              {ZONE_REGIONS.map((region, i) => {
+                const solved = solvedZones.has(region.zoneId);
+                const found = foundForSelected.has(region.zoneId);
+                const wrong = wrongZone === region.zoneId;
+                const fill = wrong ? "#DC2626" : solved ? "#16A34A" : found ? "#F59E0B" : region.idleFill;
+                return (
+                  <g
+                    key={i}
+                    onClick={() => clickZone(region.zoneId)}
+                    className="cursor-pointer transition-colors duration-200"
+                  >
+                    {region.parts.map((part, j) =>
+                      renderPrim(part, `${i}-${j}`, { fill, stroke: "#fff", strokeWidth: 2 })
+                    )}
+                    {region.zoneId === "tete" && (
+                      <g className="pointer-events-none">
+                        <circle cx={92} cy={38} r={2.6} fill="#3f2a1f" />
+                        <circle cx={108} cy={38} r={2.6} fill="#3f2a1f" />
+                        <path d="M90,49 Q100,55 110,49" stroke="#3f2a1f" strokeWidth={2.2} fill="none" strokeLinecap="round" />
+                      </g>
+                    )}
+                    {(solved || found) && (
+                      <text
+                        x={region.center.x}
+                        y={region.center.y + 4}
+                        textAnchor="middle"
+                        fontSize={12}
+                        fill="#fff"
+                        className="pointer-events-none select-none"
+                      >
+                        ✓
+                      </text>
+                    )}
+                  </g>
+                );
+              })}
+            </g>
+
+            <g fill="rgba(255,255,255,0.5)" stroke="rgba(255,255,255,0.7)" strokeWidth={1.5} className="pointer-events-none">
+              {HANDS_FEET.map((h, i) => (
+                <circle key={i} cx={h.cx} cy={h.cy} r={h.r} />
+              ))}
+            </g>
           </svg>
 
           {/* Liste des bienfaits + zone "corps entier" */}
@@ -283,7 +332,9 @@ export function CorpsGame({ step }: { step: StepData }) {
             {selectedBenefit && (
               <p className="text-white/70 text-xs font-semibold text-center md:text-left">
                 {selectedBenefit.zoneIds.length > 1
-                  ? `Trouve les ${selectedBenefit.zoneIds.length} zones concernées (${foundForSelected.size}/${selectedBenefit.zoneIds.length})`
+                  ? selectedBenefit.matchAny
+                    ? "Clique n'importe laquelle des zones concernées"
+                    : `Trouve les ${selectedBenefit.zoneIds.length} zones concernées (${foundForSelected.size}/${selectedBenefit.zoneIds.length})`
                   : "Clique la zone du corps où ce bienfait agit"}
               </p>
             )}

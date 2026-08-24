@@ -3,7 +3,7 @@
 import { useMemo, useState } from "react";
 import { Trash2, Plus } from "lucide-react";
 import { EditorShell, SectionHeader, INPUT_CLASS, ICON_BUTTON_CLASS } from "./editor-shell";
-import { shortId, BODY_ZONES, type AdminStep, type AdminGameData, type CorpsBenefit, type BodyZoneId } from "@/lib/steps-admin";
+import { shortId, BODY_ZONES, normalizeBodyZoneId, type AdminStep, type AdminGameData, type CorpsBenefit, type BodyZoneId } from "@/lib/steps-admin";
 
 interface Props {
   step: AdminStep;
@@ -12,19 +12,21 @@ interface Props {
 }
 
 // Compat : d'anciens bienfaits pouvaient stocker `zoneId` (une seule zone,
-// singulier) avant le passage aux bienfaits multi-zones.
-type LegacyBenefit = { id?: string; text?: string; zoneId?: BodyZoneId; zoneIds?: BodyZoneId[] };
+// singulier) et/ou des ids de zones qui n'existent plus (le schéma du corps a
+// changé plusieurs fois) — tout est ramené vers le schéma actuel à la lecture.
+type LegacyBenefit = { id?: string; text?: string; zoneId?: string; zoneIds?: string[]; matchAny?: boolean };
 
 function benefitsFromStep(step: AdminStep): CorpsBenefit[] {
   const qd = step.gameData?.[0]?.questionData as { benefits?: LegacyBenefit[] } | undefined;
   if (qd?.benefits?.length) {
     return qd.benefits.map((b) => {
       const raw = b.zoneIds?.length ? b.zoneIds : b.zoneId ? [b.zoneId] : [];
-      const zoneIds = raw.filter((id) => BODY_ZONES.some((z) => z.id === id));
+      const zoneIds = Array.from(new Set(raw.map(normalizeBodyZoneId)));
       return {
         id: b.id ?? shortId(),
         text: b.text ?? "",
         zoneIds: zoneIds.length ? zoneIds : ["tete"],
+        matchAny: b.matchAny ?? false,
       };
     });
   }
@@ -51,7 +53,7 @@ export function CorpsEditor({ step, color, onSave }: Props) {
         {
           ...(step.gameData?.[0]?.id ? { id: step.gameData[0].id } : {}),
           questionData: {
-            benefits: benefits.map((b) => ({ id: b.id, text: b.text.trim(), zoneIds: b.zoneIds })),
+            benefits: benefits.map((b) => ({ id: b.id, text: b.text.trim(), zoneIds: b.zoneIds, matchAny: b.matchAny ?? false })),
           },
           correctAnswer: {},
         },
@@ -136,7 +138,14 @@ export function CorpsEditor({ step, color, onSave }: Props) {
               })}
             </div>
             {b.zoneIds.length > 1 && (
-              <p className="text-[10px] text-gray-400">{b.zoneIds.length} zones à trouver pour ce bienfait</p>
+              <label className="flex items-center gap-1.5 text-[11px] text-gray-500 font-semibold">
+                <input
+                  type="checkbox"
+                  checked={b.matchAny ?? false}
+                  onChange={(e) => update(b.id, { matchAny: e.target.checked })}
+                />
+                Une seule zone suffit (sinon les {b.zoneIds.length} zones sont toutes requises)
+              </label>
             )}
           </div>
         ))}

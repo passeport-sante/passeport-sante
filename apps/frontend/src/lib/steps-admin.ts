@@ -490,7 +490,34 @@ export type CorpsBenefit = {
   id: string;
   text: string;
   zoneIds: BodyZoneId[];
+  // true = une seule des zones suffit à valider (ex. "Muscles plus forts" :
+  // n'importe quel muscle compte). false/absent = toutes requises (ex.
+  // "Jambes plus fortes" si on ciblait plusieurs zones précises).
+  matchAny?: boolean;
 };
+
+// Le schéma du corps a changé plusieurs fois (zones génériques → détaillées →
+// regroupées). Cette table ramène n'importe quel ancien id vers une zone
+// actuelle, pour que du contenu jamais réédité continue de fonctionner dans
+// le jeu plutôt que de toujours échouer silencieusement.
+const LEGACY_ZONE_MAP: Record<string, BodyZoneId> = {
+  muscles: "bras",
+  trapezes: "pectoraux",
+  epaules: "bras",
+  biceps: "bras",
+  triceps: "bras",
+  avant_bras: "bras",
+  obliques: "abdos",
+  fessiers: "jambes",
+  quadriceps: "jambes",
+  ischios: "jambes",
+  mollets: "jambes",
+};
+
+export function normalizeBodyZoneId(id: string): BodyZoneId {
+  if (BODY_ZONES.some((z) => z.id === id)) return id as BodyZoneId;
+  return LEGACY_ZONE_MAP[id] ?? "corps";
+}
 
 // ── Vrai/Faux à balayer (Swipe) : types partagés éditeur ⇆ jeu ───────────────
 
