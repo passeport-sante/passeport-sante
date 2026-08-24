@@ -49,6 +49,21 @@ interface StepData {
 // module), fournie par l'utilisateur.
 const CORPS_IMAGE_URL = "/assets/corps/corps-humain.jpg";
 
+// Chaque famille a sa propre teinte au repos (comme sur le schéma dessiné
+// précédent) : ça donne un indice visuel — organes en rosé/bleu, muscles en
+// crème — sans révéler la réponse, et ça évite que les points du torse
+// (poumons/cœur/pectoraux, proches les uns des autres) se confondent.
+const ZONE_COLOR: Partial<Record<BodyZoneId, string>> = {
+  tete: "#FBD8B4",
+  coeur: "#FCA5A5",
+  poumons: "#93C5FD",
+  pectoraux: "#FDE1B8",
+  bras: "#FDE1B8",
+  abdos: "#FDE1B8",
+  jambes: "#FDE1B8",
+  os: "#D1D5DB",
+};
+
 // Position d'un point cliquable en % de l'image (indépendant de la taille
 // d'écran). Une zone peut avoir plusieurs points (gauche/droite) : cliquer
 // l'un ou l'autre compte pour cette zone. Positions estimées visuellement —
@@ -56,11 +71,11 @@ const CORPS_IMAGE_URL = "/assets/corps/corps-humain.jpg";
 // dans la console).
 const HOTSPOTS: { zoneId: BodyZoneId; x: number; y: number }[] = [
   { zoneId: "tete", x: 50, y: 6 },
-  { zoneId: "poumons", x: 44, y: 23 },
-  { zoneId: "poumons", x: 56, y: 23 },
-  { zoneId: "coeur", x: 48, y: 27 },
-  { zoneId: "pectoraux", x: 35, y: 26 },
-  { zoneId: "pectoraux", x: 65, y: 26 },
+  { zoneId: "poumons", x: 38, y: 19 },
+  { zoneId: "poumons", x: 62, y: 19 },
+  { zoneId: "coeur", x: 50, y: 24 },
+  { zoneId: "pectoraux", x: 28, y: 29 },
+  { zoneId: "pectoraux", x: 72, y: 29 },
   { zoneId: "bras", x: 15, y: 38 },
   { zoneId: "bras", x: 85, y: 38 },
   { zoneId: "abdos", x: 50, y: 40 },
@@ -181,7 +196,7 @@ export function CorpsGame({ step }: { step: StepData }) {
               const solved = solvedZones.has(h.zoneId);
               const found = foundForSelected.has(h.zoneId);
               const wrong = wrongZone === h.zoneId;
-              const bg = wrong ? "#DC2626" : solved ? "#16A34A" : found ? "#F59E0B" : "rgba(27,107,138,0.5)";
+              const bg = wrong ? "#DC2626" : solved ? "#16A34A" : found ? "#F59E0B" : (ZONE_COLOR[h.zoneId] ?? "#D1D5DB");
               return (
                 <button
                   key={i}
