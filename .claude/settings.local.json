@@ -70,7 +70,13 @@
       "Bash(npx prisma@6 validate)",
       "Bash(npx prisma@6 generate)",
       "Read(//c/Users/cleme/Desktop/Workspace/Codes/**)",
-      "Bash(powershell.exe -Command \"Get-Process 'Docker Desktop' -ErrorAction SilentlyContinue\")"
+      "Bash(powershell.exe -Command \"Get-Process 'Docker Desktop' -ErrorAction SilentlyContinue\")",
+      "Bash(powershell.exe -Command \"Start-Process 'C:\\\\Program Files\\\\Docker\\\\Docker\\\\Docker Desktop.exe'\")",
+      "Bash(docker info *)",
+      "Bash(break)",
+      "Bash(docker restart *)",
+      "Bash(export TOKEN=\"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJjbW9pbnkydTQwMDAxbjlhaWNuZGFhbjB4IiwiZW1haWwiOiJhZG1pbkBwcmV2ZW50aW9uLmNvbSIsInJvbGUiOiJBRE1JTiIsIm9yZ2FuaXphdGlvbklkIjoic2VlZC1vcmctMSIsImlhdCI6MTc4NzY2MzE4NiwiZXhwIjoxNzg4MjY3OTg2fQ.2g4a399FePwoP5JtYeWZg-HICXcY_409KK08YuvFlUk\")",
+      "Bash(curl -s http://localhost:5000/api/modules?admin=true -H 'Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJjbW9pbnkydTQwMDAxbjlhaWNuZGFhbjB4IiwiZW1haWwiOiJhZG1pbkBwcmV2ZW50aW9uLmNvbSIsInJvbGUiOiJBRE1JTiIsIm9yZ2FuaXphdGlvbklkIjoic2VlZC1vcmctMSIsImlhdCI6MTc4NzY2MzE4NiwiZXhwIjoxNzg4MjY3OTg2fQ.2g4a399FePwoP5JtYeWZg-HICXcY_409KK08YuvFlUk')"
     ]
   }
 }

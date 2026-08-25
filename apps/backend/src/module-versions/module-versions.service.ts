@@ -56,13 +56,20 @@ function isModuleSnapshot(value: unknown): value is ModuleSnapshot {
 export class ModuleVersionsService {
   constructor(private prisma: PrismaService) {}
 
-  async snapshotModule(moduleId: string, userId?: string, tx: Tx = this.prisma): Promise<void> {
-    const last = await tx.moduleVersion.findFirst({
-      where: { moduleId },
-      orderBy: { createdAt: "desc" },
-      select: { createdAt: true },
-    });
-    if (last && Date.now() - last.createdAt.getTime() < SNAPSHOT_THROTTLE_MS) return;
+  async snapshotModule(
+    moduleId: string,
+    userId?: string,
+    tx: Tx = this.prisma,
+    opts: { force?: boolean } = {},
+  ): Promise<void> {
+    if (!opts.force) {
+      const last = await tx.moduleVersion.findFirst({
+        where: { moduleId },
+        orderBy: { createdAt: "desc" },
+        select: { createdAt: true },
+      });
+      if (last && Date.now() - last.createdAt.getTime() < SNAPSHOT_THROTTLE_MS) return;
+    }
 
     const module = await tx.module.findUnique({
       where: { id: moduleId },
@@ -158,7 +165,9 @@ export class ModuleVersionsService {
 
       // Point de restauration de l'état actuel avant de l'écraser — un restore
       // malencontreux reste lui-même annulable comme n'importe quelle version.
-      await this.snapshotModule(moduleId, userId, tx);
+      // `force` : ce snapshot ne doit jamais être sauté par le throttle, sinon
+      // l'état juste avant le restore serait perdu sans recours.
+      await this.snapshotModule(moduleId, userId, tx, { force: true });
 
       const stepIds = (await tx.step.findMany({ where: { moduleId }, select: { id: true } })).map(
         (s) => s.id,
