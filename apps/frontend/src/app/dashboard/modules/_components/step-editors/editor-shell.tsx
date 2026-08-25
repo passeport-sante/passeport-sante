@@ -60,24 +60,29 @@ export function EditorShell({
     }
   }
 
+  // Toujours à jour à chaque rendu, contrairement à la closure figée que
+  // capturerait l'effet ci-dessous s'il appelait handleSaveClick directement.
+  const handleSaveClickRef = useRef(handleSaveClick);
+  handleSaveClickRef.current = handleSaveClick;
+
   useEffect(() => {
     return () => {
       if (savedTimerRef.current) clearTimeout(savedTimerRef.current);
     };
   }, []);
 
-  // Cmd/Ctrl + S pour sauvegarder
+  // Cmd/Ctrl + S pour sauvegarder — écouteur posé une seule fois, mais qui
+  // passe toujours par la ref pour ne jamais renvoyer un état obsolète.
   useEffect(() => {
     function handleKey(e: KeyboardEvent) {
       if ((e.metaKey || e.ctrlKey) && e.key === "s") {
         e.preventDefault();
-        handleSaveClick();
+        handleSaveClickRef.current();
       }
     }
     window.addEventListener("keydown", handleKey);
     return () => window.removeEventListener("keydown", handleKey);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [isDirty, validationError, saving]);
+  }, []);
 
   return (
     <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
