@@ -104,7 +104,7 @@ export function StepsTab({ moduleId, colorPrimary, steps: initialSteps = [], onC
     setSteps(reordered); // optimiste
 
     try {
-      await reorderSteps(reordered.map((s) => ({ id: s.id, order: s.order })));
+      await reorderSteps(moduleId, reordered.map((s) => ({ id: s.id, order: s.order })));
       await onChange();
     } catch (err) {
       // revert

@@ -16,6 +16,7 @@ import { ApiBearerAuth } from "@nestjs/swagger";
 import { JwtAuthGuard } from "../auth/jwt-auth.guard";
 import { RolesGuard } from "../auth/guards/roles.guard";
 import { Roles } from "../auth/decorators/roles.decorator";
+import { CurrentUser, AuthUser } from "../auth/decorators/current-user.decorator";
 
 @ApiBearerAuth()
 @Controller("step")
@@ -25,16 +26,16 @@ export class StepController {
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles("ADMIN")
   @Post()
-  create(@Body() createStepDto: CreateStepDto) {
-    return this.stepService.create(createStepDto);
+  create(@Body() createStepDto: CreateStepDto, @CurrentUser() user: AuthUser) {
+    return this.stepService.create(createStepDto, user.userId);
   }
 
   // ⚠️ Déclaré AVANT @Patch(':id') pour ne pas être capturé par la route paramétrée
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles("ADMIN")
   @Patch("reorder")
-  reorder(@Body() dto: ReorderStepsDto) {
-    return this.stepService.reorder(dto);
+  reorder(@Body() dto: ReorderStepsDto, @CurrentUser() user: AuthUser) {
+    return this.stepService.reorder(dto, user.userId);
   }
 
   @Get()
@@ -50,14 +51,18 @@ export class StepController {
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles("ADMIN")
   @Patch(":id")
-  update(@Param("id") id: string, @Body() updateStepDto: UpdateStepDto) {
-    return this.stepService.update(id, updateStepDto);
+  update(
+    @Param("id") id: string,
+    @Body() updateStepDto: UpdateStepDto,
+    @CurrentUser() user: AuthUser,
+  ) {
+    return this.stepService.update(id, updateStepDto, user.userId);
   }
 
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles("ADMIN")
   @Delete(":id")
-  remove(@Param("id") id: string) {
-    return this.stepService.remove(id);
+  remove(@Param("id") id: string, @CurrentUser() user: AuthUser) {
+    return this.stepService.remove(id, user.userId);
   }
 }

@@ -66,7 +66,11 @@
       "Bash(rtk proxy *)",
       "Bash(python -c ' *)",
       "Bash(node -e \"let d='';process.stdin.on\\('data',c=>d+=c\\).on\\('end',\\(\\)=>{const j=JSON.parse\\(d\\);for\\(const f of j\\)for\\(const m of f.messages\\)console.log\\(m.line+':'+m.column,m.message\\)}\\)\")",
-      "WebSearch"
+      "WebSearch",
+      "Bash(npx prisma@6 validate)",
+      "Bash(npx prisma@6 generate)",
+      "Read(//c/Users/cleme/Desktop/Workspace/Codes/**)",
+      "Bash(powershell.exe -Command \"Get-Process 'Docker Desktop' -ErrorAction SilentlyContinue\")"
     ]
   }
 }

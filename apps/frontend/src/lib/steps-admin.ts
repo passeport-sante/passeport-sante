@@ -128,12 +128,13 @@ export async function deleteStep(id: string): Promise<void> {
 }
 
 export async function reorderSteps(
+  moduleId: string,
   items: { id: string; order: number }[],
 ): Promise<void> {
   const res = await fetch(`${API}/api/step/reorder`, {
     method: "PATCH",
     headers: authHeaders(),
-    body: JSON.stringify({ items }),
+    body: JSON.stringify({ moduleId, items }),
   });
   if (!res.ok) throw new Error("Erreur lors du réordonnancement");
 }

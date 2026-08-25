@@ -17,6 +17,7 @@ import { ApiBearerAuth, ApiQuery } from "@nestjs/swagger";
 import { JwtAuthGuard } from "../auth/jwt-auth.guard";
 import { RolesGuard } from "../auth/guards/roles.guard";
 import { Roles } from "../auth/decorators/roles.decorator";
+import { CurrentUser, AuthUser } from "../auth/decorators/current-user.decorator";
 
 @ApiBearerAuth()
 @Controller("modules")
@@ -56,8 +57,12 @@ export class ModulesController {
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles("ADMIN")
   @Patch(":id")
-  update(@Param("id") id: string, @Body() updateModuleDto: UpdateModuleDto) {
-    return this.modulesService.update(id, updateModuleDto);
+  update(
+    @Param("id") id: string,
+    @Body() updateModuleDto: UpdateModuleDto,
+    @CurrentUser() user: AuthUser,
+  ) {
+    return this.modulesService.update(id, updateModuleDto, user.userId);
   }
 
   @UseGuards(JwtAuthGuard, RolesGuard)

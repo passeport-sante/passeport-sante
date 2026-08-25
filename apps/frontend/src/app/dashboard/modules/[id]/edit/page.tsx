@@ -3,9 +3,10 @@
 import { useEffect, useState, use as usePromise } from "react";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
-import { ArrowLeft, Layers, Eye, EyeOff, Info } from "lucide-react";
+import { ArrowLeft, Layers, Eye, EyeOff, Info, History } from "lucide-react";
 import { ModuleForm } from "../../_components/module-form";
 import { StepsTab } from "../../_components/steps-tab";
+import { VersionHistoryTab } from "../../_components/version-history-tab";
 import {
   fetchAdminModule,
   updateModule,
@@ -19,13 +20,15 @@ interface PageProps {
   params: Promise<{ id: string }>;
 }
 
-type Tab = "info" | "steps";
+type Tab = "info" | "steps" | "history";
 
 export default function EditModulePage({ params }: PageProps) {
   const { id } = usePromise(params);
   const router = useRouter();
   const searchParams = useSearchParams();
-  const initialTab: Tab = searchParams.get("tab") === "steps" ? "steps" : "info";
+  const initialTabParam = searchParams.get("tab");
+  const initialTab: Tab =
+    initialTabParam === "steps" ? "steps" : initialTabParam === "history" ? "history" : "info";
 
   const [tab, setTab] = useState<Tab>(initialTab);
   const [module, setModule] = useState<AdminModuleDetail | null>(null);
@@ -57,8 +60,8 @@ export default function EditModulePage({ params }: PageProps) {
   function switchTab(next: Tab) {
     setTab(next);
     const url = new URL(window.location.href);
-    if (next === "steps") url.searchParams.set("tab", "steps");
-    else url.searchParams.delete("tab");
+    if (next === "info") url.searchParams.delete("tab");
+    else url.searchParams.set("tab", next);
     window.history.replaceState({}, "", url.toString());
   }
 
@@ -168,6 +171,12 @@ export default function EditModulePage({ params }: PageProps) {
           label="Étapes"
           badge={stepCount}
         />
+        <TabButton
+          active={tab === "history"}
+          onClick={() => switchTab("history")}
+          icon={<History size={13} />}
+          label="Historique"
+        />
       </div>
 
       {/* Contenu */}
@@ -179,13 +188,15 @@ export default function EditModulePage({ params }: PageProps) {
           onSubmit={handleSubmit}
           onCancel={() => router.push("/dashboard/modules")}
         />
-      ) : (
+      ) : tab === "steps" ? (
         <StepsTab
           moduleId={id}
           colorPrimary={module.colorPrimary ?? "#1B6B8A"}
           steps={module.steps}
           onChange={refresh}
         />
+      ) : (
+        <VersionHistoryTab moduleId={id} onRestored={refresh} />
       )}
     </div>
   );

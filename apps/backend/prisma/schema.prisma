@@ -83,6 +83,7 @@ model User {
 
   moduleSessions     ModuleSession[]
   diagnosticSessions DiagnosticSession[]
+  moduleVersions     ModuleVersion[]
 }
 
 // ─── Catégories ───────────────────────────────────────────────────────────────
@@ -148,6 +149,23 @@ model Module {
   kanbanResponses  KanbanResponse[]
   quizResponses    QuizResponse[]
   puzzleResponses  PuzzleResponse[]
+  moduleVersions   ModuleVersion[]
+}
+
+// Snapshot complet (module + steps + gameData) pris automatiquement avant
+// chaque mutation de contenu, pour permettre à un admin de revenir en arrière.
+model ModuleVersion {
+  id        String   @id @default(cuid())
+  createdAt DateTime @default(now())
+  snapshot  Json
+
+  moduleId String
+  module   Module @relation(fields: [moduleId], references: [id], onDelete: Cascade)
+
+  createdByUserId String?
+  createdByUser   User?   @relation(fields: [createdByUserId], references: [id], onDelete: SetNull)
+
+  @@index([moduleId, createdAt])
 }
 
 model ModuleSession {

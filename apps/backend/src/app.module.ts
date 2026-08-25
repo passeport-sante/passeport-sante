@@ -6,6 +6,7 @@ import { ModulesModule } from "./modules/modules.module";
 import { MascotteModule } from "./mascotte/mascotte.module";
 import { CategoryModule } from "./category/category.module";
 import { StepModule } from "./step/step.module";
+import { ModuleVersionsModule } from "./module-versions/module-versions.module";
 import { DiagnosticModule } from "./diagnostic/diagnostic.module";
 import { ResponseModule } from "./response/response.module";
 import { GuestStudendModule } from "./guest-studend/guest-studend.module";
@@ -26,6 +27,7 @@ import { AuthModule } from "./auth/auth.module";
     MascotteModule,
     CategoryModule,
     StepModule,
+    ModuleVersionsModule,
     DiagnosticModule,
     ResponseModule,
     GuestStudendModule,

@@ -5,6 +5,7 @@ import { UpdateStepDto } from "./dto/update-step.dto";
 import { GameDataInputDto } from "./dto/game-data.dto";
 import { ReorderStepsDto } from "./dto/reorder-steps.dto";
 import { PrismaService } from "@/prisma/prisma.service";
+import { ModuleVersionsService } from "../module-versions/module-versions.service";
 
 function jsonOrDbNull(
   value: unknown,
@@ -23,9 +24,13 @@ function gameDataCreatePayload(items: GameDataInputDto[]) {
 
 @Injectable()
 export class StepService {
-  constructor(private prisma: PrismaService) {}
+  constructor(
+    private prisma: PrismaService,
+    private moduleVersions: ModuleVersionsService,
+  ) {}
 
-  async create(dto: CreateStepDto) {
+  async create(dto: CreateStepDto, userId?: string) {
+    await this.moduleVersions.snapshotModule(dto.moduleId, userId);
     const { gameData, content, ...rest } = dto;
     return this.prisma.step.create({
       data: {
@@ -63,11 +68,13 @@ export class StepService {
     });
   }
 
-  async update(id: string, dto: UpdateStepDto) {
+  async update(id: string, dto: UpdateStepDto, userId?: string) {
     const { gameData, content, ...rest } = dto;
     return this.prisma.$transaction(async (tx) => {
       const existing = await tx.step.findUnique({ where: { id } });
       if (!existing) throw new NotFoundException("Étape introuvable");
+
+      await this.moduleVersions.snapshotModule(existing.moduleId, userId, tx);
 
       // Si gameData est fourni, on remplace tout
       if (gameData) {
@@ -95,19 +102,27 @@ export class StepService {
     });
   }
 
-  async reorder(dto: ReorderStepsDto) {
-    return this.prisma.$transaction(
-      dto.items.map((item) =>
-        this.prisma.step.update({
-          where: { id: item.id },
-          data: { order: item.order },
-        }),
-      ),
-    );
+  async reorder(dto: ReorderStepsDto, userId?: string) {
+    return this.prisma.$transaction(async (tx) => {
+      await this.moduleVersions.snapshotModule(dto.moduleId, userId, tx);
+      return Promise.all(
+        dto.items.map((item) =>
+          tx.step.update({
+            where: { id: item.id },
+            data: { order: item.order },
+          }),
+        ),
+      );
+    });
   }
 
-  async remove(id: string) {
+  async remove(id: string, userId?: string) {
     return this.prisma.$transaction(async (tx) => {
+      const existing = await tx.step.findUnique({ where: { id }, select: { moduleId: true } });
+      if (!existing) throw new NotFoundException("Étape introuvable");
+
+      await this.moduleVersions.snapshotModule(existing.moduleId, userId, tx);
+
       await tx.gameData.deleteMany({ where: { stepId: id } });
       return tx.step.delete({ where: { id } });
     });

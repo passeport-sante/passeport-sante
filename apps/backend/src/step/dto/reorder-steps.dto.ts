@@ -14,6 +14,10 @@ export class ReorderItemDto {
 }
 
 export class ReorderStepsDto {
+  @ApiProperty({ description: "Module auquel appartiennent les étapes réordonnées" })
+  @IsString()
+  moduleId!: string;
+
   @ApiProperty({ type: [ReorderItemDto] })
   @IsArray()
   @ArrayMinSize(1)

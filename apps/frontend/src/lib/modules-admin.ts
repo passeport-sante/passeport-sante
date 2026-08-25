@@ -145,6 +145,43 @@ export async function deleteModule(id: string): Promise<void> {
   }
 }
 
+// ── Historique de versions ───────────────────────────────────────────────────
+
+export type ModuleVersionListItem = {
+  id: string;
+  createdAt: string;
+  createdByUser: { id: string; name: string; email: string } | null;
+};
+
+export async function fetchModuleVersions(
+  moduleId: string,
+  cursor?: string,
+): Promise<{ items: ModuleVersionListItem[]; nextCursor: string | null }> {
+  const url = new URL(`${API}/api/modules/${moduleId}/versions`);
+  if (cursor) url.searchParams.set("cursor", cursor);
+  const res = await fetch(url.toString(), {
+    headers: authHeaders(),
+    cache: "no-store",
+  });
+  if (!res.ok) throw new Error("Impossible de charger l'historique des versions");
+  return res.json();
+}
+
+export async function restoreModuleVersion(
+  moduleId: string,
+  versionId: string,
+): Promise<AdminModuleDetail> {
+  const res = await fetch(`${API}/api/modules/${moduleId}/versions/${versionId}/restore`, {
+    method: "POST",
+    headers: authHeaders(),
+  });
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({}));
+    throw new Error(err.message ?? "Erreur lors de la restauration");
+  }
+  return res.json();
+}
+
 // Vérifie si un slug est déjà utilisé par un autre module (pour validation live à la création/édition)
 export async function isSlugTaken(slug: string): Promise<boolean> {
   const res = await fetch(`${API}/api/modules/slug/${encodeURIComponent(slug)}`, {

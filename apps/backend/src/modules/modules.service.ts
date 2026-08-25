@@ -4,6 +4,7 @@ import { CreateModuleDto } from './dto/create-module.dto';
 import { UpdateModuleDto } from './dto/update-module.dto';
 import { ImportModuleDto } from './dto/import-module.dto';
 import { PrismaService } from '@/prisma/prisma.service';
+import { ModuleVersionsService } from '../module-versions/module-versions.service';
 
 // Helper : Json? Prisma → InputJsonValue | DbNull (skip undefined)
 function jsonOrDbNull(value: Prisma.JsonValue | null | undefined): Prisma.InputJsonValue | typeof Prisma.DbNull {
@@ -38,7 +39,10 @@ const MODULE_PUBLIC_FIELDS = {
 
 @Injectable()
 export class ModulesService {
-  constructor(private prisma: PrismaService) {}
+  constructor(
+    private prisma: PrismaService,
+    private moduleVersions: ModuleVersionsService,
+  ) {}
 
   async create(dto: CreateModuleDto) {
     try {
@@ -109,7 +113,8 @@ export class ModulesService {
     });
   }
 
-  update(id: string, dto: UpdateModuleDto) {
+  async update(id: string, dto: UpdateModuleDto, userId?: string) {
+    await this.moduleVersions.snapshotModule(id, userId);
     return this.prisma.module.update({ where: { id }, data: dto });
   }
 
