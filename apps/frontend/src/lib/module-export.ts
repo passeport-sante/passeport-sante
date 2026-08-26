@@ -140,11 +140,13 @@ function renderGame(gameType: GameType, data: ExportGameData): string {
     }
     case "SWIPE": {
       const cards = (q.cards as Json[]) ?? [];
+      const trueLabel = (q.trueLabel as string | undefined)?.trim() || "Vrai";
+      const falseLabel = (q.falseLabel as string | undefined)?.trim() || "Faux";
       const rows = cards
         .map((c) => {
           const ok = String(c.answer) === "vrai";
           const exp = c.explanation ? ` — <span class="muted">${esc(c.explanation)}</span>` : "";
-          return `<tr><td>${esc(c.text)}</td><td class="correct">${ok ? "Vrai" : "Faux"}</td></tr><tr><td colspan="2" class="muted">${exp ? esc(String(c.explanation)) : ""}</td></tr>`;
+          return `<tr><td>${esc(c.text)}</td><td class="correct">${ok ? esc(trueLabel) : esc(falseLabel)}</td></tr><tr><td colspan="2" class="muted">${exp ? esc(String(c.explanation)) : ""}</td></tr>`;
         })
         .join("");
       return `<table><thead><tr><th>Affirmation</th><th>Réponse</th></tr></thead><tbody>${rows}</tbody></table>`;

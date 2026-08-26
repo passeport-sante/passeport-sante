@@ -14,7 +14,7 @@ interface StepData {
   id: string;
   order: number;
   content: { title: string; instructions: string };
-  gameData: { questionData: { cards: Card[] } }[];
+  gameData: { questionData: { cards: Card[]; trueLabel?: string; falseLabel?: string } }[];
   module: {
     id: string;
     slug: string;
@@ -32,6 +32,8 @@ export function SwipeGame({ step }: { step: StepData }) {
 
   const cards = step.gameData?.[0]?.questionData?.cards ?? [];
   const total = cards.length;
+  const trueLabel = step.gameData?.[0]?.questionData?.trueLabel?.trim() || "Vrai";
+  const falseLabel = step.gameData?.[0]?.questionData?.falseLabel?.trim() || "Faux";
 
   const [index, setIndex] = useState(0);
   const [answered, setAnswered] = useState<null | { choice: Answer; correct: boolean }>(null);
@@ -100,7 +102,7 @@ export function SwipeGame({ step }: { step: StepData }) {
         <span className="hidden sm:inline font-bold text-sm tracking-widest uppercase">{step.module.title}</span>
       </Link>
       <div className="text-center min-w-0">
-        <h1 className="font-black text-base md:text-xl text-gray-900 truncate">{step.content?.title ?? "Vrai ou Faux ?"}</h1>
+        <h1 className="font-black text-base md:text-xl text-gray-900 truncate">{step.content?.title || `${trueLabel} ou ${falseLabel} ?`}</h1>
         <p className="hidden sm:block text-sm text-gray-400 mt-0.5">{step.content?.instructions}</p>
       </div>
       <div className="text-gray-400 font-bold text-sm shrink-0">
@@ -151,10 +153,10 @@ export function SwipeGame({ step }: { step: StepData }) {
         <div className="relative w-full max-w-md h-64 select-none" style={{ touchAction: "none" }}>
           {/* Indices gauche/droite */}
           <div className="absolute inset-y-0 left-0 flex items-center pointer-events-none">
-            <span className="text-white/40 text-xs font-black uppercase -rotate-90 tracking-widest">← Faux</span>
+            <span className="text-white/40 text-xs font-black uppercase -rotate-90 tracking-widest">← {falseLabel}</span>
           </div>
           <div className="absolute inset-y-0 right-0 flex items-center pointer-events-none">
-            <span className="text-white/40 text-xs font-black uppercase rotate-90 tracking-widest">Vrai →</span>
+            <span className="text-white/40 text-xs font-black uppercase rotate-90 tracking-widest">{trueLabel} →</span>
           </div>
 
           <div
@@ -169,8 +171,8 @@ export function SwipeGame({ step }: { step: StepData }) {
             }}
           >
             {/* Feedback de balayage */}
-            {!answered && dragX > 40 && <span className="absolute top-3 right-4 text-emerald-500 font-black">VRAI</span>}
-            {!answered && dragX < -40 && <span className="absolute top-3 left-4 text-red-500 font-black">FAUX</span>}
+            {!answered && dragX > 40 && <span className="absolute top-3 right-4 text-emerald-500 font-black">{trueLabel.toUpperCase()}</span>}
+            {!answered && dragX < -40 && <span className="absolute top-3 left-4 text-red-500 font-black">{falseLabel.toUpperCase()}</span>}
             <p className="text-gray-800 text-lg md:text-xl font-bold leading-relaxed">{card?.text}</p>
           </div>
         </div>
@@ -179,7 +181,7 @@ export function SwipeGame({ step }: { step: StepData }) {
         {answered ? (
           <div className="w-full max-w-md bg-white/95 rounded-2xl px-6 py-4 shadow-lg text-center space-y-1">
             <p className="font-black text-sm" style={{ color: answered.correct ? "#16A34A" : "#DC2626" }}>
-              {answered.correct ? "Bonne réponse ✓" : `Raté — c'était « ${card?.answer === "vrai" ? "Vrai" : "Faux"} »`}
+              {answered.correct ? "Bonne réponse ✓" : `Raté — c'était « ${card?.answer === "vrai" ? trueLabel : falseLabel} »`}
             </p>
             {card?.explanation && <p className="text-gray-600 text-sm leading-relaxed">{card.explanation}</p>}
             <button
@@ -195,14 +197,14 @@ export function SwipeGame({ step }: { step: StepData }) {
             <button
               onClick={() => answer("faux")}
               className="w-16 h-16 rounded-full bg-white/15 border-2 border-white/40 text-white flex items-center justify-center hover:bg-white/25 transition-colors"
-              aria-label="Faux"
+              aria-label={falseLabel}
             >
               <X size={28} strokeWidth={3} />
             </button>
             <button
               onClick={() => answer("vrai")}
               className="w-16 h-16 rounded-full bg-white/15 border-2 border-white/40 text-white flex items-center justify-center hover:bg-white/25 transition-colors"
-              aria-label="Vrai"
+              aria-label={trueLabel}
             >
               <Check size={28} strokeWidth={3} />
             </button>

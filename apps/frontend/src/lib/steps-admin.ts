@@ -531,6 +531,14 @@ export type SwipeCard = {
   explanation?: string;
 };
 
+// Libellés affichés pour les deux réponses du swipe, partagés par toutes les
+// cartes d'une même étape (ex. "Ça peut me faire du bien" / "Je dois y faire
+// attention" plutôt que Vrai/Faux). Absents ou vides ⇒ on retombe sur Vrai/Faux.
+export type SwipeLabels = {
+  trueLabel?: string;
+  falseLabel?: string;
+};
+
 // ── Curseur d'accord : types partagés éditeur ⇆ jeu ──────────────────────────
 
 // "opinion" : pas de bonne réponse. "estimation" : une zone acceptée (cible ±

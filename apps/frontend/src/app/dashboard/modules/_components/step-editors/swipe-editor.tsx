@@ -2,8 +2,16 @@
 
 import { useMemo, useState } from "react";
 import { Trash2, Plus, Check, X } from "lucide-react";
-import { EditorShell, SectionHeader, INPUT_CLASS, ICON_BUTTON_CLASS } from "./editor-shell";
+import { EditorShell, SectionHeader, Field, INPUT_CLASS, ICON_BUTTON_CLASS } from "./editor-shell";
 import { shortId, type AdminStep, type AdminGameData, type SwipeCard, type SwipeAnswer } from "@/lib/steps-admin";
+
+function labelsFromStep(step: AdminStep): { trueLabel: string; falseLabel: string } {
+  const qd = step.gameData?.[0]?.questionData as { trueLabel?: string; falseLabel?: string } | undefined;
+  return {
+    trueLabel: qd?.trueLabel?.trim() || "Vrai",
+    falseLabel: qd?.falseLabel?.trim() || "Faux",
+  };
+}
 
 interface Props {
   step: AdminStep;
@@ -28,14 +36,18 @@ export function SwipeEditor({ step, color, onSave }: Props) {
   const [title, setTitle] = useState(step.content?.title ?? "");
   const [instructions, setInstructions] = useState(step.content?.instructions ?? "");
   const [cards, setCards] = useState<SwipeCard[]>(() => cardsFromStep(step));
+  const initialLabels = useMemo(() => labelsFromStep(step), [step]);
+  const [trueLabel, setTrueLabel] = useState(initialLabels.trueLabel);
+  const [falseLabel, setFalseLabel] = useState(initialLabels.falseLabel);
 
   const validationError = useMemo(() => {
     if (cards.length === 0) return "Ajoutez au moins une carte";
     for (const [i, c] of cards.entries()) {
       if (!c.text.trim()) return `Carte ${i + 1} : l'affirmation est vide`;
     }
+    if (!trueLabel.trim() || !falseLabel.trim()) return "Les deux libellés de réponse doivent être renseignés";
     return null;
-  }, [cards]);
+  }, [cards, trueLabel, falseLabel]);
 
   async function handleSave() {
     await onSave({
@@ -50,6 +62,8 @@ export function SwipeEditor({ step, color, onSave }: Props) {
               answer: c.answer,
               explanation: c.explanation?.trim() || undefined,
             })),
+            trueLabel: trueLabel.trim(),
+            falseLabel: falseLabel.trim(),
           },
           correctAnswer: {},
         },
@@ -79,9 +93,30 @@ export function SwipeEditor({ step, color, onSave }: Props) {
       isDirty={true}
       validationError={validationError}
     >
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+        <Field label="Libellé réponse « fausse » (balayage à gauche)">
+          <input
+            type="text"
+            value={falseLabel}
+            onChange={(e) => setFalseLabel(e.target.value)}
+            placeholder="Faux"
+            className={INPUT_CLASS}
+          />
+        </Field>
+        <Field label="Libellé réponse « vraie » (balayage à droite)">
+          <input
+            type="text"
+            value={trueLabel}
+            onChange={(e) => setTrueLabel(e.target.value)}
+            placeholder="Vrai"
+            className={INPUT_CLASS}
+          />
+        </Field>
+      </div>
+
       <SectionHeader title="Cartes" count={cards.length} onAdd={addCard} addLabel="Carte" color={color} />
       <p className="text-[11px] text-gray-400 -mt-2">
-        Une affirmation par carte. L&apos;élève balaye à droite pour <b>Vrai</b>, à gauche pour <b>Faux</b>.
+        Une affirmation par carte. L&apos;élève balaye à droite pour <b>{trueLabel || "Vrai"}</b>, à gauche pour <b>{falseLabel || "Faux"}</b>.
       </p>
 
       <div className="space-y-3">
@@ -120,7 +155,7 @@ export function SwipeEditor({ step, color, onSave }: Props) {
                     style={active ? { background: bg } : undefined}
                   >
                     {a === "vrai" ? <Check size={13} /> : <X size={13} />}
-                    {a === "vrai" ? "Vrai (→)" : "Faux (←)"}
+                    {a === "vrai" ? `${trueLabel || "Vrai"} (→)` : `${falseLabel || "Faux"} (←)`}
                   </button>
                 );
               })}
