@@ -567,6 +567,8 @@ export type CurseurItem = {
   unit?: string;
   // Precis uniquement : pas de la graduation en unité réelle (ex. 1 = années entières).
   step?: number;
+  // Affichée à l'élève après validation, quel que soit le mode.
+  explanation?: string;
 };
 
 // Convertit une position 0–100 en valeur réelle affichable (ex. "62 min").

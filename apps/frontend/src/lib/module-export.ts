@@ -156,8 +156,9 @@ function renderGame(gameType: GameType, data: ExportGameData): string {
       const rows = items
         .map((it) => {
           const unit = it.unit ? ` ${esc(String(it.unit))}` : "";
+          const exp = it.explanation ? `<tr><td colspan="3" class="muted">${esc(String(it.explanation))}</td></tr>` : "";
           if (String(it.mode) === "precis") {
-            return `<tr><td>${esc(it.text)}</td><td>Précis</td><td class="correct">${esc(it.target ?? 0)}${unit} (exact, pas de marge)</td></tr>`;
+            return `<tr><td>${esc(it.text)}</td><td>Précis</td><td class="correct">${esc(it.target ?? 0)}${unit} (exact, pas de marge)</td></tr>${exp}`;
           }
           if (String(it.mode) === "estimation") {
             const t = Number(it.target ?? 50);
@@ -165,9 +166,9 @@ function renderGame(gameType: GameType, data: ExportGameData): string {
             const vmin = Number(it.valueMin ?? 0);
             const vmax = Number(it.valueMax ?? 100);
             const toReal = (pos: number) => Math.round(vmin + (pos / 100) * (vmax - vmin));
-            return `<tr><td>${esc(it.text)}</td><td>Estimation</td><td class="correct">zone ${toReal(Math.max(0, t - tol))}${unit} – ${toReal(Math.min(100, t + tol))}${unit}</td></tr>`;
+            return `<tr><td>${esc(it.text)}</td><td>Estimation</td><td class="correct">zone ${toReal(Math.max(0, t - tol))}${unit} – ${toReal(Math.min(100, t + tol))}${unit}</td></tr>${exp}`;
           }
-          return `<tr><td>${esc(it.text)}</td><td>Opinion</td><td class="muted">${esc(it.leftLabel)} ↔ ${esc(it.rightLabel)}</td></tr>`;
+          return `<tr><td>${esc(it.text)}</td><td>Opinion</td><td class="muted">${esc(it.leftLabel)} ↔ ${esc(it.rightLabel)}</td></tr>${exp}`;
         })
         .join("");
       return `<table><thead><tr><th>Affirmation</th><th>Type</th><th>Réponse / échelle</th></tr></thead><tbody>${rows}</tbody></table>`;

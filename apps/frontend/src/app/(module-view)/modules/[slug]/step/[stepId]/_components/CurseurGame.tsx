@@ -21,6 +21,7 @@ interface Item {
   valueMax?: number;
   unit?: string;
   step?: number;
+  explanation?: string;
 }
 
 // Ticks de la règle graduée (mode "precis") — positions en % le long de la piste.
@@ -280,6 +281,7 @@ export function CurseurGame({ step }: { step: StepData }) {
             ) : (
               <p className="font-black text-sm" style={{ color: primaryColor }}>Merci, ton avis compte 💬</p>
             )}
+            {item?.explanation && <p className="text-gray-600 text-sm leading-relaxed">{item.explanation}</p>}
             <button onClick={next} className="mt-2 px-8 py-2.5 rounded-xl text-white font-black text-sm" style={{ background: primaryColor }}>
               {isLast ? "Terminer →" : "Suivant →"}
             </button>

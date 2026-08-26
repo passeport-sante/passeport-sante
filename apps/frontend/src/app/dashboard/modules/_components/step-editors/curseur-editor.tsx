@@ -32,6 +32,7 @@ function itemsFromStep(step: AdminStep): CurseurItem[] {
       valueMax: typeof it.valueMax === "number" ? it.valueMax : 100,
       unit: it.unit ?? "",
       step: typeof it.step === "number" ? it.step : 1,
+      explanation: it.explanation,
     }));
   }
   return [{ id: shortId(), text: "", leftLabel: "Pas du tout", rightLabel: "Tout à fait", mode: "opinion", target: 50, tolerance: 15, valueMin: 0, valueMax: 100, unit: "", step: 1 }];
@@ -90,6 +91,7 @@ export function CurseurEditor({ step, color, onSave }: Props) {
                       step: it.step ?? 1,
                     }
                   : {}),
+              explanation: it.explanation?.trim() || undefined,
             })),
           },
           correctAnswer: {},
@@ -177,6 +179,14 @@ export function CurseurEditor({ step, color, onSave }: Props) {
                 <input type="text" value={it.rightLabel} onChange={(e) => update(it.id, { rightLabel: e.target.value })} placeholder="Tout à fait" className={INPUT_CLASS} />
               </Field>
             </div>
+
+            <input
+              type="text"
+              value={it.explanation ?? ""}
+              onChange={(e) => update(it.id, { explanation: e.target.value })}
+              placeholder="Explication affichée après la réponse (facultatif)"
+              className={INPUT_CLASS + " text-xs"}
+            />
 
             {it.mode === "estimation" && (
               <div className="space-y-3 pt-1 border-t border-gray-200">
