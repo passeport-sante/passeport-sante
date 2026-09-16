@@ -1,8 +1,9 @@
 "use client";
 
+import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
-import { ArrowLeft, ChevronRight } from "lucide-react";
+import { ArrowLeft, ChevronRight, Maximize2, X } from "lucide-react";
 import { toEmbedUrl } from "@/lib/steps-admin";
 import { VideoEmbed } from "@/components/modules/VideoEmbed";
 import { goToNextStep, type FlowStep } from "@/lib/step-flow";
@@ -37,6 +38,20 @@ export function ContentPanel({ step }: { step: StepData }) {
   const bottomColor = step.module.colorSecondary ?? "#0c2a3a";
   const embed = contentType === "VIDEO" ? toEmbedUrl(content.videoUrl ?? "") : null;
 
+  // Les affiches contiennent du texte : elles ont besoin de toute la largeur
+  // disponible, et d'un plein écran pour rester lisibles sur petit écran.
+  const isImage = contentType === "IMAGE" && !!content.imageUrl;
+  const [zoomed, setZoomed] = useState(false);
+
+  useEffect(() => {
+    if (!zoomed) return;
+    function onKey(e: KeyboardEvent) {
+      if (e.key === "Escape") setZoomed(false);
+    }
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [zoomed]);
+
   function handleContinue() {
     goToNextStep(router, step.module.slug, step.module.steps, step.order);
   }
@@ -63,9 +78,15 @@ export function ContentPanel({ step }: { step: StepData }) {
       </header>
 
       {/* Contenu */}
-      <main className="flex-1 flex flex-col items-center justify-center gap-6 px-4 md:px-8 py-8 overflow-y-auto">
+      <main
+        className={`flex-1 flex flex-col items-center justify-center gap-6 px-4 md:px-8 overflow-y-auto ${
+          isImage ? "py-5" : "py-8"
+        }`}
+      >
         <div
-          className="w-full max-w-3xl rounded-3xl px-8 py-8 space-y-5"
+          className={`w-full rounded-3xl space-y-4 ${
+            isImage ? "max-w-5xl px-4 py-5 md:px-6" : "max-w-3xl px-8 py-8 space-y-5"
+          }`}
           style={{ background: "rgba(255,255,255,0.96)", boxShadow: "0 24px 80px rgba(0,0,0,0.3)" }}
         >
           {content.title && (
@@ -80,14 +101,28 @@ export function ContentPanel({ step }: { step: StepData }) {
             </p>
           )}
 
-          {contentType === "IMAGE" && content.imageUrl && (
+          {isImage && (
             <figure className="space-y-2">
-              {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img
-                src={content.imageUrl}
-                alt={content.caption ?? content.title ?? "Illustration"}
-                className="w-full max-h-[55vh] object-contain rounded-2xl"
-              />
+              <button
+                type="button"
+                onClick={() => setZoomed(true)}
+                aria-label="Afficher l'image en plein écran"
+                className="group relative block w-full rounded-2xl cursor-zoom-in focus:outline-none focus-visible:ring-4 focus-visible:ring-black/20"
+              >
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img
+                  src={content.imageUrl}
+                  alt={content.caption ?? content.title ?? "Illustration"}
+                  className="w-full max-h-[78vh] object-contain rounded-2xl"
+                />
+                <span
+                  className="absolute bottom-3 right-3 flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-white text-xs font-bold opacity-90 group-hover:opacity-100 transition-opacity"
+                  style={{ background: "rgba(0,0,0,0.55)" }}
+                >
+                  <Maximize2 size={13} strokeWidth={2.5} />
+                  Agrandir
+                </span>
+              </button>
               {content.caption && (
                 <figcaption className="text-center text-sm text-gray-500">{content.caption}</figcaption>
               )}
@@ -120,6 +155,34 @@ export function ContentPanel({ step }: { step: StepData }) {
           <ChevronRight size={20} strokeWidth={3} />
         </button>
       </main>
+
+      {zoomed && (
+        <div
+          role="dialog"
+          aria-modal="true"
+          aria-label={content.caption ?? content.title ?? "Image en plein écran"}
+          onClick={() => setZoomed(false)}
+          className="fixed inset-0 z-50 flex items-center justify-center p-3 md:p-6 cursor-zoom-out"
+          style={{ background: "rgba(0,0,0,0.92)" }}
+        >
+          <button
+            type="button"
+            onClick={() => setZoomed(false)}
+            aria-label="Fermer le plein écran"
+            className="absolute top-4 right-4 w-11 h-11 rounded-full text-white flex items-center justify-center transition-colors hover:bg-white/25 focus:outline-none focus-visible:ring-4 focus-visible:ring-white/40"
+            style={{ background: "rgba(255,255,255,0.15)" }}
+          >
+            <X size={22} strokeWidth={2.5} />
+          </button>
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img
+            src={content.imageUrl}
+            alt={content.caption ?? content.title ?? "Illustration"}
+            onClick={(e) => e.stopPropagation()}
+            className="max-w-full max-h-full object-contain rounded-xl cursor-default"
+          />
+        </div>
+      )}
     </div>
   );
 }

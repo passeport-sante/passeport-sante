@@ -40,9 +40,11 @@ export default function Contact() {
 
   return (
     <div className="relative overflow-hidden">
-      {/* Cercles déco */}
+      {/* Cercles déco. Le vert est remonté : en position basse par défaut il se
+          fait trancher net par l'overflow-hidden à la jointure avec le footer,
+          au lieu de déborder hors de l'écran comme prévu. */}
       <div className="circle-hero-mauve" />
-      <div className="circle-about-green" />
+      <div className="circle-about-green !bottom-16" />
 
       {/* Hero */}
       <section className="relative z-10 brand-container pt-10 md:pt-16 pb-8 md:pb-12">
@@ -149,12 +151,15 @@ export default function Contact() {
 
           {/* ── Côté droit : mascotte + infos ── */}
           <div className="flex flex-col items-center gap-8 pt-4">
+            {/* Cette mascotte est cadrée serrée (734x768, le personnage remplit
+                l'image) : elle a besoin d'une largeur bien plus petite que les
+                mascottes au format large pour garder le même poids visuel. */}
             <Image
-              src="/assets/mascotte/mascotte5.png"
-              alt="Mascotte contact"
-              width={550}
-              height={550}
-              className="drop-shadow-xl w-56 sm:w-80 lg:w-full h-auto max-w-[550px]"
+              src="/assets/mascotte/mascotte-bouclier.png"
+              alt="Mascotte Passeport Santé"
+              width={734}
+              height={768}
+              className="drop-shadow-xl w-40 sm:w-52 lg:w-full h-auto max-w-[300px]"
             />
 
             <div className="w-full space-y-4">
