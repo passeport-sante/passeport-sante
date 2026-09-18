@@ -10,6 +10,7 @@ import { DialogueGame } from "./_components/DialogueGame";
 import { SwipeGame } from "./_components/SwipeGame";
 import { CurseurGame } from "./_components/CurseurGame";
 import { CorpsGame } from "./_components/CorpsGame";
+import { FriseGame } from "./_components/FriseGame";
 import { ContentPanel } from "./_components/ContentPanel";
 import { StepGate } from "./_components/StepGate";
 
@@ -61,6 +62,8 @@ export default async function StepPage({
       <CurseurGame step={step} />
     ) : step.gameType === "CORPS" ? (
       <CorpsGame step={step} />
+    ) : step.gameType === "FRISE" ? (
+      <FriseGame step={step} />
     ) : (
       <div className="h-screen flex items-center justify-center text-gray-500 text-xl font-bold">
         Jeu {step.gameType} — à venir

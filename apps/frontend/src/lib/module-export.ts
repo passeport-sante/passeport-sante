@@ -188,6 +188,18 @@ function renderGame(gameType: GameType, data: ExportGameData): string {
         .join("");
       return `<table><thead><tr><th>Bienfait</th><th>Zone(s) du corps</th></tr></thead><tbody>${rows}</tbody></table>`;
     }
+    case "FRISE": {
+      const cards = [...((q.cards as Json[]) ?? [])].sort((a, b) => Number(a.value) - Number(b.value));
+      const axis = q.axisLabel ? `${esc(q.axisLabel)} — ` : "";
+      const rows = cards
+        .map((c) => {
+          const exp = c.explanation ? `<tr><td colspan="2" class="muted">${esc(String(c.explanation))}</td></tr>` : "";
+          const link = c.link ? `<tr><td colspan="2" class="muted">🔗 ${esc(String(c.link))}</td></tr>` : "";
+          return `<tr><td>${esc(c.text)}</td><td class="correct">${esc(c.value)}</td></tr>${exp}${link}`;
+        })
+        .join("");
+      return `<p class="muted">${axis}de ${esc(q.min)} à ${esc(q.max)}, par pas de ${esc(q.step)}</p><table><thead><tr><th>Carte</th><th>Position</th></tr></thead><tbody>${rows}</tbody></table>`;
+    }
     case "DIALOGUE": {
       const scenes = (q.scenes as Json[]) ?? [];
       const endings = (q.endings as Json[]) ?? [];

@@ -13,7 +13,8 @@ export type GameType =
   | "DIALOGUE"
   | "SWIPE"
   | "CURSEUR"
-  | "CORPS";
+  | "CORPS"
+  | "FRISE";
 
 export type StepKind = "GAME" | "CONTENT";
 
@@ -228,6 +229,13 @@ export const GAME_TYPE_META: Record<
     bg: "#FFF1F2",
     description: "Associe chaque bienfait à la bonne zone du corps (tête, cœur, muscles...).",
   },
+  FRISE: {
+    label: "Frise chronologique",
+    short: "Frise",
+    color: "#65A30D",
+    bg: "#F7FEE7",
+    description: "Place chaque carte au bon endroit sur une frise graduée (années, durées, dates...).",
+  },
 };
 
 // ── Métadonnées d'affichage des sous-étapes de contenu ──────────────────────
@@ -285,6 +293,7 @@ export function defaultContentFor(gameType: GameType): { title: string; instruct
     SWIPE: { title: "Vrai ou Faux ?", instructions: "Balaye à droite pour Vrai, à gauche pour Faux" },
     CURSEUR: { title: "Place le curseur", instructions: "Déplace le curseur selon ton avis" },
     CORPS: { title: "Où se trouve le bienfait ?", instructions: "Clique un bienfait puis la zone du corps correspondante" },
+    FRISE: { title: "Place sur la frise", instructions: "Glisse chaque carte au bon endroit sur la frise" },
   };
   return map[gameType];
 }
@@ -455,7 +464,82 @@ export function defaultGameDataFor(gameType: GameType): AdminGameData[] {
           correctAnswer: {},
         },
       ];
+    case "FRISE":
+      return [
+        {
+          questionData: {
+            axisLabel: "Années d'études après le bac",
+            min: 0,
+            max: 10,
+            step: 1,
+            linkLabel: "Voir la fiche métier",
+            cards: [
+              { id: "c1", text: "Infirmier·ère", value: 3 },
+              { id: "c2", text: "Kinésithérapeute", value: 5 },
+              { id: "c3", text: "Médecin généraliste", value: 9 },
+            ],
+          },
+          correctAnswer: {},
+        },
+      ];
   }
+}
+
+// ── Frise chronologique : types et graduations partagés éditeur ⇆ jeu ────────
+
+export type FriseCard = {
+  id: string;
+  text: string;
+  // Position exacte attendue, forcément posée sur une graduation.
+  value: number;
+  explanation?: string;
+  imageUrl?: string;
+  // Lien « en savoir plus » (ex. fiche métier Onisep), ouvert depuis la
+  // pop-up de la carte une fois qu'elle est bien placée.
+  link?: string;
+};
+
+export type FriseData = {
+  axisLabel: string;
+  min: number;
+  max: number;
+  step: number;
+  // Texte du bouton de lien dans la pop-up : la frise sert aussi à autre chose
+  // que des métiers, donc pas de libellé figé.
+  linkLabel: string;
+  cards: FriseCard[];
+};
+
+export const FRISE_DEFAULT_LINK_LABEL = "En savoir plus";
+
+// Au-delà, la frise devient trop longue à parcourir pour un élève : on force
+// l'admin à choisir un pas plus large (ex. dates par dizaine plutôt qu'à l'année).
+export const FRISE_MAX_GRADUATIONS = 25;
+
+export function friseGraduations(min: number, max: number, step: number): number[] {
+  if (!(step > 0) || max <= min) return [];
+  const count = Math.floor((max - min) / step + 1e-9) + 1;
+  if (count > FRISE_MAX_GRADUATIONS) return [];
+  // Arrondi pour absorber le flottant sur des pas décimaux (ex. 0.5).
+  return Array.from({ length: count }, (_, i) => Math.round((min + i * step) * 1000) / 1000);
+}
+
+export function normalizeFriseData(raw: Partial<FriseData> | undefined): FriseData {
+  return {
+    axisLabel: raw?.axisLabel ?? "",
+    min: typeof raw?.min === "number" ? raw.min : 0,
+    max: typeof raw?.max === "number" ? raw.max : 10,
+    step: typeof raw?.step === "number" && raw.step > 0 ? raw.step : 1,
+    linkLabel: raw?.linkLabel?.trim() || FRISE_DEFAULT_LINK_LABEL,
+    cards: (raw?.cards ?? []).map((c, i) => ({
+      id: c.id ?? `c${i}`,
+      text: c.text ?? "",
+      value: typeof c.value === "number" ? c.value : 0,
+      explanation: c.explanation,
+      imageUrl: c.imageUrl?.trim() || undefined,
+      link: c.link?.trim() || undefined,
+    })),
+  };
 }
 
 // ── Corps humain : zones fixes partagées éditeur ⇆ jeu ───────────────────────

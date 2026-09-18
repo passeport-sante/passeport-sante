@@ -12,6 +12,7 @@ import { DialogueEditor } from "./dialogue-editor";
 import { SwipeEditor } from "./swipe-editor";
 import { CurseurEditor } from "./curseur-editor";
 import { CorpsEditor } from "./corps-editor";
+import { FriseEditor } from "./frise-editor";
 import { ContentEditor } from "./content-editor";
 
 interface Props {
@@ -47,6 +48,8 @@ export function StepEditor(props: Props) {
       return <CurseurEditor {...props} />;
     case "CORPS":
       return <CorpsEditor {...props} />;
+    case "FRISE":
+      return <FriseEditor {...props} />;
   }
 
   return <ContentEditor {...props} />;
