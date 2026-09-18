@@ -150,7 +150,7 @@ export function QuizGame({ step }: { step: StepData }) {
       <header className="shrink-0 flex items-center justify-between gap-3 px-4 md:px-8 py-4 md:py-5 bg-white">
         <Link
           href={`/modules/${step.module.slug}`}
-          className="flex items-center gap-3 text-gray-700 hover:opacity-70 transition-opacity"
+          className="flex items-center gap-3 text-gray-700 hover:opacity-70 transition-opacity flex-1 basis-0 min-w-0"
         >
           <div className="w-10 h-10 rounded-full border-2 border-gray-300 flex items-center justify-center">
             <ArrowLeft size={18} />
@@ -158,12 +158,12 @@ export function QuizGame({ step }: { step: StepData }) {
           <span className="font-bold text-sm tracking-widest uppercase">{step.module.title}</span>
         </Link>
 
-        <div className="text-center">
+        <div className="text-center min-w-0">
           <h1 className="font-black text-xl text-gray-900">{step.content?.title ?? "Quiz final"}</h1>
           <p className="text-sm text-gray-400 mt-0.5">{step.content?.instructions}</p>
         </div>
 
-        <div className="text-gray-400 font-bold text-sm">
+        <div className="flex-1 basis-0 text-right text-gray-400 font-bold text-sm whitespace-nowrap">
           Étape <span className="text-gray-900 text-xl font-black">{gameLevel}</span> / {totalGameLevels}
         </div>
       </header>
