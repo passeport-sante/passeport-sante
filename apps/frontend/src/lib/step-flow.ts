@@ -5,6 +5,8 @@
 // intercalées, non comptées). Le `order` est la position globale ; le « niveau »
 // d'un jeu est dérivé de son rang parmi les seuls jeux.
 
+import { completeStep, getGuestStudentId } from "@/lib/modules";
+
 export interface FlowStep {
   id: string;
   order: number;
@@ -39,7 +41,18 @@ export function goToNextStep(
   const { level: gameLevel, total: totalGameLevels } = gameProgress(sorted, currentOrder);
   const next = sorted.find((s) => s.order > currentOrder);
 
-  // Débloque le prochain niveau de jeu, sans jamais régresser
+  // Le serveur fait foi : il n'ouvre le niveau suivant qu'après avoir vérifié
+  // qu'une réponse a bien été enregistrée pour le jeu terminé. On ne l'attend
+  // pas pour naviguer, la carte relit la progression à son affichage.
+  const guestStudentId = getGuestStudentId(slug);
+  const courant = sorted.find((s) => s.order === currentOrder);
+  if (guestStudentId && courant) {
+    void completeStep(guestStudentId, courant.id);
+  }
+
+  // Cache local, pour éviter un écran vide le temps de la réponse du serveur.
+  // Il n'ouvre plus rien par lui-même : la carte et les étapes se fient au
+  // serveur dès qu'il a répondu.
   const key = `module_level_${slug}`;
   const unlocked = Math.min(gameLevel + 1, Math.max(totalGameLevels, 1));
   const stored = parseInt(localStorage.getItem(key) ?? "1", 10);

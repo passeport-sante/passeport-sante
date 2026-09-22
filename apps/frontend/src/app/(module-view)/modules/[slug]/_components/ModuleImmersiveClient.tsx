@@ -8,7 +8,7 @@ import { ArrowLeft, ChevronRight, Download, Loader2 } from "lucide-react";
 import { PDFDownloadLink } from "@react-pdf/renderer";
 import { GameProgress } from "@/components/rive/GameProgress";
 import { mascotteUrl } from "@/lib/mascotte";
-import { createGuestStudent, setGuestStudentId, getGuestStudentId } from "@/lib/modules";
+import { ensureGuestStudentId, fetchProgress } from "@/lib/modules";
 import { ModuleCertificatePdf } from "./ModuleCertificatePdf";
 
 interface ModuleData {
@@ -81,6 +81,11 @@ export function ModuleImmersiveClient({ module }: Props) {
   const [showCompleteBtn, setShowCompleteBtn] = useState(false);
   const [showCompleteOverlay, setShowCompleteOverlay] = useState(false);
   const [pdfMounted, setPdfMounted] = useState(false);
+  // Fin de module telle que la connaît le serveur. `verifieParServeur` reste
+  // faux tant qu'il n'a pas répondu : on ne prive personne de son attestation
+  // à cause d'un incident réseau.
+  const [moduleTermine, setModuleTermine] = useState(false);
+  const [verifieParServeur, setVerifieParServeur] = useState(false);
 
   // Mise à l'échelle du canvas (1200px) pour tenir sur tous les écrans
   const [canvasScale, setCanvasScale] = useState(1);
@@ -113,13 +118,11 @@ export function ModuleImmersiveClient({ module }: Props) {
     if (didInit.current) return;
     didInit.current = true;
 
-    // Si l'élève arrive depuis /session avec un sessionId, on crée son GuestStudent
+    // L'élève reste anonyme : on lui attribue simplement un GuestStudent, qui
+    // porte ses réponses et sa progression. Avec un sessionId (entrée par le
+    // code de la classe) il est rattaché à la séance ; sans, il est créé sans
+    // session et ne compte donc dans aucune statistique de classe.
     const sessionId = searchParams.get("sessionId");
-    if (sessionId && !getGuestStudentId(module.slug)) {
-      createGuestStudent(sessionId)
-        .then((id) => setGuestStudentId(module.slug, id))
-        .catch(() => {});
-    }
 
     const unlocked = Math.min(
       Math.max(parseInt(localStorage.getItem(storageKey) ?? "1", 10), 1),
@@ -128,6 +131,22 @@ export function ModuleImmersiveClient({ module }: Props) {
     const fromParam = searchParams.get("from");
 
     setUnlockedLevel(unlocked);
+
+    // Le serveur a le dernier mot sur l'avancement et sur la fin de module :
+    // le stockage local n'est qu'un affichage immédiat, et l'attestation ne
+    // s'obtient plus en tapant ?complete=true dans la barre d'adresse.
+    void ensureGuestStudentId(module.slug, sessionId).then(async (guestId) => {
+      if (!guestId) return;
+      const etat = await fetchProgress(guestId, module.id);
+      if (!etat) return;
+      const niveau = Math.min(Math.max(etat.unlockedLevel, 1), MAX_LEVEL);
+      setUnlockedLevel(niveau);
+      try {
+        localStorage.setItem(storageKey, String(niveau));
+      } catch {}
+      setModuleTermine(etat.isCompleted);
+      setVerifieParServeur(true);
+    });
 
     const completeParam = searchParams.get("complete");
 
@@ -398,8 +417,12 @@ export function ModuleImmersiveClient({ module }: Props) {
               bien amusé !
             </p>
 
-            {/* PDF download */}
-            {pdfMounted ? (
+            {/* Attestation : réservée à un module réellement terminé */}
+            {verifieParServeur && !moduleTermine ? (
+              <p className="mt-2 text-sm text-gray-500 font-semibold">
+                Termine toutes les étapes du module pour obtenir ton attestation.
+              </p>
+            ) : pdfMounted ? (
               <PDFDownloadLink
                 document={
                   <ModuleCertificatePdf

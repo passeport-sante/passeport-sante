@@ -353,6 +353,12 @@ model ModuleProgress {
   completion  Float   @default(0)
   isCompleted Boolean @default(false)
 
+  // Rang du dernier niveau de jeu ouvert (1 = seule la première étape l'est).
+  // C'est le serveur qui le fait avancer, après avoir vérifié qu'une réponse
+  // existe bien pour l'étape terminée : le navigateur ne peut plus s'ouvrir
+  // les étapes suivantes en modifiant son stockage local.
+  unlockedLevel Int @default(1)
+
   guestStudentId String
   guestStudent   GuestStudent @relation(fields: [guestStudentId], references: [id])
 

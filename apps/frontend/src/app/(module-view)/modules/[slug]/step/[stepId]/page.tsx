@@ -71,7 +71,12 @@ export default async function StepPage({
     );
 
   return (
-    <StepGate slug={step.module.slug} steps={step.module.steps} order={step.order}>
+    <StepGate
+      slug={step.module.slug}
+      moduleId={step.module.id}
+      steps={step.module.steps}
+      order={step.order}
+    >
       {content}
     </StepGate>
   );
