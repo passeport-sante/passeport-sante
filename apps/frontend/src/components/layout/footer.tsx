@@ -8,6 +8,10 @@ export function Footer() {
 
         {/* Liens */}
         <div className="flex flex-wrap items-center justify-center gap-x-3 gap-y-1 text-sm text-gray-500">
+          <Link href="/tutoriel" className="hover:text-gray-900 transition-colors">
+            Tutoriel
+          </Link>
+          <span className="text-gray-300">|</span>
           <Link href="/politique-confidentialite" className="hover:text-gray-900 transition-colors">
             Politique de confidentialité
           </Link>

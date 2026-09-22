@@ -4,7 +4,7 @@ import { useEffect, useRef, useState } from "react";
 import { useRouter, usePathname } from "next/navigation";
 import Link from "next/link";
 import Image from "next/image";
-import { User, Shield, LogOut, ExternalLink, ChevronDown } from "lucide-react";
+import { User, Shield, LogOut, ExternalLink, ChevronDown, HelpCircle } from "lucide-react";
 
 const API = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:5000";
 
@@ -222,6 +222,18 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
                     <div className="mx-3 mb-2 border-t border-gray-100" />
                   </>
                 )}
+                {/* Le footer (et donc son lien "Tutoriel") n'est rendu que par le
+                    layout public : sans cette entrée, le tutoriel serait introuvable
+                    depuis le tableau de bord. */}
+                <Link
+                  href="/tutoriel"
+                  target="_blank"
+                  onClick={() => setMenuOpen(false)}
+                  className="flex items-center gap-2.5 px-4 py-2.5 text-sm text-gray-600 hover:bg-gray-50 transition-colors"
+                >
+                  <HelpCircle size={14} className="text-gray-400" />
+                  Tutoriel
+                </Link>
                 <Link
                   href="/"
                   onClick={() => setMenuOpen(false)}
