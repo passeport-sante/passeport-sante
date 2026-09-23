@@ -91,12 +91,12 @@ export function DialogueGame({ step }: { step: StepData }) {
     <header className="shrink-0 flex items-center justify-between gap-3 px-4 md:px-8 py-4 md:py-5 bg-white">
       <Link
         href={`/modules/${step.module.slug}`}
-        className="flex items-center gap-2 md:gap-3 text-gray-700 hover:opacity-70 transition-opacity flex-1 basis-0 min-w-0"
+        className="flex items-center gap-2 md:gap-3 text-gray-700 hover:opacity-70 transition-opacity flex-1 basis-0 min-w-9 md:min-w-10"
       >
-        <div className="w-9 h-9 md:w-10 md:h-10 rounded-full border-2 border-gray-300 flex items-center justify-center">
+        <div className="w-9 h-9 md:w-10 md:h-10 shrink-0 rounded-full border-2 border-gray-300 flex items-center justify-center">
           <ArrowLeft size={18} />
         </div>
-        <span className="hidden sm:inline font-bold text-sm tracking-widest uppercase">{step.module.title}</span>
+        <span className="hidden sm:inline truncate font-bold text-sm tracking-widest uppercase">{step.module.title}</span>
       </Link>
       <div className="text-center min-w-0">
         <h1 className="font-black text-base md:text-xl text-gray-900 truncate">

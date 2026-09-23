@@ -503,3 +503,43 @@ body {
   right: -80px;
   background-color: var(--color-circle-blue);
 }
+
+/* ── Accessibilité : réglages du panneau « Aa » (parcours élève) ──────────────
+   Posés en attributs sur <html> par components/a11y/AccessibilityPanel.tsx.
+   Tout passe par ici, pour qu'aucun mini-jeu n'ait à connaître ces réglages. */
+
+/* Police plus lisible : on remplace les deux familles du site. Les utilitaires
+   Tailwind lisent ces variables à l'exécution (@theme inline), la bascule est
+   donc immédiate. Un peu plus d'espacement aide autant que la police elle-même. */
+html[data-a11y-police="lisible"] {
+  --font-sans: var(--font-lisible);
+  --font-display: var(--font-lisible);
+}
+html[data-a11y-police="lisible"] body {
+  letter-spacing: 0.02em;
+  word-spacing: 0.08em;
+}
+html[data-a11y-police="lisible"] .font-display {
+  letter-spacing: 0.01em;
+}
+html[data-a11y-police="lisible"] :is(p, li, label) {
+  line-height: 1.7;
+}
+
+/* Taille du texte : les tailles Tailwind sont en rem, elles suivent la taille
+   de base. Les quelques tailles fixes en px (étiquettes minuscules) ne bougent
+   pas, ce qui évite de casser les mises en page serrées. */
+html[data-a11y-taille="1"] {
+  font-size: 112.5%;
+}
+html[data-a11y-taille="2"] {
+  font-size: 125%;
+}
+
+/* Lecture à voix haute : on signale ce qui peut être lu au survol. */
+html[data-a11y-voix="on"]
+  :is(h1, h2, h3, h4, p, li, label, td, th, [draggable="true"]):hover {
+  outline: 2px dashed rgb(76 175 80 / 0.6);
+  outline-offset: 3px;
+  border-radius: 6px;
+}

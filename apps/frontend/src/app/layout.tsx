@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import localFont from "next/font/local";
 import "./globals.css";
-import { Manrope, Bricolage_Grotesque, Caveat } from "next/font/google";
+import { Manrope, Bricolage_Grotesque, Caveat, Atkinson_Hyperlegible_Next } from "next/font/google";
 import { cn } from "@/lib/utils";
 
 const manrope = Manrope({
@@ -20,6 +20,15 @@ const caveat = Caveat({
   subsets: ["latin"],
   variable: "--font-handwritten",
   display: "swap",
+});
+
+// Police du réglage « Police plus lisible » du panneau d'accessibilité.
+// `preload: false` : seuls les élèves qui l'activent la téléchargent.
+const lisible = Atkinson_Hyperlegible_Next({
+  subsets: ["latin"],
+  variable: "--font-lisible",
+  display: "swap",
+  preload: false,
 });
 
 const geistSans = localFont({
@@ -50,6 +59,7 @@ export default function RootLayout({
         manrope.variable,
         bricolage.variable,
         caveat.variable,
+        lisible.variable,
       )}
     >
       <body className={`${geistSans.variable} ${geistMono.variable}`}>
