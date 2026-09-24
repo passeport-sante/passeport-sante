@@ -19,83 +19,22 @@
 
 import { useCallback, useEffect, useRef, useState } from "react";
 import { Type, Volume2, X, Minus, Plus } from "lucide-react";
-
-type Prefs = { police: boolean; taille: 0 | 1 | 2; voix: boolean; voixNom: string | null };
-
-const CLE = "a11y_prefs";
-const DEFAUT: Prefs = { police: false, taille: 0, voix: false, voixNom: null };
+import {
+  CLE_PREFS,
+  lireAVoixHaute,
+  lirePrefs,
+  nomLisibleVoix,
+  PREFS_DEFAUT,
+  voixFrancaises,
+  type Prefs,
+} from "./voix";
 
 // Éléments dont on lit le texte quand l'élève les touche en mode voix.
 const LISIBLES =
   'h1, h2, h3, h4, p, li, label, button, a, td, th, [draggable="true"], [data-a11y-lire]';
 
-function lirePrefs(): Prefs {
-  try {
-    const brut = localStorage.getItem(CLE);
-    return brut ? { ...DEFAUT, ...(JSON.parse(brut) as Partial<Prefs>) } : DEFAUT;
-  } catch {
-    return DEFAUT;
-  }
-}
-
-export function voixFrancaises(): SpeechSynthesisVoice[] {
-  if (typeof window === "undefined" || !("speechSynthesis" in window)) return [];
-  return window.speechSynthesis
-    .getVoices()
-    .filter((v) => v.lang.toLowerCase().startsWith("fr"))
-    .sort((a, b) => qualite(b) - qualite(a));
-}
-
-// Toutes les voix françaises ne se valent pas, et de loin. Les voix « Natural »
-// de Microsoft (Edge) et « Google français » (Chrome) sont proches d'une vraie
-// voix ; les voix locales de Windows (Hortense, Paul) sonnent robotiques. On
-// classe donc les voix disponibles plutôt que de prendre la première venue.
-function qualite(v: SpeechSynthesisVoice): number {
-  let note = 0;
-  if (/natural|neural|wavenet|studio/i.test(v.name)) note += 8;
-  if (/google/i.test(v.name)) note += 6;
-  if (!v.localService) note += 3; // les voix en ligne sont les mieux synthétisées
-  if (v.lang.toLowerCase() === "fr-fr") note += 2;
-  if (v.default) note += 1;
-  return note;
-}
-
-// Les noms système sont longs et techniques (« Microsoft Denise Online
-// (Natural) - French (France) ») : on les raccourcit pour la liste.
-function nomLisibleVoix(v: SpeechSynthesisVoice): string {
-  // « Google » est gardé : c'est le nom de la voix, pas celui de l'éditeur.
-  const nom = v.name
-    .replace(/^Microsoft\s+/i, "")
-    .replace(/\s*-\s*Fren(ch|ça).*$/i, "")
-    .replace(/\bOnline\b/gi, "")
-    .replace(/\((Natural|Neural)\)/i, "")
-    .replace(/\s{2,}/g, " ")
-    .trim();
-  return /natural|neural|google/i.test(v.name) ? `${nom || "Voix"} — naturelle` : nom || v.name;
-}
-
-function parler(texte: string, nomVoix?: string | null) {
-  const synth = window.speechSynthesis;
-  synth.cancel();
-  const propre = texte.replace(/\s+/g, " ").trim();
-  if (!propre) return;
-  const u = new SpeechSynthesisUtterance(propre);
-  u.lang = "fr-FR";
-  u.rate = 0.95;
-  u.pitch = 1;
-  const dispo = voixFrancaises();
-  const v = (nomVoix ? dispo.find((x) => x.name === nomVoix) : undefined) ?? dispo[0];
-  try {
-    if (v) u.voice = v;
-  } catch {
-    // Voix devenue invalide (débranchée, changement de profil…) : on lit quand
-    // même avec la voix par défaut du système plutôt que de rester muet.
-  }
-  synth.speak(u);
-}
-
 export function AccessibilityPanel() {
-  const [prefs, setPrefs] = useState<Prefs>(DEFAUT);
+  const [prefs, setPrefs] = useState<Prefs>(PREFS_DEFAUT);
   const [ouvert, setOuvert] = useState(false);
   const [voixDispo, setVoixDispo] = useState(false);
   const [listeVoix, setListeVoix] = useState<SpeechSynthesisVoice[]>([]);
@@ -122,7 +61,7 @@ export function AccessibilityPanel() {
     html.dataset.a11yTaille = String(prefs.taille);
     html.dataset.a11yVoix = prefs.voix ? "on" : "";
     try {
-      localStorage.setItem(CLE, JSON.stringify(prefs));
+      localStorage.setItem(CLE_PREFS, JSON.stringify(prefs));
     } catch {}
     return () => {
       delete html.dataset.a11yPolice;
@@ -141,7 +80,7 @@ export function AccessibilityPanel() {
       if (!cible || panneauRef.current?.contains(cible)) return;
       const el = cible.closest<HTMLElement>(LISIBLES);
       const texte = el?.innerText?.trim();
-      if (texte && texte.length <= 600) parler(texte, prefs.voixNom);
+      if (texte && texte.length <= 600) lireAVoixHaute(texte, prefs.voixNom);
     }
     document.addEventListener("click", surClic, true);
     return () => {
@@ -167,7 +106,7 @@ export function AccessibilityPanel() {
     const consigne = (bandeau?.querySelector("h1 + p, h2 + p, p")?.textContent ?? "").trim();
     // Pas de point ajouté derrière un titre déjà ponctué (« Vrai ou Intox ? »).
     const liaison = /[.!?…:]$/.test(titre) ? " " : ". ";
-    parler(consigne ? `${titre}${liaison}${consigne}` : titre, prefs.voixNom);
+    lireAVoixHaute(consigne ? `${titre}${liaison}${consigne}` : titre, prefs.voixNom);
   }
 
   const actifs = Number(prefs.police) + Number(prefs.taille > 0) + Number(prefs.voix);
@@ -256,7 +195,7 @@ export function AccessibilityPanel() {
                           value={prefs.voixNom ?? listeVoix[0]?.name ?? ""}
                           onChange={(e) => {
                             maj({ voixNom: e.target.value });
-                            parler("Bonjour, je vais lire les textes avec toi.", e.target.value);
+                            lireAVoixHaute("Bonjour, je vais lire les textes avec toi.", e.target.value);
                           }}
                           className="flex-1 min-w-0 rounded-xl border border-gray-200 bg-gray-50 text-sm px-3 py-2"
                         >
@@ -270,7 +209,7 @@ export function AccessibilityPanel() {
                           type="button"
                           aria-label="Écouter cette voix"
                           onClick={() =>
-                            parler("Bonjour, je vais lire les textes avec toi.", prefs.voixNom)
+                            lireAVoixHaute("Bonjour, je vais lire les textes avec toi.", prefs.voixNom)
                           }
                           className="w-10 h-10 shrink-0 rounded-full border border-gray-200 flex items-center justify-center hover:bg-gray-50"
                         >
