@@ -43,6 +43,39 @@ function marquerVue(stepId: string): void {
   }
 }
 
+// ─── Couleur du module ────────────────────────────────────────────────────────
+
+const API = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:5000";
+const VERT_DEFAUT = "#228b22"; // brand-dark-green, si le module n'a pas de couleur
+const couleursConnues = new Map<string, string>();
+
+async function couleurDuModule(slug: string): Promise<string> {
+  const enCache = couleursConnues.get(slug);
+  if (enCache) return enCache;
+  try {
+    const res = await fetch(`${API}/api/modules/slug/${encodeURIComponent(slug)}`);
+    if (!res.ok) return VERT_DEFAUT;
+    const data = (await res.json()) as { colorPrimary?: string | null };
+    const couleur = lisibleSurBlanc(data.colorPrimary) ? data.colorPrimary! : VERT_DEFAUT;
+    couleursConnues.set(slug, couleur);
+    return couleur;
+  } catch {
+    return VERT_DEFAUT;
+  }
+}
+
+// Certaines couleurs de module sont très claires (le jaune de Vaccination, par
+// exemple) : en fond d'un bouton à texte blanc, elles seraient illisibles. On
+// ne garde donc que les couleurs suffisamment sombres.
+function lisibleSurBlanc(hex?: string | null): boolean {
+  if (!hex || !/^#[0-9a-f]{6}$/i.test(hex)) return false;
+  const r = parseInt(hex.slice(1, 3), 16);
+  const v = parseInt(hex.slice(3, 5), 16);
+  const b = parseInt(hex.slice(5, 7), 16);
+  // Luminance perçue (ITU-R BT.601), 0 = noir, 255 = blanc.
+  return 0.299 * r + 0.587 * v + 0.114 * b < 170;
+}
+
 // Le bandeau de chaque écran porte le titre de l'étape et sa consigne.
 function lireBandeau(): { titre: string; consigne: string } | null {
   const bandeau = document.querySelector("header");
