@@ -90,9 +90,23 @@ export function ConsignePanel() {
   const pathname = usePathname();
   const [contenu, setContenu] = useState<{ titre: string; consigne: string } | null>(null);
   const [ouvert, setOuvert] = useState(false);
+  const [couleur, setCouleur] = useState(VERT_DEFAUT);
   const etapeRef = useRef<string | null>(null);
 
   const stepId = pathname?.match(/\/step\/([^/]+)/)?.[1] ?? null;
+  const slug = pathname?.match(/\/modules\/([^/]+)/)?.[1] ?? null;
+
+  // Le modal reprend la couleur du module en cours, comme le reste du parcours.
+  useEffect(() => {
+    if (!slug) return;
+    let annule = false;
+    void couleurDuModule(slug).then((c) => {
+      if (!annule) setCouleur(c);
+    });
+    return () => {
+      annule = true;
+    };
+  }, [slug]);
 
   // Le bandeau est rendu par le jeu, parfois après un chargement de données :
   // on le relit tant qu'il n'a rien donné, puis on s'arrête.
@@ -166,10 +180,14 @@ export function ConsignePanel() {
             role="dialog"
             aria-label="Consigne"
             onClick={(e) => e.stopPropagation()}
-            className="w-full max-w-md rounded-3xl bg-white shadow-2xl p-6 md:p-8 text-center space-y-4"
+            className="w-full max-w-md rounded-3xl bg-white shadow-2xl p-6 md:p-8 text-center space-y-4 border-t-8"
+            style={{ borderTopColor: couleur }}
           >
             <div className="flex items-center justify-between">
-              <span className="text-[11px] font-bold uppercase tracking-wider text-brand-dark-green bg-brand-green/10 rounded-full px-3 py-1">
+              <span
+                className="text-[11px] font-bold uppercase tracking-wider rounded-full px-3 py-1"
+                style={{ color: couleur, background: `${couleur}1a` }}
+              >
                 Ce qu&apos;il faut faire
               </span>
               <button
@@ -201,7 +219,8 @@ export function ConsignePanel() {
               <button
                 type="button"
                 onClick={() => setOuvert(false)}
-                className="flex-1 rounded-full bg-brand-dark-green text-white font-bold text-sm py-3 hover:opacity-90"
+                className="flex-1 rounded-full text-white font-bold text-sm py-3 hover:opacity-90"
+                style={{ background: couleur }}
               >
                 C&apos;est parti !
               </button>

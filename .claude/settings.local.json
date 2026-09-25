@@ -77,7 +77,10 @@
       "Bash(docker restart *)",
       "Bash(export TOKEN=\"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJjbW9pbnkydTQwMDAxbjlhaWNuZGFhbjB4IiwiZW1haWwiOiJhZG1pbkBwcmV2ZW50aW9uLmNvbSIsInJvbGUiOiJBRE1JTiIsIm9yZ2FuaXphdGlvbklkIjoic2VlZC1vcmctMSIsImlhdCI6MTc4NzY2MzE4NiwiZXhwIjoxNzg4MjY3OTg2fQ.2g4a399FePwoP5JtYeWZg-HICXcY_409KK08YuvFlUk\")",
       "Bash(curl -s http://localhost:5000/api/modules?admin=true -H 'Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJjbW9pbnkydTQwMDAxbjlhaWNuZGFhbjB4IiwiZW1haWwiOiJhZG1pbkBwcmV2ZW50aW9uLmNvbSIsInJvbGUiOiJBRE1JTiIsIm9yZ2FuaXphdGlvbklkIjoic2VlZC1vcmctMSIsImlhdCI6MTc4NzY2MzE4NiwiZXhwIjoxNzg4MjY3OTg2fQ.2g4a399FePwoP5JtYeWZg-HICXcY_409KK08YuvFlUk')",
-      "Bash(curl -s http://localhost:5000/api/modules)"
+      "Bash(curl -s http://localhost:5000/api/modules)",
+      "Bash(sed -i 's|  const jeu = detail.steps.find\\(\\(s\\) => s.kind === \"GAME\"\\);|  const jeu = \\(detail.steps ?? []\\).find\\(\\(s\\) => s.kind === \"GAME\"\\);\\\\n  if \\(!jeu\\) { console.log\\(`${slug} : aucune étape de jeu en base locale, ignoré`\\); continue; }|' couleur.mjs)",
+      "Bash(sed -i 's|for \\(const slug of \\\\[\"vaccination\", \"sommeil\", \"ecrans\"\\\\]\\)|for \\(const slug of [\"vaccination\", \"sommeil\", \"ecrans\", \"hygiene-bucco\", \"bien-manger\"]\\)|' couleur.mjs)",
+      "Bash(node couleur.mjs)"
     ]
   }
 }
