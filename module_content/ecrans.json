@@ -1,0 +1,675 @@
+{
+  "title": "Écrans",
+  "description": "Trouver un bon équilibre avec les écrans, sans culpabiliser ni tout interdire.",
+  "duration": 20,
+  "category": "Hygiène de vie",
+  "isActive": false,
+  "steps": [
+    {
+      "kind": "CONTENT",
+      "content": {
+        "contentType": "VIDEO",
+        "title": "Bienvenue dans ta journée connectée",
+        "videoUrl": "https://www.youtube.com/watch?v=JXyBwzw9nWw"
+      }
+    },
+    {
+      "kind": "GAME",
+      "gameType": "KANBAN",
+      "content": {
+        "title": "Ce que les écrans me font",
+        "instructions": "Ce que les écrans m’apportent… et ce qui peut me fatiguer"
+      },
+      "gameData": [
+        {
+          "questionData": {
+            "categories": [
+              "Ça peut me faire du bien",
+              "Je dois y faire attention"
+            ],
+            "items": [
+              "Je découvre un sujet qui m’intéresse.",
+              "Je garde contact avec quelqu’un qui habite loin.",
+              "Je crée une vidéo, une musique ou un dessin.",
+              "Je rigole avec mes amis en jouant.",
+              "Je continue alors que je suis fatigué·e.",
+              "Je m’énerve beaucoup quand on me demande d’arrêter.",
+              "Je laisse de côté quelque chose que j’aimais faire.",
+              "Je regarde mon téléphone pendant la nuit."
+            ]
+          },
+          "correctAnswer": {
+            "Je découvre un sujet qui m’intéresse.": "Ça peut me faire du bien",
+            "Je garde contact avec quelqu’un qui habite loin.": "Ça peut me faire du bien",
+            "Je crée une vidéo, une musique ou un dessin.": "Ça peut me faire du bien",
+            "Je rigole avec mes amis en jouant.": "Ça peut me faire du bien",
+            "Je continue alors que je suis fatigué·e.": "Je dois y faire attention",
+            "Je m’énerve beaucoup quand on me demande d’arrêter.": "Je dois y faire attention",
+            "Je laisse de côté quelque chose que j’aimais faire.": "Je dois y faire attention",
+            "Je regarde mon téléphone pendant la nuit.": "Je dois y faire attention"
+          }
+        }
+      ]
+    },
+    {
+      "kind": "CONTENT",
+      "gameType": "QUIZ",
+      "content": {
+        "title": "Premiers repères",
+        "instructions": "Réponds à toutes les questions"
+      },
+      "gameData": [
+        {
+          "questionData": {
+            "questions": [
+              {
+                "id": "q1",
+                "text": "Les écrans sont toujours mauvais.",
+                "explanation": "Ils peuvent aussi permettre d’apprendre, créer ou discuter.",
+                "options": [
+                  {
+                    "id": "a",
+                    "text": "Vrai"
+                  },
+                  {
+                    "id": "b",
+                    "text": "Faux"
+                  }
+                ]
+              },
+              {
+                "id": "q2",
+                "text": "Deux personnes peuvent vivre le même temps d’écran de façon très différente.",
+                "explanation": "Le contenu, le moment et le ressenti comptent aussi.",
+                "options": [
+                  {
+                    "id": "a",
+                    "text": "Vrai"
+                  },
+                  {
+                    "id": "b",
+                    "text": "Faux"
+                  }
+                ]
+              },
+              {
+                "id": "q3",
+                "text": "Faire une pause est inutile si je ne suis pas fatigué·e.",
+                "explanation": "Une petite pause permet de bouger et de reposer ses yeux.",
+                "options": [
+                  {
+                    "id": "a",
+                    "text": "Faux"
+                  },
+                  {
+                    "id": "b",
+                    "text": "Vrai"
+                  }
+                ]
+              },
+              {
+                "id": "q4",
+                "text": "Je peux demander de l’aide si quelque chose en ligne me dérange.",
+                "explanation": "Parler à un adulte de confiance est une bonne idée.",
+                "options": [
+                  {
+                    "id": "a",
+                    "text": "Vrai"
+                  },
+                  {
+                    "id": "b",
+                    "text": "Faux"
+                  }
+                ]
+              }
+            ]
+          },
+          "correctAnswer": {
+            "answers": {
+              "q1": [
+                "b"
+              ],
+              "q2": [
+                "a"
+              ],
+              "q3": [
+                "a"
+              ],
+              "q4": [
+                "a"
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "kind": "CONTENT",
+      "content": {
+        "contentType": "INFO",
+        "title": "Le soir, un moment à part",
+        "body": "Le soir, ton cerveau se prépare à dormir. La lumière des écrans peut retarder l'envie de dormir, et une vidéo qui s'enchaîne automatiquement rend difficile de s'arrêter. Ce n'est pas grave d'utiliser un écran le soir — c'est surtout une question de moment et de durée. Voici une situation pour y réfléchir."
+      }
+    },
+    {
+      "kind": "GAME",
+      "gameType": "SCENARIO",
+      "content": {
+        "title": "La vidéo de trop",
+        "instructions": "Choisis la meilleure réaction face à cette situation",
+        "shieldMode": false
+      },
+      "gameData": [
+        {
+          "questionData": {
+            "situation": "Il est 21 h 45. Sam se lève tôt demain. Une vidéo vient de se terminer et une autre se lance automatiquement. Son téléphone est sur le lit.",
+            "choices": [
+              {
+                "id": "a",
+                "text": "Sam coupe la lecture automatique, pose son téléphone hors de la chambre et choisit une activité calme.",
+                "points": 0
+              },
+              {
+                "id": "b",
+                "text": "Sam regarde encore plusieurs vidéos « juste cinq minutes ».",
+                "points": 0
+              },
+              {
+                "id": "c",
+                "text": "Sam garde le son allumé sous son oreiller au cas où un message arrive.",
+                "points": 0
+              }
+            ]
+          },
+          "correctAnswer": {
+            "choiceId": "a",
+            "choiceIds": [
+              "a"
+            ],
+            "explanation": "C’est un bon choix : enlever le téléphone du lit et prévoir une activité calme rend le coucher plus simple. Il ne s’agit pas d’être parfait·e, mais d’essayer un repère qui marche pour soi."
+          }
+        }
+      ]
+    },
+    {
+      "kind": "CONTENT",
+      "gameType": "SWIPE",
+      "content": {
+        "title": "Les réflexes du soir de Sam",
+        "instructions": "Balaye à droite si c'est un bon réflexe, à gauche si c'est à surveiller"
+      },
+      "gameData": [
+        {
+          "questionData": {
+            "trueLabel": "Ça peut me faire du bien",
+            "falseLabel": "Je dois y faire attention",
+            "cards": [
+              {
+                "id": "c1",
+                "text": "Sam laisse son téléphone en mode silencieux sur la table de chevet.",
+                "answer": "faux",
+                "explanation": "Même en silencieux, il reste à portée de main : la tentation de vérifier reste forte. Mieux vaut le laisser hors de la chambre."
+              },
+              {
+                "id": "c2",
+                "text": "Sam répond à un dernier message juste avant d'éteindre son téléphone.",
+                "answer": "faux",
+                "explanation": "Un message peut vite en entraîner un autre... et retarder le coucher. Mieux vaut prévenir ses amis à l'avance."
+              },
+              {
+                "id": "c3",
+                "text": "Sam utilise son téléphone comme réveil le matin.",
+                "answer": "faux",
+                "explanation": "Un vrai réveil évite d'avoir le téléphone dans la chambre toute la nuit."
+              },
+              {
+                "id": "c4",
+                "text": "Sam demande à un parent de garder son téléphone dans une autre pièce.",
+                "answer": "vrai",
+                "explanation": "Une bonne façon de ne pas être tenté·e pendant la nuit."
+              },
+              {
+                "id": "c5",
+                "text": "Sam active le mode « ne pas déranger » mais garde le téléphone sous l'oreiller, au cas où.",
+                "answer": "faux",
+                "explanation": "Le mode ne pas déranger aide, mais le vrai réflexe, c'est d'éloigner le téléphone du lit — pas juste le faire taire."
+              },
+              {
+                "id": "c6",
+                "text": "Une activité calme (lecture, musique douce) avant de dormir aide à s'endormir plus facilement.",
+                "answer": "vrai",
+                "explanation": "Ça remplace l'écran par un moment qui aide le cerveau à se détendre."
+              }
+            ]
+          },
+          "correctAnswer": {}
+        }
+      ]
+    },
+    {
+      "kind": "CONTENT",
+      "gameType": "SCENARIO",
+      "content": {
+        "title": "Les bons réflexes du soir",
+        "instructions": "Plusieurs réponses sont acceptables : choisis celle qui te ressemble",
+        "shieldMode": false
+      },
+      "gameData": [
+        {
+          "questionData": {
+            "situation": "Il est 21 h. Tu te couches vers 22 h et tu es sur ton téléphone.",
+            "choices": [
+              {
+                "id": "a",
+                "text": "J'arrête les écrans maintenant, une heure avant de me coucher",
+                "points": 0
+              },
+              {
+                "id": "b",
+                "text": "J'arrête trois minutes avant d'éteindre la lumière",
+                "points": 0
+              },
+              {
+                "id": "c",
+                "text": "Je continue jusqu'à ce que je m'endorme",
+                "points": 0
+              }
+            ]
+          },
+          "correctAnswer": {
+            "choiceId": "a",
+            "choiceIds": [
+              "a"
+            ],
+            "explanation": "Environ une heure sans écran avant le coucher laisse à ton cerveau le temps de produire la mélatonine, l'hormone qui t'endort. Trois minutes n'y changent rien."
+          }
+        },
+        {
+          "questionData": {
+            "situation": "Il est 22 h 30, tu es déjà au lit et ton téléphone vibre. Demain tu as cours.",
+            "choices": [
+              {
+                "id": "a",
+                "text": "Je laisse le téléphone dans une autre pièce pour la nuit",
+                "points": 0
+              },
+              {
+                "id": "b",
+                "text": "Je passe en mode « ne pas déranger » et je le pose loin du lit",
+                "points": 0
+              },
+              {
+                "id": "c",
+                "text": "Je réponds vite fait, puis je repose le téléphone",
+                "points": 0
+              },
+              {
+                "id": "d",
+                "text": "Je regarde juste une vidéo pour m'endormir",
+                "points": 0
+              }
+            ]
+          },
+          "correctAnswer": {
+            "choiceId": "a",
+            "choiceIds": [
+              "a",
+              "b"
+            ],
+            "explanation": "Il n'y a pas une seule bonne réponse. Ce qui compte, c'est de couper les sollicitations : la lumière et les notifications retardent l'endormissement, et « juste une vidéo » se transforme rarement en une seule."
+          }
+        },
+        {
+          "questionData": {
+            "situation": "Il te reste vingt minutes avant de dormir. Qu'est-ce que tu fais ?",
+            "choices": [
+              {
+                "id": "a",
+                "text": "Je lis quelques pages",
+                "points": 0
+              },
+              {
+                "id": "b",
+                "text": "J'écoute de la musique douce",
+                "points": 0
+              },
+              {
+                "id": "c",
+                "text": "Je regarde une vidéo pour m'endormir",
+                "points": 0
+              },
+              {
+                "id": "d",
+                "text": "Je fais une dernière partie",
+                "points": 0
+              }
+            ]
+          },
+          "correctAnswer": {
+            "choiceId": "a",
+            "choiceIds": [
+              "a",
+              "b"
+            ],
+            "explanation": "Une activité calme aide le cerveau à redescendre. Une vidéo ou une partie font l'inverse : la lumière, le son et l'envie de connaître la suite le remettent en alerte."
+          }
+        },
+        {
+          "questionData": {
+            "situation": "Tu as pris l'habitude de faire tes devoirs et de regarder tes séries dans ton lit.",
+            "choices": [
+              {
+                "id": "a",
+                "text": "Je garde mon lit pour dormir, et je fais le reste ailleurs",
+                "points": 0
+              },
+              {
+                "id": "b",
+                "text": "Je continue comme ça, c'est plus confortable",
+                "points": 0
+              },
+              {
+                "id": "c",
+                "text": "Je fais mes devoirs au lit, mais je regarde mes séries au salon",
+                "points": 0
+              }
+            ]
+          },
+          "correctAnswer": {
+            "choiceId": "a",
+            "choiceIds": [
+              "a"
+            ],
+            "explanation": "Ton cerveau associe ton lit à ce que tu y fais. S'il sert aussi à travailler et à regarder des séries, il l'associe moins au sommeil — et tu mets plus de temps à t'endormir."
+          }
+        }
+      ]
+    },
+    {
+      "kind": "CONTENT",
+      "content": {
+        "contentType": "INFO",
+        "title": "Un équilibre, pas une interdiction",
+        "body": "Les bons réflexes du soir, c'est un exemple parmi d'autres : l'idée n'est pas de bannir les écrans, mais de trouver ta propre façon d'équilibrer ton temps. À toi de voir maintenant : parmi toutes tes activités de la journée, lesquelles ont vraiment besoin d'un écran, et lesquelles n'en ont pas besoin ?"
+      }
+    },
+    {
+      "kind": "GAME",
+      "gameType": "KANBAN",
+      "content": {
+        "title": "Classe les activités",
+        "instructions": "Classe chaque affirmation dans la bonne catégorie"
+      },
+      "gameData": [
+        {
+          "questionData": {
+            "categories": [
+              "Avec écran",
+              "Sans écran",
+              "Avec ou sans écran"
+            ],
+            "items": [
+              "Jouer à un jeu vidéo",
+              "Regarder une série",
+              "Faire une recherche pour un exposé",
+              "Participer à une visioconférence",
+              "Regarder un tutoriel vidéo",
+              "Jouer au ballon",
+              "Promener un animal",
+              "Jouer à un jeu de société",
+              "Jardiner",
+              "Faire du vélo",
+              "Dessiner",
+              "Écouter de la musique",
+              "Cuisiner une recette",
+              "Prendre des photos",
+              "Créer une bande dessinée",
+              "Apprendre une langue"
+            ]
+          },
+          "correctAnswer": {
+            "Jouer à un jeu vidéo": "Avec écran",
+            "Regarder une série": "Avec écran",
+            "Faire une recherche pour un exposé": "Avec ou sans écran",
+            "Participer à une visioconférence": "Avec écran",
+            "Regarder un tutoriel vidéo": "Avec écran",
+            "Jouer au ballon": "Sans écran",
+            "Promener un animal": "Sans écran",
+            "Jouer à un jeu de société": "Sans écran",
+            "Jardiner": "Sans écran",
+            "Faire du vélo": "Sans écran",
+            "Dessiner": "Avec ou sans écran",
+            "Écouter de la musique": "Avec ou sans écran",
+            "Cuisiner une recette": "Avec ou sans écran",
+            "Prendre des photos": "Avec ou sans écran",
+            "Créer une bande dessinée": "Avec ou sans écran",
+            "Apprendre une langue": "Avec ou sans écran"
+          }
+        }
+      ]
+    },
+    {
+      "kind": "GAME",
+      "gameType": "SCENARIO",
+      "content": {
+        "title": "Quand l’écran ne me fait plus du bien",
+        "instructions": "Choisis la meilleure réaction face à cette situation",
+        "shieldMode": false
+      },
+      "gameData": [
+        {
+          "questionData": {
+            "situation": "Sam regarde les publications d’autres jeunes. Au bout d’un moment, Sam se compare, se sent moins bien et n’arrive plus à s’arrêter de faire défiler l’écran.",
+            "choices": [
+              {
+                "id": "a",
+                "text": "Sam pose le téléphone, fait autre chose quelques minutes et en parle à quelqu’un si ce sentiment reste.",
+                "points": 0
+              },
+              {
+                "id": "b",
+                "text": "Sam continue jusqu’à se sentir encore plus mal.",
+                "points": 0
+              },
+              {
+                "id": "c",
+                "text": "Sam écrit un commentaire méchant pour se défouler.",
+                "points": 0
+              }
+            ]
+          },
+          "correctAnswer": {
+            "choiceId": "a",
+            "choiceIds": [
+              "a"
+            ],
+            "explanation": "Poser le téléphone et en parler à quelqu'un permet de sortir du cercle des comparaisons qui font du mal."
+          }
+        }
+      ]
+    },
+    {
+      "kind": "CONTENT",
+      "content": {
+        "contentType": "VIDEO",
+        "title": "Qui nous rend accro aux écrans ?",
+        "videoUrl": "https://www.lumni.fr/video/qui-nous-rend-accro-aux-ecrans-comment-se-defendre"
+      }
+    },
+    {
+      "kind": "GAME",
+      "gameType": "QUIZ",
+      "content": {
+        "title": "Le grand quiz de l’équilibre",
+        "instructions": "Réponds à toutes les questions"
+      },
+      "gameData": [
+        {
+          "questionData": {
+            "questions": [
+              {
+                "id": "q1",
+                "text": "Le but est-il d’arrêter tous les écrans ?",
+                "explanation": "Les écrans permettent aussi d'apprendre, de créer et de rester en contact avec des proches. L'idée n'est pas de les bannir mais de trouver un équilibre.",
+                "options": [
+                  {
+                    "id": "a",
+                    "text": "Oui"
+                  },
+                  {
+                    "id": "b",
+                    "text": "Non"
+                  }
+                ]
+              },
+              {
+                "id": "q2",
+                "text": "À quel moment de la journée vaut-il mieux éviter les écrans ?",
+                "explanation": "La lumière des écrans retarde l'endormissement, et une vidéo qui s'enchaîne rend difficile de s'arrêter.",
+                "options": [
+                  {
+                    "id": "a",
+                    "text": "Avant de dormir"
+                  },
+                  {
+                    "id": "b",
+                    "text": "Pendant les trajets en bus"
+                  },
+                  {
+                    "id": "c",
+                    "text": "Juste après le petit-déjeuner"
+                  }
+                ]
+              },
+              {
+                "id": "q3",
+                "text": "Que peux-tu faire après un long moment devant un écran ?",
+                "explanation": "Une pause permet de bouger, de reposer ses yeux et de faire autre chose.",
+                "options": [
+                  {
+                    "id": "a",
+                    "text": "Faire une pause"
+                  },
+                  {
+                    "id": "b",
+                    "text": "Enchaîner tout de suite une autre activité sur écran"
+                  },
+                  {
+                    "id": "c",
+                    "text": "Attendre d'avoir mal aux yeux avant de s'arrêter"
+                  }
+                ]
+              },
+              {
+                "id": "q4",
+                "text": "Au repas, une bonne idée peut être de…",
+                "explanation": "Ça permet de profiter du moment et des personnes autour de toi, sans être interrompu·e par des notifications.",
+                "options": [
+                  {
+                    "id": "a",
+                    "text": "poser le téléphone loin de la table"
+                  },
+                  {
+                    "id": "b",
+                    "text": "Le garder à côté de son assiette au cas où"
+                  },
+                  {
+                    "id": "c",
+                    "text": "Répondre rapidement aux messages"
+                  }
+                ]
+              },
+              {
+                "id": "q5",
+                "text": "Quel signe peut montrer que j’ai besoin d’une pause ?",
+                "explanation": "Ce sont des signaux que le temps d'écran commence à peser plutôt qu'à faire du bien — c'est le bon moment pour s'arrêter.",
+                "options": [
+                  {
+                    "id": "a",
+                    "text": "Je suis fatigué·e, énervé·e ou je n’arrive plus à m’arrêter"
+                  },
+                  {
+                    "id": "b",
+                    "text": "Je viens de commencer une partie qui m'amuse"
+                  },
+                  {
+                    "id": "c",
+                    "text": "Je regarde depuis seulement 5 minutes"
+                  }
+                ]
+              },
+              {
+                "id": "q6",
+                "text": "Si un contenu me met mal à l’aise, je peux…",
+                "explanation": "Ces deux actions te protègent, toi et les autres : signaler fait réagir la plateforme, en parler permet d'être soutenu·e.",
+                "options": [
+                  {
+                    "id": "a",
+                    "text": "en parler à un adulte de confiance"
+                  },
+                  {
+                    "id": "b",
+                    "text": "le garder pour moi à tout prix"
+                  },
+                  {
+                    "id": "c",
+                    "text": "le diffuser"
+                  },
+                  {
+                    "id": "d",
+                    "text": "signaler"
+                  }
+                ]
+              },
+              {
+                "id": "q7",
+                "text": "Quel défi est réaliste ?",
+                "explanation": "Un petit défi ponctuel est plus facile à tenir qu'un changement radical et permanent — et ça permet de voir l'effet que ça fait.",
+                "options": [
+                  {
+                    "id": "a",
+                    "text": "Tester un repas sans téléphone cette semaine"
+                  },
+                  {
+                    "id": "b",
+                    "text": "Être parfait·e dès demain"
+                  },
+                  {
+                    "id": "c",
+                    "text": "Ne plus jamais dormir"
+                  }
+                ]
+              }
+            ]
+          },
+          "correctAnswer": {
+            "answers": {
+              "q1": [
+                "b"
+              ],
+              "q2": [
+                "a"
+              ],
+              "q3": [
+                "a"
+              ],
+              "q4": [
+                "a"
+              ],
+              "q5": [
+                "a"
+              ],
+              "q6": [
+                "a",
+                "d"
+              ],
+              "q7": [
+                "a"
+              ]
+            }
+          }
+        }
+      ]
+    }
+  ]
+}

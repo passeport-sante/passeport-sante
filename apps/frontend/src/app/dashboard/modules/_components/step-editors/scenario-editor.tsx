@@ -3,7 +3,14 @@
 import { useMemo, useState } from "react";
 import { Trash2, Plus, Check, X, Shield } from "lucide-react";
 import { EditorShell, SectionHeader, INPUT_CLASS, TEXTAREA_CLASS, ICON_BUTTON_CLASS } from "./editor-shell";
-import { shortId, type AdminStep, type AdminGameData, type StepContent } from "@/lib/steps-admin";
+import {
+  scenarioCorrectIds,
+  shortId,
+  type AdminGameData,
+  type AdminStep,
+  type ScenarioCorrectAnswer,
+  type StepContent,
+} from "@/lib/steps-admin";
 
 interface Props {
   step: AdminStep;
@@ -19,18 +26,18 @@ type Scenario = {
   id?: string;
   situation: string;
   choices: Choice[];
-  correctId: string;
+  correctIds: string[];
   explanation: string;
 };
 
 function scenarioFromGameData(gd: AdminGameData): Scenario {
   const qd = gd.questionData as { situation?: string; choices?: { id?: string; text?: string; points?: number }[] };
-  const ca = gd.correctAnswer as { choiceId?: string; explanation?: string } | undefined;
+  const ca = gd.correctAnswer as ScenarioCorrectAnswer | undefined;
   return {
     id: gd.id,
     situation: qd?.situation ?? "",
     choices: (qd?.choices ?? []).map((c) => ({ id: c.id ?? shortId(), text: c.text ?? "", points: c.points ?? 0 })),
-    correctId: ca?.choiceId ?? "",
+    correctIds: scenarioCorrectIds(ca),
     explanation: ca?.explanation ?? "",
   };
 }
@@ -42,7 +49,7 @@ function emptyScenario(): Scenario {
       { id: shortId(), text: "", points: 0 },
       { id: shortId(), text: "", points: 0 },
     ],
-    correctId: "",
+    correctIds: [],
     explanation: "",
   };
 }
@@ -68,8 +75,8 @@ export function ScenarioEditor({ step, color, onSave }: Props) {
       if (s.choices.some((c) => !c.text.trim())) return `Scénario ${idx + 1} : tous les choix doivent être renseignés`;
       if (shieldMode) {
         if (!s.choices.some((c) => c.points > 0)) return `Scénario ${idx + 1} : indiquez les points (au moins un choix > 0)`;
-      } else if (!s.correctId || !s.choices.find((c) => c.id === s.correctId)) {
-        return `Scénario ${idx + 1} : indiquez la bonne réponse`;
+      } else if (!s.correctIds.some((id) => s.choices.some((c) => c.id === id))) {
+        return `Scénario ${idx + 1} : indiquez au moins une bonne réponse`;
       }
     }
     return null;
@@ -85,7 +92,7 @@ export function ScenarioEditor({ step, color, onSave }: Props) {
           choices: s.choices.map((c) => ({ id: c.id, text: c.text.trim(), points: c.points })),
         },
         correctAnswer: {
-          choiceId: shieldMode ? bestChoiceId(s) : s.correctId,
+          choiceIds: shieldMode ? [bestChoiceId(s)] : s.correctIds,
           explanation: s.explanation.trim() || undefined,
         },
       })),
@@ -122,7 +129,7 @@ export function ScenarioEditor({ step, color, onSave }: Props) {
         return {
           ...s,
           choices: s.choices.filter((_, j) => j !== cIdx),
-          correctId: s.correctId === removedId ? "" : s.correctId,
+          correctIds: s.correctIds.filter((id) => id !== removedId),
         };
       }),
     );
@@ -190,8 +197,13 @@ export function ScenarioEditor({ step, color, onSave }: Props) {
               <p className="text-[11px] font-bold uppercase tracking-wider text-gray-500">
                 {shieldMode ? "Choix et points" : "Choix possibles"}
               </p>
+              {!shieldMode && (
+                <p className="text-[11px] text-gray-400 -mt-1">
+                  Cochez toutes les réponses acceptables : une situation peut en avoir plusieurs.
+                </p>
+              )}
               {s.choices.map((c, cIdx) => {
-                const isCorrect = s.correctId === c.id;
+                const isCorrect = s.correctIds.includes(c.id);
                 return (
                   <div key={c.id} className="flex items-center gap-2">
                     {shieldMode ? (
@@ -204,12 +216,20 @@ export function ScenarioEditor({ step, color, onSave }: Props) {
                       />
                     ) : (
                       <button
-                        onClick={() => updateScenario(sIdx, { correctId: c.id })}
-                        className={`w-6 h-6 rounded-full border-2 flex items-center justify-center shrink-0 transition-all ${
+                        onClick={() =>
+                          updateScenario(sIdx, {
+                            correctIds: isCorrect
+                              ? s.correctIds.filter((id) => id !== c.id)
+                              : [...s.correctIds, c.id],
+                          })
+                        }
+                        // Case carrée et non ronde : plusieurs réponses peuvent
+                        // être acceptées, ce n'est plus un choix exclusif.
+                        className={`w-6 h-6 rounded-md border-2 flex items-center justify-center shrink-0 transition-all ${
                           isCorrect ? "text-white" : "border-gray-300 hover:border-gray-400"
                         }`}
                         style={isCorrect ? { background: color, borderColor: color } : {}}
-                        title="Marquer comme bonne réponse"
+                        title={isCorrect ? "Ne plus accepter cette réponse" : "Accepter cette réponse"}
                       >
                         {isCorrect && <Check size={12} strokeWidth={3} />}
                       </button>

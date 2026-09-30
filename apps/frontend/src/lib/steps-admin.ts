@@ -364,7 +364,7 @@ export function defaultGameDataFor(gameType: GameType): AdminGameData[] {
               { id: "b", text: "Deuxième réaction" },
             ],
           },
-          correctAnswer: { choiceId: "a", explanation: "Explique pourquoi c'est la bonne réponse." },
+          correctAnswer: { choiceIds: ["a"], explanation: "Explique pourquoi c'est la bonne réponse." },
         },
       ];
     case "MOTS_CROISES":
@@ -602,6 +602,27 @@ const LEGACY_ZONE_MAP: Record<string, BodyZoneId> = {
 export function normalizeBodyZoneId(id: string): BodyZoneId {
   if (BODY_ZONES.some((z) => z.id === id)) return id as BodyZoneId;
   return LEGACY_ZONE_MAP[id] ?? "corps";
+}
+
+// ── Mise en situation (Scénario) : types partagés éditeur ⇆ jeu ──────────────
+
+// Une situation peut avoir PLUSIEURS réponses acceptables : demandé en réunion
+// du 30 septembre 2026, parce que certaines situations (ex. module Addictions)
+// n'ont pas une seule bonne façon de réagir, et qu'en refuser une aussi valable
+// que celle attendue apprend le contraire de ce qu'on veut transmettre.
+//
+// Forme en base : `correctAnswer.choiceIds: string[]`. L'ancienne forme
+// `correctAnswer.choiceId: string` (réponse unique) reste lue telle quelle :
+// les scénarios déjà saisis n'ont pas à être repris.
+export type ScenarioCorrectAnswer = {
+  choiceIds?: string[];
+  choiceId?: string;
+  explanation?: string;
+};
+
+export function scenarioCorrectIds(answer: ScenarioCorrectAnswer | undefined): string[] {
+  if (answer?.choiceIds?.length) return answer.choiceIds.map(String);
+  return answer?.choiceId ? [String(answer.choiceId)] : [];
 }
 
 // ── Vrai/Faux à balayer (Swipe) : types partagés éditeur ⇆ jeu ───────────────

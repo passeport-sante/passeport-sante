@@ -80,7 +80,10 @@
       "Bash(curl -s http://localhost:5000/api/modules)",
       "Bash(sed -i 's|  const jeu = detail.steps.find\\(\\(s\\) => s.kind === \"GAME\"\\);|  const jeu = \\(detail.steps ?? []\\).find\\(\\(s\\) => s.kind === \"GAME\"\\);\\\\n  if \\(!jeu\\) { console.log\\(`${slug} : aucune étape de jeu en base locale, ignoré`\\); continue; }|' couleur.mjs)",
       "Bash(sed -i 's|for \\(const slug of \\\\[\"vaccination\", \"sommeil\", \"ecrans\"\\\\]\\)|for \\(const slug of [\"vaccination\", \"sommeil\", \"ecrans\", \"hygiene-bucco\", \"bien-manger\"]\\)|' couleur.mjs)",
-      "Bash(node couleur.mjs)"
+      "Bash(node couleur.mjs)",
+      "Bash(printf '%s\\\\n' \"- [Compte rendu réunion 30 sept.]\\(project_cr_reunion_30sept.md\\) — todo par module \\(affiches, vidéos, calendrier vaccinal 2026\\) + scénario à réponses multiples ; phrases à trous à bannir partout\")",
+      "Bash(CM_DIR=\"C:/Users/cleme/Desktop/Content-module\" node digest.mjs)",
+      "Bash(awk '/FICHIER: module-vaccination/,0' frais.txt)"
     ]
   }
 }

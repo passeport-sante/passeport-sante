@@ -1,0 +1,277 @@
+{
+  "title": "Vaccination",
+  "description": "Qu'est-ce que la vaccination ? Pourquoi est-il important de se faire vacciner ? Quels vaccins dois-je faire ?",
+  "duration": 20,
+  "category": "Santé",
+  "isActive": false,
+  "steps": [
+    {
+      "kind": "GAME",
+      "gameType": "QUIZ",
+      "content": {
+        "title": "Qu'est-ce que la vaccination ?",
+        "instructions": "Réponds à toutes les questions"
+      },
+      "gameData": [
+        {
+          "questionData": {
+            "questions": [
+              {
+                "id": "q1",
+                "text": "Un vaccin, c'est quoi ?",
+                "explanation": "En déclenchant la fabrication d'anticorps, la vaccination permet de lutter contre des maladies infectieuses potentiellement graves. On est vacciné pour se protéger soi-même, mais aussi pour protéger sa famille et son entourage.",
+                "options": [
+                  { "id": "a", "text": "Une piqûre de médicaments pour éloigner les maladies" },
+                  { "id": "b", "text": "Une injection d'un produit qui permet à mon corps d'identifier des maladies" },
+                  { "id": "c", "text": "Une piqûre qui me permet d'avoir plus de force" }
+                ]
+              }
+            ]
+          },
+          "correctAnswer": { "answers": { "q1": ["b"] } }
+        }
+      ]
+    },
+    {
+      "kind": "CONTENT",
+      "content": {
+        "contentType": "IMAGE",
+        "title": "Comment se passe la vaccination ?",
+        "imageUrl": "https://res.cloudinary.com/do44r5xbn/image/upload/v1781187670/Gemini_Generated_Image_e5eqdde5eqdde5eq_bhu13r.png"
+      }
+    },
+    {
+      "kind": "CONTENT",
+      "content": {
+        "contentType": "INFO",
+        "title": "Le saviez-vous ?",
+        "body": "Grâce à la vaccination, la variole a complètement disparu de la planète : c'est la seule maladie humaine éradiquée à ce jour.\n\nD'autres, comme la poliomyélite, ont été éliminées en Europe — elles ne circulent plus chez nous, mais existent encore ailleurs. C'est pour ça qu'il faut continuer à vacciner : le jour où on arrête, elles reviennent."
+      }
+    },
+    {
+      "kind": "GAME",
+      "gameType": "SWIPE",
+      "content": {
+        "title": "Pourquoi est-il important de se faire vacciner ?",
+        "instructions": "Balaye à droite pour Vrai, à gauche pour Faux"
+      },
+      "gameData": [
+        {
+          "questionData": {
+            "trueLabel": "Vrai",
+            "falseLabel": "Faux",
+            "cards": [
+              {
+                "id": "c1",
+                "text": "Le vaccin contre le HPV, c'est seulement pour les filles",
+                "answer": "faux",
+                "explanation": "Il est recommandé aux filles et aux garçons entre 11 et 14 ans : le virus se transmet dans les deux sens, et les garçons peuvent aussi développer des cancers liés au HPV."
+              },
+              {
+                "id": "c2",
+                "text": "Le vaccin contre le HPV se fait entre 11 et 14 ans",
+                "answer": "vrai",
+                "explanation": "Deux doses suffisent à cet âge. Si on commence plus tard, il en faut trois — et le rattrapage reste possible jusqu'à 26 ans."
+              },
+              {
+                "id": "c3",
+                "text": "Entre 11 et 13 ans, on refait un rappel contre la diphtérie, le tétanos, la coqueluche et la polio",
+                "answer": "vrai",
+                "explanation": "C'est le rappel dTcaPolio. Les protections reçues quand tu étais bébé s'affaiblissent avec le temps : ce rappel les relance."
+              },
+              {
+                "id": "c4",
+                "text": "Le vaccin contre les méningocoques ACWY est recommandé entre 11 et 14 ans",
+                "answer": "vrai",
+                "explanation": "Une seule dose suffit, même si tu as déjà été vacciné contre le méningocoque quand tu étais petit."
+              },
+              {
+                "id": "c5",
+                "text": "Le vaccin contre la grippe est obligatoire pour tous les collégiens",
+                "answer": "faux",
+                "explanation": "Il est recommandé aux personnes fragiles, pas obligatoire au collège."
+              },
+              {
+                "id": "c6",
+                "text": "On se fait vacciner uniquement pour se protéger soi-même",
+                "answer": "faux",
+                "explanation": "Se vacciner protège aussi les autres : les bébés trop jeunes pour l'être, et les personnes malades qui ne peuvent pas l'être. C'est ce qu'on appelle l'immunité collective."
+              }
+            ]
+          },
+          "correctAnswer": {}
+        }
+      ]
+    },
+    {
+      "kind": "GAME",
+      "gameType": "KANBAN",
+      "content": {
+        "title": "Quels vaccins sont prévus entre 11 et 14 ans ?",
+        "instructions": "Classe chaque vaccin dans la bonne catégorie"
+      },
+      "gameData": [
+        {
+          "questionData": {
+            "categories": ["Oui", "Non"],
+            "items": [
+              "Diphtérie",
+              "Tétanos",
+              "Coqueluche",
+              "Poliomyélite",
+              "Méningocoques ACWY",
+              "HPV - Papillomavirus",
+              "Grippe",
+              "COVID-19"
+            ]
+          },
+          "correctAnswer": {
+            "Diphtérie": "Oui",
+            "Tétanos": "Oui",
+            "Coqueluche": "Oui",
+            "Poliomyélite": "Oui",
+            "Méningocoques ACWY": "Oui",
+            "HPV - Papillomavirus": "Oui",
+            "Grippe": "Non",
+            "COVID-19": "Non"
+          }
+        }
+      ]
+    },
+    {
+      "kind": "CONTENT",
+      "content": {
+        "contentType": "IMAGE",
+        "title": "Calendrier vaccinal 2026",
+        "imageUrl": "https://res.cloudinary.com/do44r5xbn/image/upload/v1790754452/2026_Carte_postale_vaccination_page-0001_lk2ujj.webp",
+        "caption": "source : ameli.fr"
+      }
+    },
+    {
+      "kind": "CONTENT",
+      "content": {
+        "contentType": "IMAGE",
+        "title": "Le savais-tu ?",
+        "imageUrl": "https://res.cloudinary.com/do44r5xbn/image/upload/v1781188282/Gemini_Generated_Image_7jng1q7jng1q7jng_q9fmar.png",
+        "caption": "Les dates clés de la vaccination"
+      }
+    },
+    {
+      "kind": "GAME",
+      "gameType": "QUIZ",
+      "content": {
+        "title": "C'est quoi le papillomavirus ?",
+        "instructions": "Réponds à toutes les questions"
+      },
+      "gameData": [
+        {
+          "questionData": {
+            "questions": [
+              {
+                "id": "q1",
+                "text": "Ton ami pense que le vaccin contre le papillomavirus n'est que pour les filles et qu'en tant que garçon, il n'en a pas besoin. Que lui réponds-tu ?",
+                "explanation": "Le HPV se transmet lors des rapports, dans les deux sens. Chez les garçons aussi, il peut provoquer des cancers — de la gorge, de l'anus, du pénis. Depuis 2021, le vaccin leur est recommandé exactement comme aux filles.",
+                "options": [
+                  { "id": "a", "text": "Le HPV concerne tout le monde. Les garçons aussi peuvent contracter et transmettre le virus." },
+                  { "id": "b", "text": "De toute façon, les vaccins ne servent à rien." },
+                  { "id": "c", "text": "Tu peux attendre d'avoir 18 ans pour en parler à ton médecin." },
+                  { "id": "d", "text": "Tu as raison, ce vaccin est réservé aux filles." }
+                ]
+              }
+            ]
+          },
+          "correctAnswer": { "answers": { "q1": ["a"] } }
+        }
+      ]
+    },
+    {
+      "kind": "GAME",
+      "gameType": "QUIZ",
+      "content": {
+        "title": "On teste nos connaissances ?",
+        "instructions": "Réponds à toutes les questions"
+      },
+      "gameData": [
+        {
+          "questionData": {
+            "questions": [
+              {
+                "id": "q1",
+                "text": "Qu'est-ce qu'un vaccin ?",
+                "explanation": "Un vaccin prépare ton système immunitaire à reconnaître et combattre un agent pathogène, sans te rendre malade.",
+                "options": [
+                  { "id": "a", "text": "Un médicament qui guérit les maladies déjà contractées" },
+                  { "id": "b", "text": "Une préparation qui entraîne le système immunitaire à reconnaître un agent pathogène" },
+                  { "id": "c", "text": "Un complément alimentaire pour booster ses défenses" },
+                  { "id": "d", "text": "Un traitement uniquement réservé aux personnes malades" }
+                ]
+              },
+              {
+                "id": "q2",
+                "text": "En 2002, quelle maladie a été éliminée en Europe grâce aux vaccins ?",
+                "explanation": "La poliomyélite a été déclarée éliminée en Europe en 2002, grâce à la vaccination massive menée depuis les années 1950. Éliminée ne veut pas dire éradiquée : elle circule encore dans quelques pays du monde.",
+                "options": [
+                  { "id": "a", "text": "La grippe" },
+                  { "id": "b", "text": "La varicelle" },
+                  { "id": "c", "text": "La poliomyélite (polio)" },
+                  { "id": "d", "text": "La rougeole" }
+                ]
+              },
+              {
+                "id": "q3",
+                "text": "Quels vaccins sont recommandés entre 11 et 14 ans ?",
+                "explanation": "Entre 11 et 14 ans, le calendrier recommande le rappel dTcaPolio (diphtérie, tétanos, coqueluche, poliomyélite) entre 11 et 13 ans, le vaccin méningocoques ACWY et le vaccin HPV.",
+                "options": [
+                  { "id": "a", "text": "Grippe, rage et hépatite A" },
+                  { "id": "b", "text": "dTcaPolio, méningocoques ACWY et HPV" },
+                  { "id": "c", "text": "Aucun vaccin à cet âge" },
+                  { "id": "d", "text": "Seulement le vaccin contre la varicelle" }
+                ]
+              },
+              {
+                "id": "q4",
+                "text": "Qui doit se faire vacciner contre le papillomavirus (HPV) ?",
+                "explanation": "Depuis 2021, la vaccination HPV est recommandée pour tous — filles et garçons — entre 11 et 14 ans, car le virus peut toucher et se transmettre par les deux. Un rattrapage reste possible jusqu'à 26 ans.",
+                "options": [
+                  { "id": "a", "text": "Uniquement les filles" },
+                  { "id": "b", "text": "Uniquement les garçons" },
+                  { "id": "c", "text": "Les filles et les garçons" },
+                  { "id": "d", "text": "Personne avant 18 ans" }
+                ]
+              },
+              {
+                "id": "q5",
+                "text": "Où peut-on se faire vacciner ?",
+                "explanation": "Depuis 2023, le médecin, le pharmacien, l'infirmier et la sage-femme peuvent tous vacciner dès 11 ans. Et en classe de 5e, le collège propose la vaccination contre le HPV et les méningocoques ACWY, prise en charge à 100 %, avec l'autorisation des parents.",
+                "options": [
+                  { "id": "a", "text": "Uniquement à l'hôpital" },
+                  { "id": "b", "text": "Chez le médecin, en pharmacie ou chez un infirmier, à partir de 11 ans" },
+                  { "id": "c", "text": "Seulement dans un laboratoire d'analyses médicales" },
+                  { "id": "d", "text": "Seulement pendant les campagnes de vaccination" },
+                  { "id": "e", "text": "Au collège, pour le HPV et les méningocoques ACWY" }
+                ]
+              }
+            ]
+          },
+          "correctAnswer": {
+            "answers": {
+              "q1": ["b"],
+              "q2": ["c"],
+              "q3": ["b"],
+              "q4": ["c"],
+              "q5": ["b", "e"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "kind": "CONTENT",
+      "content": {
+        "contentType": "IMAGE",
+        "title": "Ce que je retiens",
+        "imageUrl": "https://res.cloudinary.com/do44r5xbn/image/upload/v1787226184/Vaccination-affiche-v2_xmqbqz.webp"
+      }
+    }
+  ]
+}

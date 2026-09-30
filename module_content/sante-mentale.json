@@ -1,0 +1,332 @@
+{
+  "title": "Santé Mentale",
+  "description": "C'est quoi ? Est-ce que je vais mal ? Comment aider ?",
+  "duration": 20,
+  "category": "CPS",
+  "isActive": false,
+  "steps": [
+    {
+      "kind": "GAME",
+      "gameType": "KANBAN",
+      "content": {
+        "title": "La Santé Mentale",
+        "instructions": "Recréer la définition et les facteurs qui impactent la santé mentale"
+      },
+      "gameData": [
+        {
+          "questionData": {
+            "categories": ["Définition", "Facteurs de prévention", "Facteurs négatifs"],
+            "items": [
+              "Savoir gérer ses émotions",
+              "Bien dormir",
+              "Être bien en compagnie des autres",
+              "Se sentir bien dans sa tête",
+              "Avoir des activités",
+              "Écouter son corps",
+              "Repenser sans cesse à la même chose",
+              "S'isoler",
+              "Ne plus vouloir bouger"
+            ]
+          },
+          "correctAnswer": {
+            "Savoir gérer ses émotions": "Définition",
+            "Bien dormir": "Facteurs de prévention",
+            "Être bien en compagnie des autres": "Définition",
+            "Se sentir bien dans sa tête": "Définition",
+            "Avoir des activités": "Facteurs de prévention",
+            "Écouter son corps": "Facteurs de prévention",
+            "Repenser sans cesse à la même chose": "Facteurs négatifs",
+            "S'isoler": "Facteurs négatifs",
+            "Ne plus vouloir bouger": "Facteurs négatifs"
+          }
+        }
+      ]
+    },
+    {
+      "kind": "CONTENT",
+      "content": {
+        "contentType": "IMAGE",
+        "title": "C'est quoi la santé mentale ?",
+        "imageUrl": "https://res.cloudinary.com/do44r5xbn/image/upload/v1785226009/Cquoi_pil1mk.webp"
+      }
+    },
+    {
+      "kind": "CONTENT",
+      "content": {
+        "contentType": "VIDEO",
+        "title": "C'est quoi un·e psychologue ?",
+        "videoUrl": "https://www.youtube.com/watch?v=znnNEleNiAo"
+      }
+    },
+    {
+      "kind": "CONTENT",
+      "content": {
+        "contentType": "INFO",
+        "title": "Différence psychologue/psychiatre",
+        "body": "Le psychologue et le psychiatre aident tous les deux à aller mieux, mais ils sont différents : le psychiatre est médecin (il a fait des études de médecine) et peut prescrire des médicaments. Le psychologue n'est pas médecin — il propose l'écoute et des techniques pour comprendre et gérer ses émotions, mais ne peut pas prescrire de médicaments. Les deux sont soumis au secret professionnel : ce que tu leur dis reste confidentiel."
+      }
+    },
+    {
+      "kind": "GAME",
+      "gameType": "MOTS_CROISES",
+      "content": {
+        "title": "Oser en parler, c'est être fort.e",
+        "instructions": "Remplis la grille à partir des définitions"
+      },
+      "gameData": [
+        {
+          "questionData": {
+            "words": [
+              { "id": "w1", "answer": "tabou", "clue": "La santé mentale n'est pas un __", "row": 3, "col": 1, "dir": "H", "manual": true },
+              { "id": "w2", "answer": "courage", "clue": "Il en faut pour dire qu'on ne va pas bien.", "row": 1, "col": 8, "dir": "V", "manual": true },
+              { "id": "w3", "answer": "triste", "clue": "Tu as le droit de dire que tu l'es.", "row": 3, "col": 1, "dir": "V", "manual": true },
+              { "id": "w4", "answer": "psychologue", "clue": "Personne qui t'écoute, t'aide à comprendre ce que tu ressens.", "row": 6, "col": 0, "dir": "H", "manual": true },
+              { "id": "w5", "answer": "internet", "clue": "On y trouve des infos, mais ça ne remplace pas un professionnel.", "row": 9, "col": 4, "dir": "H", "manual": true },
+              { "id": "w6", "answer": "infirmerie", "clue": "Lieu où tu peux aller pour parler au collège.", "row": 0, "col": 10, "dir": "V", "manual": true }
+            ]
+          },
+          "correctAnswer": {}
+        }
+      ]
+    },
+    {
+      "kind": "GAME",
+      "gameType": "SWIPE",
+      "content": {
+        "title": "Les signes d'alerte",
+        "instructions": "Balaye à droite si ce signe doit t'alerter, à gauche si c'est normal de temps en temps"
+      },
+      "gameData": [
+        {
+          "questionData": {
+            "trueLabel": "Ça doit m'alerter",
+            "falseLabel": "C'est normal de temps en temps",
+            "cards": [
+              {
+                "id": "c1",
+                "text": "Je n'ai plus envie de faire ce que j'aimais, depuis plusieurs semaines",
+                "answer": "vrai",
+                "explanation": "Perdre l'envie pour ce qu'on aimait, et que ça dure, c'est l'un des signes les plus parlants. Ce n'est pas de la flemme."
+              },
+              {
+                "id": "c2",
+                "text": "Je dors mal depuis longtemps",
+                "answer": "vrai",
+                "explanation": "Une mauvaise nuit arrive à tout le monde. Plusieurs semaines de mauvais sommeil, c'est autre chose : le corps dit que quelque chose ne va pas."
+              },
+              {
+                "id": "c3",
+                "text": "Je mange beaucoup moins, ou beaucoup plus qu'avant",
+                "answer": "vrai",
+                "explanation": "Dans les deux sens, un changement net et durable de l'appétit est un signal à prendre au sérieux."
+              },
+              {
+                "id": "c4",
+                "text": "Je m'isole et j'évite les autres",
+                "answer": "vrai",
+                "explanation": "S'isoler soulage sur le moment, mais entretient le mal-être. C'est souvent le moment où on a le plus besoin des autres."
+              },
+              {
+                "id": "c5",
+                "text": "J'ai souvent mal au ventre ou à la tête sans être malade",
+                "answer": "vrai",
+                "explanation": "Le mal-être se manifeste aussi dans le corps. Des douleurs répétées sans cause médicale méritent qu'on en parle."
+              },
+              {
+                "id": "c6",
+                "text": "Je suis souvent triste, stressé.e ou en colère depuis des semaines",
+                "answer": "vrai",
+                "explanation": "Les émotions fortes font partie de la vie. Quand elles s'installent et ne repartent plus, c'est un signe d'alerte."
+              },
+              {
+                "id": "c7",
+                "text": "J'ai passé une mauvaise journée hier",
+                "answer": "faux",
+                "explanation": "Une mauvaise journée, ça arrive à tout le monde. Ce n'est pas un signe d'alerte."
+              },
+              {
+                "id": "c8",
+                "text": "J'étais stressé.e avant un contrôle",
+                "answer": "faux",
+                "explanation": "Le stress avant une épreuve est normal, et même utile : il met le corps en alerte. Ce qui compte, c'est qu'il retombe après."
+              }
+            ]
+          },
+          "correctAnswer": {}
+        }
+      ]
+    },
+    {
+      "kind": "CONTENT",
+      "content": {
+        "contentType": "VIDEO",
+        "title": "Comment savoir si je ne vais pas bien ?",
+        "videoUrl": "https://www.youtube.com/watch?v=Nn8zyaJ73vg&list=PLdpMx-7U-O1cVA5m4dbLaJT4Wg2iUMJc0&index=5&ab_channel=InstitutdePsychiatrie"
+      }
+    },
+    {
+      "kind": "CONTENT",
+      "content": {
+        "contentType": "IMAGE",
+        "title": "Que faire quand je ne vais pas bien ?",
+        "imageUrl": "https://res.cloudinary.com/do44r5xbn/image/upload/v1785225997/quefaire_fmxnsm.webp"
+      }
+    },
+    {
+      "kind": "GAME",
+      "gameType": "KANBAN",
+      "content": {
+        "title": "Comment aider quelqu'un qui ne va pas bien ?",
+        "instructions": "Classe chaque affirmation dans la bonne catégorie"
+      },
+      "gameData": [
+        {
+          "questionData": {
+            "categories": ["Il faut", "Il ne faut pas"],
+            "items": [
+              "Écouter",
+              "Juger",
+              "Accompagner vers un adulte",
+              "Garder pour soi la situation",
+              "Proposer des activités",
+              "Rester présent sans forcer à parler",
+              "Rappeler que ce n'est pas honteux de ne pas aller bien",
+              "Minimiser ce qu'il ressent"
+            ]
+          },
+          "correctAnswer": {
+            "Écouter": "Il faut",
+            "Juger": "Il ne faut pas",
+            "Accompagner vers un adulte": "Il faut",
+            "Garder pour soi la situation": "Il ne faut pas",
+            "Proposer des activités": "Il faut",
+            "Rester présent sans forcer à parler": "Il faut",
+            "Rappeler que ce n'est pas honteux de ne pas aller bien": "Il faut",
+            "Minimiser ce qu'il ressent": "Il ne faut pas"
+          }
+        }
+      ]
+    },
+    {
+      "kind": "CONTENT",
+      "content": {
+        "contentType": "IMAGE",
+        "title": "Et pour les autres ?",
+        "imageUrl": "https://res.cloudinary.com/do44r5xbn/image/upload/v1785226739/pourlesautres_grtcsf.webp"
+      }
+    },
+    {
+      "kind": "GAME",
+      "gameType": "QUIZ",
+      "content": {
+        "title": "Quiz Final",
+        "instructions": "Réponds à toutes les questions"
+      },
+      "gameData": [
+        {
+          "questionData": {
+            "questions": [
+              {
+                "id": "q1",
+                "text": "La santé mentale c'est ?",
+                "explanation": "La santé, ce n'est pas seulement le corps. La santé mentale, c'est être bien dans sa tête, gérer ses émotions et avoir de bonnes relations avec les autres.",
+                "options": [
+                  { "id": "a", "text": "Être bien dans sa tête" },
+                  { "id": "b", "text": "Ne pas avoir de maladies" },
+                  { "id": "c", "text": "Gérer ses émotions" },
+                  { "id": "d", "text": "Avoir de bonnes relations avec les autres" }
+                ]
+              },
+              {
+                "id": "q2",
+                "text": "Si j'ai besoin de parler, je peux trouver de l'écoute auprès",
+                "explanation": "Parfois tu veux juste parler à quelqu'un, vider ton sac. Tu pourrais avoir envie de parler à une application ou une IA, mais attention. L'IA peut se tromper, elle ne remplace pas un humain. Tu n'es pas seul.e. Il y a toujours quelqu'un pour t'écouter.",
+                "options": [
+                  { "id": "a", "text": "de l'infirmier.e scolaire" },
+                  { "id": "b", "text": "un.e professeur.e ou CPE" },
+                  { "id": "c", "text": "du psychologue scolaire" },
+                  { "id": "d", "text": "de l'IA" },
+                  { "id": "e", "text": "de l'assistant.e de service social" }
+                ]
+              },
+              {
+                "id": "q3",
+                "text": "Si je ne vais pas bien",
+                "explanation": "Beaucoup de gens pensent qu'il ne faut pas parler quand on ne va pas bien. C'est faux. Parler de ses émotions, c'est courageux.",
+                "options": [
+                  { "id": "a", "text": "C'est la honte, j'en parle pas." },
+                  { "id": "b", "text": "J'ai le courage de dire que je suis triste, stressé·e." },
+                  { "id": "c", "text": "Je demande de l'aide." },
+                  { "id": "d", "text": "Ça va passer !" }
+                ]
+              },
+              {
+                "id": "q4",
+                "text": "Quels signes doivent m'alerter ?",
+                "explanation": "Parfois on ne va pas bien. Des signes doivent nous alerter. Avoir un ou deux signes de temps en temps, c'est normal. Mais si ça dure, il faut en parler.",
+                "options": [
+                  { "id": "a", "text": "Je suis moins performant aux jeux vidéos" },
+                  { "id": "b", "text": "Je n'ai plus envie de faire ce que j'aime" },
+                  { "id": "c", "text": "Je dors mal depuis plusieurs semaines" },
+                  { "id": "d", "text": "Je sors tout le temps" },
+                  { "id": "e", "text": "Je mange beaucoup moins" },
+                  { "id": "f", "text": "Je mange beaucoup plus" },
+                  { "id": "g", "text": "Sortir, aller au collège, voir du monde devient difficile" },
+                  { "id": "h", "text": "J'ai mal au ventre, à la tête" },
+                  { "id": "i", "text": "J'ai le nez qui coule et je tousse" }
+                ]
+              },
+              {
+                "id": "q5",
+                "text": "Que faire si je ne vais pas bien ?",
+                "explanation": "Il existe toujours des personnes et des solutions pour t'aider. Tes parents, la famille, un prof, l'infirmier.e scolaire, un psy ou même un.e ami.e. Ce n'est pas bizarre de voir un psy, c'est même très courant et ça peut vraiment t'aider. Tu peux appeler aussi le 3114, le 3018 ou le 119. Un bouton 'Demander de l'aide' est disponible sur Pronote ou l'ENT. Tu peux cliquer dessus si tu veux prévenir un adulte sans avoir à parler tout de suite.",
+                "options": [
+                  { "id": "a", "text": "Ne rien dire, cela va passer." },
+                  { "id": "b", "text": "Parler à mes parents ou quelqu'un de ma famille." },
+                  { "id": "c", "text": "Parler à un adulte de confiance." },
+                  { "id": "d", "text": "Parler à un.e ami.e." },
+                  { "id": "e", "text": "Demander à internet ce que j'ai." },
+                  { "id": "f", "text": "Demander de l'aide via Pronote ou l'ENT." }
+                ]
+              },
+              {
+                "id": "q6",
+                "text": "Comment être là pour les autres ?",
+                "explanation": "Parfois, un ami ne va pas bien. Tu ne peux pas tout faire, mais tu peux faire de petites choses importantes pour aider. Être là c'est déjà beaucoup. Tu n'as pas à tout régler tout seul, et tu n'es pas responsable si ton ami ne va pas mieux tout de suite.",
+                "options": [
+                  { "id": "a", "text": "Dire que c'est pas normal, le juger." },
+                  { "id": "b", "text": "Être compréhensif et dire que cela peut arriver à tout le monde." },
+                  { "id": "c", "text": "Lui dire de garder ça pour lui/elle." },
+                  { "id": "d", "text": "Proposer de l'accompagner pour en parler à un adulte." },
+                  { "id": "e", "text": "Aller confier le problème à un adulte si je suis inquiet." }
+                ]
+              },
+              {
+                "id": "q7",
+                "text": "Dire qu'on ne va pas bien, c'est…",
+                "explanation": "Parfois, on a envie de rester seul. Mais en parler, c'est déjà le premier pas pour aller mieux. Cela demande du courage et est un droit !",
+                "options": [
+                  { "id": "a", "text": "Être faible" },
+                  { "id": "b", "text": "Être courageux" },
+                  { "id": "c", "text": "Un droit" },
+                  { "id": "d", "text": "Inutile" }
+                ]
+              }
+            ]
+          },
+          "correctAnswer": {
+            "answers": {
+              "q1": ["a", "c", "d"],
+              "q2": ["a", "b", "c", "e"],
+              "q3": ["b", "c"],
+              "q4": ["b", "c", "e", "f", "g", "h"],
+              "q5": ["b", "c", "d", "f"],
+              "q6": ["b", "d", "e"],
+              "q7": ["b", "c"]
+            }
+          }
+        }
+      ]
+    }
+  ]
+}

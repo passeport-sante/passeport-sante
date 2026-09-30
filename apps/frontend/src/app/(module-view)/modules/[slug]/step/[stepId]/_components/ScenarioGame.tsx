@@ -7,6 +7,7 @@ import { ArrowLeft, Shield } from "lucide-react";
 import { FeedbackOverlay } from "@/components/modules/FeedbackOverlay";
 import { getGuestStudentId, submitQuizResponse } from "@/lib/modules";
 import { goToNextStep, gameProgress, type FlowStep } from "@/lib/step-flow";
+import { scenarioCorrectIds, type ScenarioCorrectAnswer } from "@/lib/steps-admin";
 
 interface Choice {
   id: string;
@@ -20,7 +21,7 @@ interface StepData {
   content: { title: string; instructions: string; shieldMode?: boolean };
   gameData: {
     questionData: { situation: string; choices: Choice[] };
-    correctAnswer: { choiceId: string; explanation?: string };
+    correctAnswer: ScenarioCorrectAnswer;
   }[];
   module: {
     id: string;
@@ -56,7 +57,8 @@ export function ScenarioGame({ step }: { step: StepData }) {
   const gameData = allGameData[currentIndex];
   const situation = gameData?.questionData?.situation ?? "";
   const choices = gameData?.questionData?.choices ?? [];
-  const correctChoiceId = gameData?.correctAnswer?.choiceId ?? "";
+  // Plusieurs réponses peuvent être acceptables pour une même situation.
+  const correctChoiceIds = scenarioCorrectIds(gameData?.correctAnswer);
   const explanation = gameData?.correctAnswer?.explanation ?? "";
   const isLastItem = currentIndex === total - 1;
 
@@ -72,7 +74,7 @@ export function ScenarioGame({ step }: { step: StepData }) {
 
   // ── Mode normal ──────────────────────────────────────────────────────────────
   function handleSubmit() {
-    const isCorrect = selected === correctChoiceId;
+    const isCorrect = !!selected && correctChoiceIds.includes(selected);
     const guestStudentId = getGuestStudentId(step.module.slug);
     if (guestStudentId) {
       submitQuizResponse({

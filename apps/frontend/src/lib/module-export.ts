@@ -105,10 +105,11 @@ function renderGame(gameType: GameType, data: ExportGameData): string {
     }
     case "SCENARIO": {
       const choices = (q.choices as Json[]) ?? [];
-      const correctId = String(a.choiceId ?? "");
+      // Plusieurs réponses peuvent être acceptables (ancien format : choiceId seul).
+      const correctIds = a.choiceIds ? toIds(a.choiceIds) : toIds(a.choiceId);
       const li = choices
         .map((c) => {
-          const ok = String(c.id) === correctId;
+          const ok = correctIds.includes(String(c.id));
           return `<li class="${ok ? "correct" : ""}">${ok ? "✔ " : ""}${esc(c.text)}</li>`;
         })
         .join("");

@@ -1,0 +1,494 @@
+{
+  "title": "Bien manger",
+  "description": "Ce que ton corps fait vraiment de ce que tu manges : les familles d'aliments, les pièges du sucre, les idées reçues, et comment composer une assiette qui tient la route.",
+  "duration": 20,
+  "category": "Alimentation & Nutrition",
+  "colorPrimary": "#D97706",
+  "colorSecondary": "#14290A",
+  "colorCard": "#ffedd5",
+  "colorCardSecondary": "#fed7aa",
+  "isActive": false,
+  "steps": [
+    {
+      "kind": "CONTENT",
+      "content": {
+        "contentType": "INFO",
+        "title": "Pourquoi on mange ?",
+        "body": "Manger, ce n'est pas seulement remplir son ventre. C'est apporter à ton corps de quoi grandir, réfléchir, bouger et se réparer — et à ton âge, il en a particulièrement besoin.\n\nCe que contiennent les aliments se range en deux familles :\n\nLes macronutriments — glucides, protéines, lipides. Ce sont eux qui donnent l'énergie et servent de matériaux de construction. On en a besoin en grande quantité, d'où leur nom.\n\nLes micronutriments — vitamines et minéraux. Ils ne donnent aucune énergie, et on en a besoin en toutes petites quantités. Mais sans eux, rien ne fonctionne : ni les muscles, ni le cerveau, ni les défenses contre les microbes."
+      }
+    },
+    {
+      "kind": "GAME",
+      "gameType": "CORPS",
+      "content": {
+        "title": "Où ça agit dans ton corps ?",
+        "instructions": "Touche un nutriment, puis la partie du corps qu'il fait fonctionner"
+      },
+      "gameData": [
+        {
+          "questionData": {
+            "benefits": [
+              {
+                "id": "b1",
+                "text": "Le calcium les rend solides — et tu les construis jusqu'à tes 20 ans environ",
+                "zoneIds": ["os"]
+              },
+              {
+                "id": "b2",
+                "text": "Le glucose est le seul carburant que cet organe sait utiliser",
+                "zoneIds": ["tete"]
+              },
+              {
+                "id": "b3",
+                "text": "Après l'effort, les protéines viennent les réparer",
+                "zoneIds": ["bras", "pectoraux", "abdos", "jambes"],
+                "matchAny": true
+              },
+              {
+                "id": "b4",
+                "text": "Le fer permet de transporter l'oxygène, de là où tu le respires vers là où il est pompé",
+                "zoneIds": ["poumons", "coeur"],
+                "matchAny": true
+              },
+              {
+                "id": "b5",
+                "text": "Les lipides protègent les organes et mettent l'énergie en réserve, partout",
+                "zoneIds": ["corps"]
+              }
+            ]
+          },
+          "correctAnswer": {}
+        }
+      ]
+    },
+    {
+      "kind": "GAME",
+      "gameType": "KANBAN",
+      "content": {
+        "title": "Dans quelle famille ?",
+        "instructions": "Classe chaque aliment selon ce qu'il apporte surtout"
+      },
+      "gameData": [
+        {
+          "questionData": {
+            "categories": ["Glucides", "Protéines", "Lipides"],
+            "items": [
+              "Pâtes",
+              "Riz",
+              "Pain",
+              "Œufs",
+              "Lentilles",
+              "Poulet",
+              "Huile d'olive",
+              "Noix",
+              "Avocat"
+            ]
+          },
+          "correctAnswer": {
+            "Pâtes": "Glucides",
+            "Riz": "Glucides",
+            "Pain": "Glucides",
+            "Œufs": "Protéines",
+            "Lentilles": "Protéines",
+            "Poulet": "Protéines",
+            "Huile d'olive": "Lipides",
+            "Noix": "Lipides",
+            "Avocat": "Lipides"
+          }
+        }
+      ]
+    },
+    {
+      "kind": "CONTENT",
+      "gameType": "PUZZLE",
+      "content": {
+        "title": "Le voyage d'un repas",
+        "instructions": "Remets les étapes de la digestion dans l'ordre"
+      },
+      "gameData": [
+        {
+          "questionData": {
+            "title": "De la première bouchée à la sortie",
+            "items": [
+              { "id": "a", "text": "Dans la bouche, les dents découpent les aliments et la salive commence déjà à les transformer." },
+              { "id": "b", "text": "Les aliments descendent le long de l'œsophage jusqu'à l'estomac." },
+              { "id": "c", "text": "Dans l'estomac, ils sont brassés et réduits en bouillie pendant plusieurs heures." },
+              { "id": "d", "text": "Dans l'intestin grêle, les nutriments passent dans le sang : c'est là que ton corps récupère ce qui l'intéresse." },
+              { "id": "e", "text": "Dans le gros intestin, ce qui n'a pas été absorbé — dont les fibres — forme les déchets." }
+            ]
+          },
+          "correctAnswer": { "order": ["a", "b", "c", "d", "e"] }
+        }
+      ]
+    },
+    {
+      "kind": "CONTENT",
+      "content": {
+        "contentType": "INFO",
+        "title": "Les fibres, tes alliées",
+        "body": "Les fibres viennent uniquement des végétaux. Ton corps ne sait pas les digérer — et c'est justement ce qui les rend utiles : elles traversent tout le tube digestif et le font travailler au passage.\n\nRésultat : un transit régulier, moins de constipation, et une sensation de satiété qui dure plus longtemps qu'avec un aliment sucré.\n\nOn les trouve dans les fruits, les légumes, les céréales complètes (pain complet, riz complet) et les légumineuses (lentilles, pois chiches, haricots).\n\nL'objectif à ton âge tourne autour de 25 à 30 g par jour : en pratique, 5 portions de fruits et légumes, plus des féculents complets, et tu y es."
+      }
+    },
+    {
+      "kind": "GAME",
+      "gameType": "SWIPE",
+      "content": {
+        "title": "Mythe ou réalité ?",
+        "instructions": "Fais glisser chaque affirmation du bon côté"
+      },
+      "gameData": [
+        {
+          "questionData": {
+            "trueLabel": "Mythe",
+            "falseLabel": "Réalité",
+            "cards": [
+              {
+                "id": "c1",
+                "text": "Sauter un repas fait maigrir",
+                "answer": "vrai",
+                "explanation": "Le corps compense : on a plus faim au repas suivant, on grignote entre les deux, et en attendant on tient moins bien en cours. Ce n'est pas comme ça qu'on régule son poids."
+              },
+              {
+                "id": "c2",
+                "text": "Plus de protéines, plus de muscles",
+                "answer": "vrai",
+                "explanation": "Au-delà de tes besoins, les protéines en trop ne deviennent pas du muscle : le corps s'en débarrasse. Ce sont l'entraînement et le sommeil qui construisent le muscle. À ton âge, une alimentation variée suffit largement — les poudres protéinées n'ont aucun intérêt."
+              },
+              {
+                "id": "c3",
+                "text": "Les compléments alimentaires peuvent remplacer les repas",
+                "answer": "vrai",
+                "explanation": "Une gélule de vitamines n'apporte ni énergie, ni fibres, ni tout ce qu'un aliment contient et qu'on ne sait même pas encore mesurer. Elle complète, au mieux — elle ne remplace pas."
+              },
+              {
+                "id": "c4",
+                "text": "Manger sans gluten est plus sain pour tout le monde",
+                "answer": "vrai",
+                "explanation": "Indispensable pour les personnes atteintes de maladie cœliaque ou intolérantes, soit environ une sur cent. Pour les autres, aucun bénéfice démontré — et les produits « sans gluten » industriels sont souvent plus gras et plus sucrés."
+              },
+              {
+                "id": "c5",
+                "text": "Un produit « light » est souvent plus sucré qu'il n'y paraît",
+                "answer": "faux",
+                "explanation": "Quand on retire le gras, il faut compenser le goût, souvent avec du sucre ou des additifs. D'où l'intérêt de retourner le paquet et de lire l'étiquette plutôt que de se fier à ce qui est écrit devant."
+              },
+              {
+                "id": "c6",
+                "text": "Boire de l'eau aide à avoir un bon transit",
+                "answer": "faux",
+                "explanation": "L'eau et les fibres fonctionnent en binôme. Beaucoup de fibres sans boire assez, et l'effet s'inverse."
+              },
+              {
+                "id": "c7",
+                "text": "Les féculents font grossir",
+                "answer": "vrai",
+                "explanation": "Pâtes, riz et pain ne font pas grossir en eux-mêmes : ce sont ta source d'énergie principale. C'est la quantité, et surtout ce qu'on met dessus — sauces grasses, fromage, beurre — qui change la donne."
+              }
+            ]
+          },
+          "correctAnswer": {}
+        }
+      ]
+    },
+    {
+      "kind": "CONTENT",
+      "content": {
+        "contentType": "INFO",
+        "title": "Savoir lire un paquet",
+        "body": "Le devant d'un paquet, c'est de la publicité. Les informations utiles sont derrière.\n\nLe Nutri-Score classe les produits de A à E, à quantité égale. Attention à son usage : il sert à comparer des produits d'une même famille — deux paquets de céréales entre eux, deux pizzas entre elles. Comparer une pizza et une pomme n'a aucun sens.\n\nLa liste des ingrédients est rangée de la plus grande à la plus petite quantité. Si le sucre apparaît dans les trois premiers, tu sais à quoi t'en tenir. Et une liste très longue, avec des noms qu'on ne reconnaît pas, signale souvent un produit ultra-transformé — ceux dont la consommation régulière est associée à davantage de maladies chroniques."
+      }
+    },
+    {
+      "kind": "GAME",
+      "gameType": "CURSEUR",
+      "content": {
+        "title": "Combien de sucre là-dedans ?",
+        "instructions": "Place le curseur sur le nombre de morceaux de sucre que tu penses trouver (1 morceau = 5 g)"
+      },
+      "gameData": [
+        {
+          "questionData": {
+            "items": [
+              {
+                "id": "i1",
+                "text": "Une canette de soda (33 cl)",
+                "leftLabel": "0 morceau",
+                "rightLabel": "12 morceaux",
+                "mode": "estimation",
+                "valueMin": 0,
+                "valueMax": 12,
+                "unit": "morceaux",
+                "target": 7,
+                "tolerance": 1,
+                "explanation": "Environ 35 g, soit sept morceaux. L'OMS conseille de ne pas dépasser environ 50 g de sucres ajoutés par jour à ton âge : cette seule canette en représente déjà les deux tiers."
+              },
+              {
+                "id": "i2",
+                "text": "Une briquette de jus de fruits (20 cl)",
+                "leftLabel": "0 morceau",
+                "rightLabel": "8 morceaux",
+                "mode": "estimation",
+                "valueMin": 0,
+                "valueMax": 8,
+                "unit": "morceaux",
+                "target": 4,
+                "tolerance": 1,
+                "explanation": "Même « 100 % pur jus », sans sucre ajouté : le sucre du fruit est là, mais sans les fibres qui ralentissent son passage dans le sang. Un fruit entier n'a pas le même effet qu'un verre de jus."
+              },
+              {
+                "id": "i3",
+                "text": "Deux cuillères de pâte à tartiner",
+                "leftLabel": "0 morceau",
+                "rightLabel": "8 morceaux",
+                "mode": "estimation",
+                "valueMin": 0,
+                "valueMax": 8,
+                "unit": "morceaux",
+                "target": 4,
+                "tolerance": 1,
+                "explanation": "Le sucre est le premier ingrédient de la liste, avant le gras et bien avant le cacao. Ça ne l'interdit pas — ça se sait, simplement."
+              },
+              {
+                "id": "i4",
+                "text": "Un yaourt nature",
+                "leftLabel": "0 morceau",
+                "rightLabel": "8 morceaux",
+                "mode": "estimation",
+                "valueMin": 0,
+                "valueMax": 8,
+                "unit": "morceaux",
+                "target": 0,
+                "tolerance": 1,
+                "explanation": "Aucun sucre ajouté : le peu qu'il contient vient naturellement du lait. C'est le repère à garder en tête pour comparer avec un yaourt aromatisé, qui en contient souvent deux à trois morceaux."
+              }
+            ]
+          },
+          "correctAnswer": {}
+        }
+      ]
+    },
+    {
+      "kind": "CONTENT",
+      "gameType": "KANBAN",
+      "content": {
+        "title": "Compose ton assiette",
+        "instructions": "Choisis au moins 4 aliments que tu mettrais dans ton assiette au quotidien",
+        "freeMode": true,
+        "minRequired": 4
+      },
+      "gameData": [
+        {
+          "questionData": {
+            "categories": ["Au quotidien", "De temps en temps"],
+            "items": [
+              "Légumes cuits ou crus",
+              "Fruits frais",
+              "Pain ou céréales complètes",
+              "Poisson",
+              "Œufs ou légumineuses",
+              "Yaourt ou fromage",
+              "Chips",
+              "Sodas",
+              "Bonbons",
+              "Burger-frites"
+            ]
+          },
+          "correctAnswer": {}
+        }
+      ]
+    },
+    {
+      "kind": "CONTENT",
+      "gameType": "SCENARIO",
+      "content": {
+        "title": "Ça t'arrive aussi ?",
+        "instructions": "Choisis ce qui te semble le plus malin",
+        "shieldMode": false
+      },
+      "gameData": [
+        {
+          "questionData": {
+            "situation": "Il est 10 h, tu n'as rien avalé ce matin et tu n'arrives plus à te concentrer en cours.",
+            "choices": [
+              { "id": "a", "text": "J'attends le déjeuner, ça passera", "points": 0 },
+              { "id": "b", "text": "Je prends un fruit ou quelques amandes si j'en ai", "points": 0 },
+              { "id": "c", "text": "Je prends une barre chocolatée au distributeur", "points": 0 }
+            ]
+          },
+          "correctAnswer": {
+            "choiceId": "b",
+            "explanation": "Un fruit ou une poignée d'oléagineux relance l'énergie sans le pic de sucre suivi du coup de barre. La barre chocolatée dépanne, mais l'effet retombe vite — et souvent avant midi."
+          }
+        },
+        {
+          "questionData": {
+            "situation": "À la cantine, tu as le choix entre plusieurs entrées et tu n'as pas très faim.",
+            "choices": [
+              { "id": "a", "text": "Je saute l'entrée et je prends double dessert", "points": 0 },
+              { "id": "b", "text": "Je prends des crudités, même une petite part", "points": 0 },
+              { "id": "c", "text": "Je ne prends rien du tout", "points": 0 }
+            ]
+          },
+          "correctAnswer": {
+            "choiceId": "b",
+            "explanation": "Une petite part de crudités apporte des fibres et des vitamines sans te remplir. Le repas de midi est le moment le plus simple pour atteindre tes 5 fruits et légumes de la journée."
+          }
+        },
+        {
+          "questionData": {
+            "situation": "Tu regardes une série le soir, et tu te retrouves avec un paquet de gâteaux entamé devant toi.",
+            "choices": [
+              { "id": "a", "text": "Je mange directement dans le paquet, sans y penser", "points": 0 },
+              { "id": "b", "text": "J'en mets quelques-uns dans un bol et je range le paquet", "points": 0 },
+              { "id": "c", "text": "Je me force à ne rien prendre du tout", "points": 0 }
+            ]
+          },
+          "correctAnswer": {
+            "choiceId": "b",
+            "explanation": "Devant un écran, on mange sans s'en rendre compte : le cerveau est ailleurs et n'enregistre pas la quantité. Servir une portion à l'avance change tout — et s'interdire complètement finit souvent par l'effet inverse."
+          }
+        }
+      ]
+    },
+    {
+      "kind": "CONTENT",
+      "content": {
+        "contentType": "INFO",
+        "title": "Quand il manque quelque chose",
+        "body": "Manger trop peu varié finit par se voir.\n\nLe fer transporte l'oxygène dans le sang. Quand il manque, c'est l'anémie : fatigue qui ne passe pas, essoufflement au moindre effort, pâleur. Les filles réglées y sont plus exposées, parce qu'elles en perdent chaque mois. On en trouve dans la viande rouge, le boudin, les lentilles et les légumes verts — et la vitamine C d'un fruit, au même repas, aide le corps à mieux l'absorber.\n\nLe calcium construit tes os, et ça se joue maintenant : entre 11 et 17 ans, il t'en faut environ 1 150 mg par jour, soit plus qu'à un adulte. Ce que tu ne construis pas pendant ces années-là ne se rattrape pas ensuite.\n\nÀ l'inverse, trop de sucre, de gras et de produits ultra-transformés sur des années pèse aussi sur la santé. Dans les deux sens, c'est la régularité qui compte : l'équilibre se joue sur la semaine, pas sur un repas."
+      }
+    },
+    {
+      "kind": "GAME",
+      "gameType": "QUIZ",
+      "content": {
+        "title": "Le grand quiz",
+        "instructions": "Réponds à toutes les questions"
+      },
+      "gameData": [
+        {
+          "questionData": {
+            "questions": [
+              {
+                "id": "q1",
+                "text": "Les macronutriments, ce sont ?",
+                "explanation": "Glucides, protéines et lipides donnent l'énergie et construisent le corps. Les vitamines et minéraux sont des micronutriments : indispensables, mais sans apport d'énergie.",
+                "options": [
+                  { "id": "a", "text": "Les glucides, les protéines et les lipides" },
+                  { "id": "b", "text": "Ce qui donne de l'énergie et construit ton corps" },
+                  { "id": "c", "text": "Les vitamines et les minéraux" },
+                  { "id": "d", "text": "Uniquement ce qu'on trouve dans la viande" }
+                ]
+              },
+              {
+                "id": "q2",
+                "text": "À quoi servent les vitamines et les minéraux ?",
+                "explanation": "Ils ne fournissent aucune énergie — c'est pour ça qu'un complément ne remplacera jamais un repas. Mais sans eux, les muscles, le cerveau et les défenses immunitaires ne fonctionnent pas correctement.",
+                "options": [
+                  { "id": "a", "text": "À faire fonctionner le corps, sans donner d'énergie" },
+                  { "id": "b", "text": "À protéger contre les microbes, comme la vitamine C" },
+                  { "id": "c", "text": "À fournir l'essentiel de ton énergie de la journée" },
+                  { "id": "d", "text": "À remplacer un repas quand on est pressé" }
+                ]
+              },
+              {
+                "id": "q3",
+                "text": "Où trouve-t-on des fibres ?",
+                "explanation": "Uniquement dans les végétaux peu transformés. Ni la viande, ni les produits laitiers, ni les sucreries n'en contiennent.",
+                "options": [
+                  { "id": "a", "text": "Dans les fruits et les légumes" },
+                  { "id": "b", "text": "Dans les céréales complètes et les légumineuses" },
+                  { "id": "c", "text": "Dans les sodas" },
+                  { "id": "d", "text": "Dans la viande" }
+                ]
+              },
+              {
+                "id": "q4",
+                "text": "Le Nutri-Score, comment on s'en sert ?",
+                "explanation": "Il compare des produits comparables, à quantité égale. Entre deux paquets de céréales, il est utile. Entre une pizza et une pomme, il ne veut rien dire.",
+                "options": [
+                  { "id": "a", "text": "Pour comparer deux produits d'une même famille" },
+                  { "id": "b", "text": "Pour choisir entre deux paquets de céréales" },
+                  { "id": "c", "text": "Pour comparer n'importe quels aliments entre eux" },
+                  { "id": "d", "text": "Pour remplacer la liste des ingrédients" }
+                ]
+              },
+              {
+                "id": "q5",
+                "text": "Après avoir bu un soda, qu'est-ce qui se passe ?",
+                "explanation": "Le sucre rapide fait monter l'énergie d'un coup, puis redescendre tout aussi vite : c'est le coup de barre qui suit. Une canette contient environ sept morceaux de sucre.",
+                "options": [
+                  { "id": "a", "text": "Un coup d'énergie rapide" },
+                  { "id": "b", "text": "Une fatigue plus forte ensuite" },
+                  { "id": "c", "text": "Une concentration améliorée pour toute la journée" },
+                  { "id": "d", "text": "Rien du tout, le sucre n'a aucun effet" }
+                ]
+              },
+              {
+                "id": "q6",
+                "text": "Parmi ces affirmations, lesquelles sont fausses ?",
+                "explanation": "Les protéines en excès ne deviennent pas du muscle, et une gélule ne remplace pas un repas. En revanche, les féculents sont bien ta source d'énergie principale, et sauter un repas ne fait pas maigrir.",
+                "options": [
+                  { "id": "a", "text": "Plus on mange de protéines, plus on a de muscles" },
+                  { "id": "b", "text": "Un complément alimentaire peut remplacer un repas" },
+                  { "id": "c", "text": "Les féculents sont une bonne source d'énergie" },
+                  { "id": "d", "text": "Sauter un repas fait maigrir" }
+                ]
+              },
+              {
+                "id": "q7",
+                "text": "Une carence en fer, ça donne quoi ?",
+                "explanation": "Le fer transporte l'oxygène dans le sang : quand il manque, le corps tourne au ralenti. Les filles réglées sont plus concernées. Lentilles, viande rouge et légumes verts en apportent.",
+                "options": [
+                  { "id": "a", "text": "Une fatigue qui ne passe pas" },
+                  { "id": "b", "text": "Un essoufflement au moindre effort" },
+                  { "id": "c", "text": "Des caries" },
+                  { "id": "d", "text": "Une meilleure concentration" }
+                ]
+              },
+              {
+                "id": "q8",
+                "text": "Le calcium, à ton âge ?",
+                "explanation": "Entre 11 et 17 ans, il en faut environ 1 150 mg par jour — plus qu'à un adulte — parce que c'est maintenant que le squelette se construit. Produits laitiers, mais aussi eaux minérales riches en calcium et certains légumes verts.",
+                "options": [
+                  { "id": "a", "text": "Il sert à construire tes os" },
+                  { "id": "b", "text": "Il en faut plus qu'à un adulte" },
+                  { "id": "c", "text": "On peut le rattraper plus tard, ça n'a pas d'importance maintenant" },
+                  { "id": "d", "text": "On n'en trouve que dans le lait" }
+                ]
+              }
+            ]
+          },
+          "correctAnswer": {
+            "answers": {
+              "q1": ["a", "b"],
+              "q2": ["a", "b"],
+              "q3": ["a", "b"],
+              "q4": ["a", "b"],
+              "q5": ["a", "b"],
+              "q6": ["a", "b"],
+              "q7": ["a", "b"],
+              "q8": ["a", "b"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "kind": "CONTENT",
+      "content": {
+        "contentType": "INFO",
+        "title": "Bien manger en un coup d'œil",
+        "body": "Ce qu'il faut retenir :\n\nGlucides, protéines, lipides : les trois font le travail, aucun n'est à supprimer.\n\n5 fruits et légumes par jour, et des féculents complets pour les fibres.\n\nUne canette de soda, c'est sept morceaux de sucre — les deux tiers du maximum conseillé pour la journée.\n\nLe Nutri-Score compare des produits d'une même famille, pas n'importe quoi avec n'importe quoi.\n\nAucun complément ne remplace un vrai repas.\n\nL'équilibre se joue sur la semaine, pas sur un repas : un burger de temps en temps ne déséquilibre rien."
+      }
+    },
+    {
+      "kind": "CONTENT",
+      "content": {
+        "contentType": "INFO",
+        "title": "Bravo !",
+        "body": "Tu as terminé le module. Tu sais maintenant à quoi servent les aliments que tu manges, comment lire une étiquette sans te faire avoir par le devant du paquet, et repérer les idées reçues qui circulent.\n\nUne dernière chose : il n'y a pas d'aliment interdit. Il y a des aliments du quotidien, et d'autres qu'on garde pour de temps en temps. C'est tout."
+      }
+    }
+  ]
+}
