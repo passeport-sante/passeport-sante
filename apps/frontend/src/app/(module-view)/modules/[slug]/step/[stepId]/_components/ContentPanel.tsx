@@ -4,8 +4,9 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { ArrowLeft, ChevronRight, Maximize2, X } from "lucide-react";
-import { toEmbedUrl } from "@/lib/steps-admin";
+import { isVideoEmbeddable, toEmbedUrl } from "@/lib/steps-admin";
 import { VideoEmbed } from "@/components/modules/VideoEmbed";
+import { VideoLinkCard } from "@/components/modules/VideoLinkCard";
 import { goToNextStep, type FlowStep } from "@/lib/step-flow";
 
 interface StepData {
@@ -36,7 +37,10 @@ export function ContentPanel({ step }: { step: StepData }) {
 
   const primaryColor = step.module.colorPrimary ?? "#0EA5E9";
   const bottomColor = step.module.colorSecondary ?? "#0c2a3a";
-  const embed = contentType === "VIDEO" ? toEmbedUrl(content.videoUrl ?? "") : null;
+  // Seules YouTube et Vimeo s'affichent dans un lecteur : ailleurs, le site
+  // refuse l'intégration et on bascule sur une carte cliquable.
+  const videoUrl = contentType === "VIDEO" ? (content.videoUrl ?? "").trim() : "";
+  const embed = videoUrl && isVideoEmbeddable(videoUrl) ? toEmbedUrl(videoUrl) : null;
 
   // Les affiches contiennent du texte : elles ont besoin de toute la largeur
   // disponible, et d'un plein écran pour rester lisibles sur petit écran.
@@ -130,9 +134,15 @@ export function ContentPanel({ step }: { step: StepData }) {
           )}
 
           {contentType === "VIDEO" &&
-            (embed ? (
+            (videoUrl ? (
               <figure className="space-y-2">
-                <VideoEmbed url={embed} title={content.title} accent={primaryColor} />
+                {/* Lecteur intégré pour YouTube et Vimeo ; carte cliquable pour
+                    les plateformes qui refusent l'intégration (Lumni…). */}
+                {embed ? (
+                  <VideoEmbed url={embed} title={content.title} accent={primaryColor} />
+                ) : (
+                  <VideoLinkCard url={videoUrl} title={content.title} accent={primaryColor} />
+                )}
                 {content.caption && (
                   <figcaption className="text-center text-sm text-gray-500">{content.caption}</figcaption>
                 )}

@@ -1090,3 +1090,19 @@ export function toEmbedUrl(raw: string): string | null {
 
   return null;
 }
+
+// Toutes les plateformes n'autorisent pas l'intégration dans un lecteur.
+// Lumni, par exemple, renvoie `Content-Security-Policy: frame-ancestors
+// https://www.lumni.fr` : le navigateur refuse alors d'afficher la page chez
+// nous, et l'élève ne voit qu'un cadre vide. Pour ces vidéos-là on affiche une
+// carte cliquable (vignette + titre) qui ouvre la vidéo dans un nouvel onglet.
+//
+// On ne liste donc que les plateformes dont on sait que le lecteur fonctionne.
+export function isVideoEmbeddable(raw: string): boolean {
+  const url = raw.trim();
+  if (!url) return false;
+  return (
+    /(?:youtube(?:-nocookie)?\.com|youtu\.be)\//.test(url) ||
+    /(?:vimeo\.com|player\.vimeo\.com)\//.test(url)
+  );
+}
