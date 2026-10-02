@@ -31,6 +31,8 @@ export default function DiagnosticClient({ session }: Props) {
   const [error, setError]         = useState("");
   const [done, setDone]           = useState(false);
   const [pdfMounted, setPdfMounted] = useState(false);
+  const [submitting, setSubmitting] = useState(false);
+  const [submitError, setSubmitError] = useState("");
   const [startTime, setStartTime] = useState<number>(Date.now());
   const initDone = useRef(false);
 
@@ -75,25 +77,35 @@ export default function DiagnosticClient({ session }: Props) {
     setAnswer(updated);
   };
 
-  const next = async () => {
+  const next = async (override?: unknown) => {
+    if (submitting) return;
     const question = questions[index]!;
-    const answer   = answers[index];
+    const answer   = override !== undefined ? override : answers[index];
     const timing   = Math.round((Date.now() - startTime) / 1000);
 
     const userAnswer: Record<string, any> =
-      question.questionType === "MCQ_MULTI" ? { answers: answer as string[] } :
-      question.questionType === "CLASSIFY"  ? answer as Record<string, any> :
-      answer as Record<string, any>;
+      question.questionType === "MCQ_MULTI" ? { answers: (answer as string[] | undefined) ?? [] } :
+      question.questionType === "OPEN"      ? { answer: ((answer as Record<string, any> | undefined)?.answer ?? "").trim() } :
+      (answer as Record<string, any>);
 
-    await submitResponse({
-      questionId:     question.id,
-      userAnswer,
-      guestStudentId: guestId,
-      sessionId:      session.id,
-      timing,
-    });
+    setSubmitting(true);
+    setSubmitError("");
+    try {
+      await submitResponse({
+        questionId:     question.id,
+        userAnswer,
+        guestStudentId: guestId,
+        sessionId:      session.id,
+        timing,
+      });
+    } catch (err: any) {
+      setSubmitError(err?.message ?? "Problème de connexion, réessaie");
+      setSubmitting(false);
+      return;
+    }
 
     setStartTime(Date.now());
+    setSubmitting(false);
     if (index < questions.length - 1) setIndex((i) => i + 1);
     else setDone(true);
   };
@@ -110,6 +122,17 @@ export default function DiagnosticClient({ session }: Props) {
     <div className="min-h-screen flex items-center justify-center px-6">
       <div className="bg-[#0F3A5C]/80 rounded-3xl p-10 text-center text-white max-w-sm">
         <p className="text-xl font-black mb-4">⚠️ {error}</p>
+        <button onClick={() => router.push("/diagnostic")} className="mt-4 underline text-white/70 hover:text-white text-sm">
+          Retour
+        </button>
+      </div>
+    </div>
+  );
+
+  if (questions.length === 0) return (
+    <div className="min-h-screen flex items-center justify-center px-6">
+      <div className="bg-[#0F3A5C]/80 rounded-3xl p-10 text-center text-white max-w-sm">
+        <p className="text-xl font-black mb-4">Aucune question disponible pour le moment.</p>
         <button onClick={() => router.push("/diagnostic")} className="mt-4 underline text-white/70 hover:text-white text-sm">
           Retour
         </button>
@@ -193,17 +216,27 @@ export default function DiagnosticClient({ session }: Props) {
 
       <div className="flex-1 flex items-center justify-center overflow-y-auto min-h-0 pt-20 pb-24 md:py-20">
         <QuestionRenderer
+          key={question.id}
           question={question}
           answer={answer}
           onAnswer={setAnswer}
           onToggle={toggleMulti}
-          onClassifyValidate={(result) => { setAnswer(result); next(); }}
+          onClassifyValidate={(result) => { setAnswer(result); next(result); }}
         />
       </div>
 
+      {submitError && (
+        <div
+          role="alert"
+          className="absolute bottom-24 left-4 right-4 md:bottom-8 md:left-1/2 md:right-auto md:-translate-x-1/2 z-10 bg-red-600/90 text-white text-sm font-bold rounded-2xl px-5 py-3 text-center"
+        >
+          {submitError} — appuie à nouveau pour réessayer.
+        </div>
+      )}
+
       {!isClassify && (
         <div className="absolute bottom-4 right-4 md:bottom-8 md:right-8 z-10">
-          <NextButton onClick={next} disabled={!canNext} />
+          <NextButton onClick={() => next()} disabled={!canNext || submitting} />
         </div>
       )}
     </div>

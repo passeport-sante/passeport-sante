@@ -16,7 +16,7 @@ type Zone = "pending" | "vrai" | "faux";
 
 export function QuestionClassify({
   title = "A CLASSER",
-  subtitle = "Glisser les cartes dans la bonne colonne",
+  subtitle = "Glisse (ou touche) les cartes pour les placer dans la bonne colonne",
   items,
   onValidate,
 }: Props) {
@@ -35,9 +35,11 @@ export function QuestionClassify({
 
   const allClassified = inZone("pending").length === 0;
 
+  // Tactile : un tap sélectionne la carte, un tap sur une colonne la place.
   const dropProps = (zone: Zone) => ({
     onDragOver: (e: React.DragEvent) => e.preventDefault(),
     onDrop: () => drop(zone),
+    onClick: () => drop(zone),
   });
 
   const dragItem = (id: string, zone: Zone) => (
@@ -45,7 +47,11 @@ export function QuestionClassify({
       key={id}
       draggable
       onDragStart={() => setDraggingId(id)}
-      className={`rounded-full px-3 py-2 sm:px-6 sm:py-3 text-xs sm:text-sm font-semibold text-gray-700 cursor-grab select-none transition-transform active:scale-95 break-words ${
+      onClick={(e) => {
+        e.stopPropagation();
+        setDraggingId((cur) => (cur === id ? null : id));
+      }}
+      className={`${draggingId === id ? "ring-4 ring-white scale-105 " : ""}rounded-full px-3 py-2 sm:px-6 sm:py-3 text-xs sm:text-sm font-semibold text-gray-700 cursor-grab select-none transition-transform active:scale-95 break-words ${
         zone === "pending" ? "bg-white/75 w-full text-center" : "bg-white/80"
       }`}
     >
@@ -82,12 +88,13 @@ export function QuestionClassify({
           {inZone("pending").map((i) => dragItem(i.id, "pending"))}
 
           <button
-            onClick={() =>
+            onClick={(e) => {
+              e.stopPropagation();
               onValidate({
                 vraiIds: inZone("vrai").map((i) => i.id),
                 fauxIds: inZone("faux").map((i) => i.id),
-              })
-            }
+              });
+            }}
             disabled={!allClassified}
             className="mt-auto bg-green-500 hover:bg-green-600 disabled:bg-green-500/40 disabled:cursor-not-allowed text-white font-black py-3 px-5 sm:py-4 sm:px-10 rounded-2xl text-sm sm:text-lg transition-colors w-full sm:w-auto"
           >

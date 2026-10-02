@@ -1,112 +1,147 @@
-import { Document, Page, Text, View, StyleSheet } from "@react-pdf/renderer";
+import {
+  Document,
+  Page,
+  Text,
+  View,
+  StyleSheet,
+  Svg,
+  Path,
+  Circle,
+} from "@react-pdf/renderer";
 
 const TEAL = "#1B6B8A";
+const TEAL_DARK = "#124E66";
 const GREEN = "#2A8970";
+const MINT = "#5DD4BC";
 
 const s = StyleSheet.create({
   page: { fontFamily: "Helvetica", backgroundColor: "#FFFFFF" },
 
+  frame: {
+    position: "absolute",
+    top: 16,
+    left: 16,
+    right: 16,
+    bottom: 16,
+    borderWidth: 1.5,
+    borderColor: "#CFE3EA",
+    borderRadius: 14,
+  },
+
   band: {
     backgroundColor: TEAL,
     paddingHorizontal: 50,
-    paddingVertical: 30,
+    paddingTop: 44,
+    paddingBottom: 56,
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "center",
+    overflow: "hidden",
   },
+  bandDeco: { position: "absolute", top: 0, left: 0 },
   brandRow: { flexDirection: "row" },
-  brandA: { fontSize: 14, fontFamily: "Helvetica-Bold", color: "#FFFFFF" },
-  brandB: { fontSize: 14, fontFamily: "Helvetica-Bold", color: "#5DD4BC" },
+  brandA: { fontSize: 16, fontFamily: "Helvetica-Bold", color: "#FFFFFF" },
+  brandB: { fontSize: 16, fontFamily: "Helvetica-Bold", color: MINT },
   bandTag: {
-    backgroundColor: "rgba(255,255,255,0.18)",
+    backgroundColor: "rgba(255,255,255,0.2)",
     borderRadius: 20,
-    paddingHorizontal: 12,
-    paddingVertical: 4,
+    paddingHorizontal: 14,
+    paddingVertical: 5,
   },
-  bandTagText: { fontSize: 8, fontFamily: "Helvetica-Bold", color: "#FFFFFF" },
+  bandTagText: { fontSize: 9, fontFamily: "Helvetica-Bold", color: "#FFFFFF" },
 
   body: {
-    paddingHorizontal: 60,
-    paddingTop: 56,
-    paddingBottom: 40,
+    paddingHorizontal: 56,
     alignItems: "center",
+    marginTop: -34,
   },
 
   badge: {
-    width: 68,
-    height: 68,
-    borderRadius: 34,
-    backgroundColor: "#EBF6F3",
-    borderWidth: 3,
-    borderColor: GREEN,
+    width: 76,
+    height: 76,
+    borderRadius: 38,
+    backgroundColor: GREEN,
+    borderWidth: 5,
+    borderColor: "#FFFFFF",
     alignItems: "center",
     justifyContent: "center",
-    marginBottom: 28,
+    marginBottom: 22,
   },
-  badgeTick: { fontSize: 30, fontFamily: "Helvetica-Bold", color: GREEN },
 
   categoryLabel: {
     fontSize: 9,
-    color: "#9CA3AF",
+    color: GREEN,
+    fontFamily: "Helvetica-Bold",
+    letterSpacing: 2,
     textTransform: "uppercase",
     marginBottom: 10,
   },
   mainTitle: {
-    fontSize: 24,
+    fontSize: 28,
     fontFamily: "Helvetica-Bold",
-    color: "#1A1A1A",
+    color: TEAL_DARK,
     textAlign: "center",
   },
   divider: {
-    width: 44,
+    width: 56,
     height: 3,
-    backgroundColor: TEAL,
-    marginTop: 20,
-    marginBottom: 24,
+    backgroundColor: MINT,
+    marginTop: 18,
+    marginBottom: 22,
   },
   descText: {
     fontSize: 13,
     color: "#4B5563",
     textAlign: "center",
-    lineHeight: 1.8,
+    lineHeight: 1.7,
   },
-  classText: {
-    fontFamily: "Helvetica-Bold",
-    color: TEAL,
-    fontSize: 14,
+  classPill: {
+    backgroundColor: "#EBF4F8",
+    borderRadius: 18,
+    paddingHorizontal: 20,
+    paddingVertical: 7,
+    marginVertical: 8,
   },
+  classText: { fontFamily: "Helvetica-Bold", color: TEAL, fontSize: 16 },
 
-  infoRow: { flexDirection: "row", marginTop: 36 },
+  nameBox: { width: "70%", marginTop: 44, alignItems: "center" },
+  nameLine: {
+    width: "100%",
+    borderBottomWidth: 1,
+    borderBottomColor: "#9CA3AF",
+    borderBottomStyle: "dashed",
+    height: 22,
+  },
+  nameLabel: { fontSize: 8, color: "#9CA3AF", marginTop: 5 },
+
+  infoRow: { flexDirection: "row", marginTop: 44, width: "100%" },
   infoCard: {
-    flex: 1,
     backgroundColor: "#F8FAFC",
     borderRadius: 8,
-    paddingVertical: 14,
-    paddingHorizontal: 16,
+    paddingVertical: 12,
+    paddingHorizontal: 12,
     borderWidth: 1,
     borderColor: "#E5E7EB",
     alignItems: "center",
-    marginHorizontal: 6,
+    marginHorizontal: 5,
   },
-  infoCardLabel: { fontSize: 8, color: "#9CA3AF", textTransform: "uppercase", marginBottom: 4 },
-  infoCardValue: { fontSize: 12, fontFamily: "Helvetica-Bold", color: "#1A1A1A" },
-
-  statsRow: {
-    flexDirection: "row",
-    marginTop: 32,
-    backgroundColor: "#EBF4F8",
-    borderRadius: 10,
-    paddingVertical: 16,
-    paddingHorizontal: 24,
-    alignItems: "center",
-    justifyContent: "center",
+  infoCardLabel: {
+    fontSize: 7,
+    color: "#9CA3AF",
+    letterSpacing: 1,
+    textTransform: "uppercase",
+    marginBottom: 4,
   },
-  statsValue: { fontSize: 22, fontFamily: "Helvetica-Bold", color: TEAL },
-  statsLabel: { fontSize: 10, color: "#6B7280", marginTop: 2 },
+  infoCardValue: {
+    fontSize: 11,
+    fontFamily: "Helvetica-Bold",
+    color: "#1A1A1A",
+    textAlign: "center",
+  },
 
   footer: {
     position: "absolute",
-    bottom: 28,
+    bottom: 34,
     left: 50,
     right: 50,
     flexDirection: "row",
@@ -126,10 +161,16 @@ interface Props {
 
 export function DiagnosticCertificatePdf({ className, date, questionCount }: Props) {
   return (
-    <Document>
+    <Document title={`Diagnostic Santé — ${className}`} author="Passeport Santé">
       <Page size="A4" style={s.page}>
+        <View style={s.frame} fixed />
+
         {/* Header */}
         <View style={s.band}>
+          <Svg width={595} height={150} style={s.bandDeco}>
+            <Circle cx={520} cy={30} r={90} fill="#FFFFFF" fillOpacity={0.07} />
+            <Circle cx={60} cy={150} r={70} fill="#FFFFFF" fillOpacity={0.06} />
+          </Svg>
           <View style={s.brandRow}>
             <Text style={s.brandA}>PASSEPORT </Text>
             <Text style={s.brandB}>SANTÉ</Text>
@@ -141,42 +182,44 @@ export function DiagnosticCertificatePdf({ className, date, questionCount }: Pro
 
         {/* Body */}
         <View style={s.body}>
-          {/* Badge checkmark */}
           <View style={s.badge}>
-            <Text style={s.badgeTick}>✓</Text>
+            <Svg width={38} height={38} viewBox="0 0 24 24">
+              <Path
+                d="M5 12.5l4.5 4.5L19 7.5"
+                stroke="#FFFFFF"
+                strokeWidth={3.2}
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                fill="none"
+              />
+            </Svg>
           </View>
 
-          <Text style={s.categoryLabel}>Certificat de participation</Text>
-
+          <Text style={s.categoryLabel}>Bravo !</Text>
           <Text style={s.mainTitle}>Attestation de participation</Text>
-
           <View style={s.divider} />
 
-          <Text style={s.descText}>
-            Un élève de la classe{"\n"}
+          <Text style={s.descText}>Un élève de la classe</Text>
+          <View style={s.classPill}>
             <Text style={s.classText}>{className}</Text>
-            {"\n"}a complété l'intégralité du Diagnostic Santé.
-          </Text>
+          </View>
+          <Text style={s.descText}>a complété l&apos;intégralité du Diagnostic Santé.</Text>
 
-          {/* Stats */}
-          <View style={s.statsRow}>
-            <View style={{ alignItems: "center" }}>
-              <Text style={s.statsValue}>{questionCount}</Text>
-              <Text style={s.statsLabel}>questions répondues</Text>
-            </View>
+          <View style={s.nameBox}>
+            <View style={s.nameLine} />
+            <Text style={s.nameLabel}>Prénom de l&apos;élève (à compléter)</Text>
           </View>
 
-          {/* Info cards */}
           <View style={s.infoRow}>
-            <View style={s.infoCard}>
-              <Text style={s.infoCardLabel}>Classe</Text>
-              <Text style={s.infoCardValue}>{className}</Text>
+            <View style={[s.infoCard, { flex: 1.2 }]}>
+              <Text style={s.infoCardLabel}>Questions</Text>
+              <Text style={s.infoCardValue}>{questionCount} répondues</Text>
             </View>
-            <View style={s.infoCard}>
+            <View style={[s.infoCard, { flex: 1.4 }]}>
               <Text style={s.infoCardLabel}>Date</Text>
               <Text style={s.infoCardValue}>{date}</Text>
             </View>
-            <View style={s.infoCard}>
+            <View style={[s.infoCard, { flex: 1 }]}>
               <Text style={s.infoCardLabel}>Statut</Text>
               <Text style={[s.infoCardValue, { color: GREEN }]}>Complété</Text>
             </View>

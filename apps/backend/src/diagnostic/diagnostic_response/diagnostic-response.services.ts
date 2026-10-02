@@ -63,8 +63,11 @@ export class DiagnosticResponseService {
 
       case 'CLASSIFY': {
         if (!correctAnswer.vrai || !correctAnswer.faux) return null;
-        const vraiOk = [...correctAnswer.vrai].sort().join('|') === [...(userAnswer.vrai ?? [])].sort().join('|');
-        const fauxOk = [...correctAnswer.faux].sort().join('|') === [...(userAnswer.faux ?? [])].sort().join('|');
+        // Le frontend envoie { vraiIds, fauxIds } ; on accepte aussi { vrai, faux }.
+        const givenVrai = userAnswer.vraiIds ?? userAnswer.vrai ?? [];
+        const givenFaux = userAnswer.fauxIds ?? userAnswer.faux ?? [];
+        const vraiOk = [...correctAnswer.vrai].sort().join('|') === [...givenVrai].sort().join('|');
+        const fauxOk = [...correctAnswer.faux].sort().join('|') === [...givenFaux].sort().join('|');
         return vraiOk && fauxOk;
       }
 

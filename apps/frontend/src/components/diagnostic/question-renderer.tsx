@@ -81,7 +81,7 @@ export function QuestionRenderer({
         <div className="w-full">
           <QuestionClassify
             title="VRAI ou FAUX ?"
-            subtitle="Glisse les cartes dans la bonne colonne"
+            subtitle="Glisse (ou touche) une carte, puis la colonne où la placer"
             items={(question.options?.items ?? []).map((i: any) => ({ id: i.id, text: i.text }))}
             onValidate={onClassifyValidate}
           />

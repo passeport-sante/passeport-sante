@@ -57,9 +57,10 @@ export async function submitResponse(payload: {
   sessionId: string;
   timing?: number;
 }): Promise<void> {
-  await fetch(`${API_PUBLIC}/api/diagnostic/response`, {
+  const res = await fetch(`${API_PUBLIC}/api/diagnostic/response`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify(payload),
   });
+  if (!res.ok) throw new Error("Ta réponse n'a pas pu être enregistrée");
 }
