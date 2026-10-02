@@ -17,7 +17,6 @@
     "@dnd-kit/sortable": "^10.0.0",
     "@dnd-kit/utilities": "^3.2.2",
     "@react-pdf/renderer": "^4.3.2",
-    "@repo/ui": "*",
     "@rive-app/react-canvas": "4.29.5",
     "@tailwindcss/postcss": "^4.2.2",
     "@types/nodemailer": "^8.0.0",
