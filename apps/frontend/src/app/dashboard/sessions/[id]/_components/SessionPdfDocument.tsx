@@ -259,7 +259,7 @@ export function SessionPdfDocument({
               <Text style={s.brandBlue}>PASSEPORT</Text>
               <Text style={s.brandGreen}> SANTÉ</Text>
             </View>
-            <Text style={s.title}>{session.className}</Text>
+            <Text style={s.title}>{session.className} · {session.schoolYear}</Text>
             <Text style={s.subtitle}>
               Session du {date} · Code : {session.accessCode}
             </Text>

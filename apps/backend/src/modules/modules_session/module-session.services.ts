@@ -4,6 +4,7 @@ import { PrismaService } from "@/prisma/prisma.service";
 import { AuthUser } from "../../auth/decorators/current-user.decorator";
 import { CreateModuleSessionDto } from "./dto/create-module.dto";
 import { UpdateModuleSessionDto } from "./dto/update-module.dto";
+import { schoolYearOf } from "../../common/school-year";
 
 @Injectable()
 export class ModuleSessionService {
@@ -26,7 +27,7 @@ export class ModuleSessionService {
     const accessUrl = `${baseUrl}/session/${accessCode}`;
 
     return this.prisma.moduleSession.create({
-      data: { ...dto, organizationId, createdByUserId, accessCode, accessUrl },
+      data: { ...dto, organizationId, createdByUserId, accessCode, accessUrl, schoolYear: schoolYearOf() },
     });
   }
 

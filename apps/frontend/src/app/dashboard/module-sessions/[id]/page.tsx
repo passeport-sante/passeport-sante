@@ -79,7 +79,10 @@ export default function ModuleSessionDetailPage() {
           <ArrowLeft size={18} className="text-gray-500" />
         </Link>
         <div className="flex-1">
-          <h1 className="text-2xl font-black text-[#1A1A1A]">{session.className}</h1>
+          <h1 className="text-2xl font-black text-[#1A1A1A]">
+            {session.className}
+            <span className="ml-2 text-base font-semibold text-gray-400">{session.schoolYear}</span>
+          </h1>
           <div className="flex items-center gap-4 mt-1 text-sm text-gray-400 flex-wrap">
             <span className="flex items-center gap-1.5">
               <Calendar size={14} />

@@ -4,6 +4,7 @@ import { PrismaService } from "@/prisma/prisma.service";
 import { AuthUser } from "../../auth/decorators/current-user.decorator";
 import { CreateDiagnosticSessionDto } from "./dto/create-diagnostic.dto";
 import { UpdateDiagnosticSessionDto } from "./dto/update-diagnostic.dto";
+import { schoolYearOf } from "../../common/school-year";
 
 @Injectable()
 export class DiagnosticSessionService {
@@ -26,7 +27,7 @@ export class DiagnosticSessionService {
     const accessUrl = `${baseUrl}/diagnostic/${accessCode}`;
 
     return this.prisma.diagnosticSession.create({
-      data: { ...dto, organizationId, createdByUserId, accessCode, accessUrl },
+      data: { ...dto, organizationId, createdByUserId, accessCode, accessUrl, schoolYear: schoolYearOf() },
     });
   }
 

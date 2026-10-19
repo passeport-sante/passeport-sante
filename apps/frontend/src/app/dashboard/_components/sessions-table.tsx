@@ -52,7 +52,10 @@ export function SessionsTable({ sessions, moduleSessions = [], onDelete }: Props
         <tbody>
           {sessions.map((s) => (
             <tr key={s.id} className="border-b border-gray-50 hover:bg-gray-50 transition-colors last:border-b-0">
-              <td className="px-6 py-4 font-semibold text-[#1A1A1A]">{s.className}</td>
+              <td className="px-6 py-4">
+                <p className="font-semibold text-[#1A1A1A]">{s.className}</p>
+                <p className="text-xs font-medium mt-0.5 text-gray-400">{s.schoolYear}</p>
+              </td>
               <td className="px-6 py-4">
                 <span className="px-2 py-0.5 bg-[#EBF4F8] text-[#1B6B8A] text-xs font-semibold rounded-full">
                   Diagnostic
@@ -94,7 +97,9 @@ export function SessionsTable({ sessions, moduleSessions = [], onDelete }: Props
                 <td className="px-6 py-4">
                   <p className="font-semibold text-[#1A1A1A]">{s.className}</p>
                   {s.module ? (
-                    <p className="text-xs font-medium mt-0.5" style={{ color }}>{s.module.title}</p>
+                    <p className="text-xs font-medium mt-0.5" style={{ color }}>
+                      {s.module.title} <span className="text-gray-400">· {s.schoolYear}</span>
+                    </p>
                   ) : (
                     <p className="text-xs font-medium mt-0.5 text-gray-400 italic">Module supprimé</p>
                   )}

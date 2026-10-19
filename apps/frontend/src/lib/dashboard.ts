@@ -15,6 +15,18 @@ export async function fetchDiagnosticQuestionCount(): Promise<number> {
   }
 }
 
+// ── Niveaux de classe ─────────────────────────────────────────────────────────
+// Collège uniquement. Mêmes valeurs que l'enum ClassLevel du backend.
+
+export const CLASS_LEVELS = [
+  { value: "SIXIEME", label: "6e" },
+  { value: "CINQUIEME", label: "5e" },
+  { value: "QUATRIEME", label: "4e" },
+  { value: "TROISIEME", label: "3e" },
+] as const;
+
+export type ClassLevel = (typeof CLASS_LEVELS)[number]["value"];
+
 // ── Types ─────────────────────────────────────────────────────────────────────
 
 export type SessionUser = { id: string; name: string; email?: string };
@@ -22,6 +34,8 @@ export type SessionUser = { id: string; name: string; email?: string };
 export type SessionSummary = {
   id: string;
   className: string;
+  schoolYear: string; // "2026-2027"
+  level: ClassLevel | null; // null : ancienne session sans niveau
   accessCode: string;
   accessUrl: string;
   isActive: boolean;
@@ -71,6 +85,8 @@ export type SessionDetail = Omit<SessionSummary, "_count"> & {
 export type ModuleSessionSummary = {
   id: string;
   className: string;
+  schoolYear: string;
+  level: ClassLevel | null;
   accessCode: string;
   accessUrl: string;
   isActive: boolean;
@@ -99,6 +115,7 @@ export type ModuleStepMeta = {
 export type ModuleSessionDetail = {
   id: string;
   className: string;
+  schoolYear: string;
   accessCode: string;
   isActive: boolean;
   createdAt: string;

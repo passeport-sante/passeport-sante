@@ -80,18 +80,41 @@ export function setGuestStudentId(slug: string, id: string): void {
   }
 }
 
+// Session à laquelle appartient l'élève mémorisé pour ce module. Sur un PC
+// partagé, l'élève d'une autre séance ne doit pas reprendre la progression du
+// précédent ni être compté dans sa classe.
+const guestSessionKey = (slug: string) => `module_guest_session_${slug}`;
+
+function getGuestSessionId(slug: string): string | null {
+  try {
+    return localStorage.getItem(guestSessionKey(slug));
+  } catch {
+    return null;
+  }
+}
+
+function setGuestSessionId(slug: string, sessionId: string | null): void {
+  try {
+    if (sessionId) localStorage.setItem(guestSessionKey(slug), sessionId);
+    else localStorage.removeItem(guestSessionKey(slug));
+  } catch {}
+}
+
 // Renvoie l'élève invité du module, en le créant si besoin. Un élève qui
 // découvre un module hors séance n'a pas de sessionId : le GuestStudent est
 // alors créé sans session, donc sans effet sur les compteurs des classes.
+// Avec un sessionId (entrée par le code), l'élève mémorisé n'est repris que
+// s'il appartient à cette même session ; sinon un nouvel élève est créé.
 export async function ensureGuestStudentId(
   slug: string,
   sessionId?: string | null,
 ): Promise<string | null> {
   const existant = getGuestStudentId(slug);
-  if (existant) return existant;
+  if (existant && (!sessionId || getGuestSessionId(slug) === sessionId)) return existant;
   try {
     const id = await createGuestStudent(sessionId ?? undefined);
     setGuestStudentId(slug, id);
+    setGuestSessionId(slug, sessionId ?? null);
     return id;
   } catch {
     return null;

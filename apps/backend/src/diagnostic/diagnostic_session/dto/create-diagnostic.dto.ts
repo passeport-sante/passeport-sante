@@ -1,11 +1,17 @@
 import { ApiProperty, ApiPropertyOptional } from "@nestjs/swagger";
-import { IsBoolean, IsNotEmpty, IsOptional, IsString } from "class-validator";
+import { IsBoolean, IsEnum, IsNotEmpty, IsOptional, IsString } from "class-validator";
+import { ClassLevel } from "@prisma/client";
 
 export class CreateDiagnosticSessionDto {
   @ApiProperty()
   @IsString()
   @IsNotEmpty()
   className!: string;
+
+  // Obligatoire : sert à filtrer les statistiques par niveau.
+  @ApiProperty({ enum: ClassLevel })
+  @IsEnum(ClassLevel)
+  level!: ClassLevel;
 
   @ApiPropertyOptional()
   @IsBoolean()

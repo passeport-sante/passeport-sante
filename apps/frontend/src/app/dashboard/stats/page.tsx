@@ -2,9 +2,12 @@
 
 import { useEffect, useState } from "react";
 import { Users, Layers, Activity, FileText } from "lucide-react";
-import { fetchSessions, fetchModuleSessions } from "@/lib/dashboard";
-import type { SessionSummary, ModuleSessionSummary } from "@/lib/dashboard";
+import { fetchSessions, fetchModuleSessions, CLASS_LEVELS } from "@/lib/dashboard";
+import type { SessionSummary, ModuleSessionSummary, ClassLevel } from "@/lib/dashboard";
 import { StatsRow } from "../_components/stats-row";
+
+const ALL = "all";
+const NO_LEVEL = "none"; // anciennes sessions dont le niveau n'a pas pu être déduit
 
 type ModuleBreakdown = {
   id: string;
@@ -15,16 +18,18 @@ type ModuleBreakdown = {
 };
 
 export default function StatsPage() {
-  const [sessions, setSessions] = useState<SessionSummary[]>([]);
-  const [moduleSessions, setModuleSessions] = useState<ModuleSessionSummary[]>([]);
+  const [allSessions, setAllSessions] = useState<SessionSummary[]>([]);
+  const [allModuleSessions, setAllModuleSessions] = useState<ModuleSessionSummary[]>([]);
   const [loading, setLoading] = useState(true);
+  const [yearFilter, setYearFilter] = useState<string>(ALL);
+  const [levelFilter, setLevelFilter] = useState<string>(ALL);
 
   useEffect(() => {
     const token = localStorage.getItem("access_token") ?? "";
     Promise.all([fetchSessions(token), fetchModuleSessions(token)])
       .then(([diag, mod]) => {
-        setSessions(diag);
-        setModuleSessions(mod);
+        setAllSessions(diag);
+        setAllModuleSessions(mod);
       })
       .finally(() => setLoading(false));
   }, []);
@@ -36,6 +41,17 @@ export default function StatsPage() {
       </div>
     );
   }
+
+  // ── Filtres année scolaire / niveau ─────────────────────────────────────────
+  const schoolYears = [...new Set([...allSessions, ...allModuleSessions].map((s) => s.schoolYear))]
+    .sort()
+    .reverse();
+  const hasUnknownLevel = [...allSessions, ...allModuleSessions].some((s) => s.level === null);
+  const matches = (s: { schoolYear: string; level: ClassLevel | null }) =>
+    (yearFilter === ALL || s.schoolYear === yearFilter) &&
+    (levelFilter === ALL || (levelFilter === NO_LEVEL ? s.level === null : s.level === levelFilter));
+  const sessions = allSessions.filter(matches);
+  const moduleSessions = allModuleSessions.filter(matches);
 
   // ── Diagnostic ──────────────────────────────────────────────────────────────
   const diagStudents = sessions.reduce((a, s) => a + s._count.guestStudents, 0);
@@ -73,6 +89,31 @@ export default function StatsPage() {
       <div>
         <h1 className="text-2xl font-black text-[#1A1A1A]">Statistiques école</h1>
         <p className="text-gray-400 text-sm mt-1">Vue d&apos;ensemble de votre établissement</p>
+      </div>
+
+      {/* Filtres */}
+      <div className="flex flex-wrap items-end gap-3">
+        <FilterSelect label="Année scolaire" value={yearFilter} onChange={setYearFilter}>
+          <option value={ALL}>Toutes les années</option>
+          {schoolYears.map((y) => (
+            <option key={y} value={y}>{y}</option>
+          ))}
+        </FilterSelect>
+        <FilterSelect label="Niveau" value={levelFilter} onChange={setLevelFilter}>
+          <option value={ALL}>Tous les niveaux</option>
+          {CLASS_LEVELS.map((l) => (
+            <option key={l.value} value={l.value}>{l.label}</option>
+          ))}
+          {hasUnknownLevel && <option value={NO_LEVEL}>Non renseigné</option>}
+        </FilterSelect>
+        {(yearFilter !== ALL || levelFilter !== ALL) && (
+          <button
+            onClick={() => { setYearFilter(ALL); setLevelFilter(ALL); }}
+            className="px-3 py-2 text-sm font-semibold text-gray-500 hover:text-[#1B6B8A] transition-colors"
+          >
+            Réinitialiser
+          </button>
+        )}
       </div>
 
       {/* Vue d'ensemble combinée */}
@@ -139,6 +180,31 @@ export default function StatsPage() {
         </div>
       </section>
     </div>
+  );
+}
+
+function FilterSelect({
+  label,
+  value,
+  onChange,
+  children,
+}: {
+  label: string;
+  value: string;
+  onChange: (v: string) => void;
+  children: React.ReactNode;
+}) {
+  return (
+    <label className="flex flex-col gap-1">
+      <span className="text-xs font-semibold text-gray-400 uppercase tracking-wider">{label}</span>
+      <select
+        value={value}
+        onChange={(e) => onChange(e.target.value)}
+        className="px-3 py-2 rounded-xl border border-gray-200 bg-white text-sm font-semibold text-gray-700 focus:outline-none focus:ring-2 focus:ring-[#2A8970]"
+      >
+        {children}
+      </select>
+    </label>
   );
 }
 

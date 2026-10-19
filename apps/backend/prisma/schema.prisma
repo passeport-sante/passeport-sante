@@ -48,6 +48,14 @@ enum QuestionType {
   CLASSIFY
 }
 
+// Niveau de la classe d'une session (collège uniquement), pour filtrer les statistiques.
+enum ClassLevel {
+  SIXIEME
+  CINQUIEME
+  QUATRIEME
+  TROISIEME
+}
+
 // ─── Organisation & Utilisateurs ─────────────────────────────────────────────
 
 model Organization {
@@ -172,6 +180,12 @@ model ModuleVersion {
 model ModuleSession {
   id         String   @id @default(cuid())
   className  String
+  // Année scolaire ("2026-2027"), fixée à la création : distingue la 6e B
+  // d'une année de celle de l'année suivante.
+  schoolYear String
+  // Obligatoire à la création ; null pour les anciennes sessions dont le nom
+  // ne permettait pas de le déduire.
+  level      ClassLevel?
   accessCode String   @unique
   accessUrl  String   @unique
   isActive   Boolean  @default(true)
@@ -216,6 +230,11 @@ model Step {
 model DiagnosticSession {
   id         String   @id @default(cuid())
   className  String
+  // Année scolaire ("2026-2027"), fixée à la création (voir ModuleSession).
+  schoolYear String
+  // Obligatoire à la création ; null pour les anciennes sessions dont le nom
+  // ne permettait pas de le déduire.
+  level      ClassLevel?
   accessCode String   @unique
   accessUrl  String   @unique
   isActive   Boolean  @default(true)

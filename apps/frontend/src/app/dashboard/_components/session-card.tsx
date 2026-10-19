@@ -34,6 +34,7 @@ export function SessionCard({ session, onClose, totalQuestions }: Props) {
         <div className="flex-1 min-w-0">
           <h3 className="font-bold text-[#1A1A1A] text-lg truncate">{session.className}</h3>
           <p className="text-gray-400 text-xs mt-0.5">
+            <span className="font-semibold text-gray-500">{session.schoolYear}</span> ·{" "}
             {new Date(session.createdAt).toLocaleDateString("fr-FR", {
               day: "numeric",
               month: "long",

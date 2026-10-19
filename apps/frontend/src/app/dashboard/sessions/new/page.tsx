@@ -4,6 +4,8 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { ArrowLeft, Loader2, Stethoscope, BookOpen, Check } from "lucide-react";
+import { CLASS_LEVELS } from "@/lib/dashboard";
+import type { ClassLevel } from "@/lib/dashboard";
 
 const API = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:5000";
 
@@ -26,6 +28,7 @@ export default function NewSessionPage() {
 
   const [type, setType] = useState<SessionType>(null);
   const [className, setClassName] = useState("");
+  const [level, setLevel] = useState<ClassLevel | null>(null);
   const [modules, setModules] = useState<Module[]>([]);
   const [selectedModuleId, setSelectedModuleId] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
@@ -44,7 +47,7 @@ export default function NewSessionPage() {
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
-    if (!className.trim() || !type) return;
+    if (!className.trim() || !type || !level) return;
     if (type === "module" && !selectedModuleId) return;
 
     setLoading(true);
@@ -67,8 +70,8 @@ export default function NewSessionPage() {
 
       const body =
         type === "diagnostic"
-          ? { className: className.trim(), createdByUserId: userId, organizationId: user.organizationId }
-          : { className: className.trim(), moduleId: selectedModuleId, createdByUserId: userId, organizationId: user.organizationId };
+          ? { className: className.trim(), level, createdByUserId: userId, organizationId: user.organizationId }
+          : { className: className.trim(), level, moduleId: selectedModuleId, createdByUserId: userId, organizationId: user.organizationId };
 
       const res = await fetch(endpoint, {
         method: "POST",
@@ -88,6 +91,7 @@ export default function NewSessionPage() {
 
   const canSubmit =
     className.trim().length > 0 &&
+    level !== null &&
     type !== null &&
     (type === "diagnostic" || selectedModuleId !== null);
 
@@ -224,13 +228,34 @@ export default function NewSessionPage() {
               <span className="inline-flex items-center justify-center w-5 h-5 rounded-full text-white text-xs mr-2" style={{ background: "#1B6B8A" }}>
                 {type === "diagnostic" ? "2" : "3"}
               </span>
-              Nom de la classe
+              Classe
             </p>
+            <div>
+              <p className="text-xs font-semibold text-gray-500 mb-2">Niveau</p>
+              <div className="flex flex-wrap gap-2">
+                {CLASS_LEVELS.map((l) => (
+                  <button
+                    key={l.value}
+                    type="button"
+                    onClick={() => setLevel(l.value)}
+                    aria-pressed={level === l.value}
+                    className={`px-3.5 py-1.5 rounded-full border-2 text-sm font-semibold transition-all ${
+                      level === l.value
+                        ? "border-[#1B6B8A] bg-[#EBF4F8] text-[#1B6B8A]"
+                        : "border-gray-200 bg-gray-50 text-gray-600 hover:border-gray-300"
+                    }`}
+                  >
+                    {l.label}
+                  </button>
+                ))}
+              </div>
+            </div>
+            <p className="text-xs font-semibold text-gray-500 pt-1">Nom de la classe</p>
             <input
               type="text"
               value={className}
               onChange={(e) => setClassName(e.target.value)}
-              placeholder="Ex : 5ème A, Terminale B..."
+              placeholder="Ex : 6e B, 4e A..."
               className="w-full px-4 py-3 rounded-xl border border-gray-200 bg-gray-50 text-sm focus:outline-none focus:ring-2 focus:ring-[#2A8970] focus:border-transparent transition"
               required
             />
