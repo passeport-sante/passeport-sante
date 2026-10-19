@@ -1,17 +1,19 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import Link from "next/link";
 import { ArrowLeft, Calendar, Users } from "lucide-react";
 import {
   fetchSessionDetail,
+  fetchDiagnosticQuestionCount,
   computeQuestionStats,
   computeAvgScore,
 } from "@/lib/dashboard";
 import type { SessionDetail } from "@/lib/dashboard";
 import { ScoreCard } from "./_components/score-card";
 import { QuestionResultCard } from "./_components/question-result-card";
+import { StudentsPanel } from "./_components/students-panel";
 import { PDFDownloadLink } from "@react-pdf/renderer";
 import { FileDown } from "lucide-react";
 import { SessionPdfDocument } from "./_components/SessionPdfDocument";
@@ -21,16 +23,20 @@ export default function SessionDetailPage() {
   const router = useRouter();
   const [session, setSession] = useState<SessionDetail | null>(null);
   const [loading, setLoading] = useState(true);
+  const [totalQuestions, setTotalQuestions] = useState(0);
+
+  // Rechargée aussi après une action du panel élèves (exclusion, suppression).
+  const load = useCallback(async () => {
+    const token = localStorage.getItem("access_token") ?? "";
+    const data = await fetchSessionDetail(id, token);
+    if (!data) router.replace("/dashboard");
+    else setSession(data);
+  }, [id, router]);
 
   useEffect(() => {
-    const token = localStorage.getItem("access_token") ?? "";
-    fetchSessionDetail(id, token)
-      .then((data) => {
-        if (!data) router.replace("/dashboard");
-        else setSession(data);
-      })
-      .finally(() => setLoading(false));
-  }, [id, router]);
+    load().finally(() => setLoading(false));
+    fetchDiagnosticQuestionCount().then(setTotalQuestions);
+  }, [load]);
 
   if (loading) {
     return (
@@ -130,7 +136,7 @@ export default function SessionDetailPage() {
         <ScoreCard
           label="Participants"
           value={session._count.guestStudents}
-          sub="élèves ont rejoint"
+          sub={`élèves ont rejoint, dont ${session.completedCount} ont terminé`}
           color="#1B6B8A"
         />
         <ScoreCard
@@ -173,6 +179,24 @@ export default function SessionDetailPage() {
           </div>
         </section>
       )}
+
+      <section>
+        <h2 className="text-lg font-bold text-[#1A1A1A] mb-1">
+          Élèves
+          <span className="ml-2 px-2 py-0.5 bg-gray-100 text-gray-500 text-xs font-semibold rounded-full">
+            {session.guestStudents.length}
+          </span>
+        </h2>
+        <p className="text-sm text-gray-400 mb-4">
+          Un élève de test ou en double peut être exclu : il ne compte plus dans les effectifs ni dans les résultats.
+        </p>
+        <StudentsPanel
+          sessionId={session.id}
+          students={session.guestStudents}
+          totalQuestions={totalQuestions}
+          onChanged={load}
+        />
+      </section>
 
       {session.diagnosticResponses.length === 0 && (
         <div className="bg-white rounded-2xl border border-dashed border-gray-200 p-16 text-center">

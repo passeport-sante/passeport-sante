@@ -29,6 +29,15 @@ export class DiagnosticResponseController {
     return this.diagnosticResponseService.findAll();
   }
 
+  // Public : questions déjà répondues par l'élève, pour reprendre où il en était.
+  @Get("progress/:sessionId/:guestStudentId")
+  progress(
+    @Param("sessionId") sessionId: string,
+    @Param("guestStudentId") guestStudentId: string,
+  ) {
+    return this.diagnosticResponseService.progress(guestStudentId, sessionId);
+  }
+
   @Get(":id")
   findOne(@Param("id") id: string) {
     return this.diagnosticResponseService.findOne(id);

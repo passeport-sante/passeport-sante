@@ -30,24 +30,57 @@ export class DiagnosticSessionService {
     });
   }
 
-  findAll(user: AuthUser) {
-    return this.prisma.diagnosticSession.findMany({
+  // Les élèves exclus par l'enseignant ne comptent ni dans les effectifs ni dans
+  // les réponses ; `completedCount` distingue ceux qui sont allés au bout.
+  private readonly counts = {
+    _count: {
+      select: {
+        guestStudents: { where: { excludedAt: null } },
+        diagnosticResponses: { where: { guestStudent: { excludedAt: null } } },
+      },
+    },
+  } as const;
+
+  private async completedCounts(sessionIds: string[]) {
+    const rows = await this.prisma.guestStudent.groupBy({
+      by: ['diagnosticSessionId'],
+      where: { diagnosticSessionId: { in: sessionIds }, excludedAt: null, completedAt: { not: null } },
+      _count: { _all: true },
+    });
+    return new Map(rows.map((r) => [r.diagnosticSessionId, r._count._all]));
+  }
+
+  async findAll(user: AuthUser) {
+    const sessions = await this.prisma.diagnosticSession.findMany({
       where: this.scope(user),
       include: {
-        _count: { select: { guestStudents: true, diagnosticResponses: true } },
+        ...this.counts,
         createdByUser: { select: { id: true, name: true } },
       },
       orderBy: { createdAt: 'desc' },
     });
+    const completed = await this.completedCounts(sessions.map((s) => s.id));
+    return sessions.map((s) => ({ ...s, completedCount: completed.get(s.id) ?? 0 }));
   }
 
-  findOne(id: string, user: AuthUser) {
-    return this.prisma.diagnosticSession.findFirst({
+  async findOne(id: string, user: AuthUser) {
+    const session = await this.prisma.diagnosticSession.findFirst({
       where: { id, ...this.scope(user) },
       include: {
         createdByUser: { select: { id: true, name: true, email: true } },
-        _count: { select: { guestStudents: true, diagnosticResponses: true } },
+        ...this.counts,
+        guestStudents: {
+          select: {
+            id: true,
+            createdAt: true,
+            completedAt: true,
+            excludedAt: true,
+            _count: { select: { diagnosticResponses: true } },
+          },
+          orderBy: { createdAt: 'asc' },
+        },
         diagnosticResponses: {
+          where: { guestStudent: { excludedAt: null } },
           select: {
             id: true,
             isCorrect: true,
@@ -68,6 +101,38 @@ export class DiagnosticSessionService {
         },
       },
     });
+    if (!session) return null;
+    const completedCount = session.guestStudents.filter((g) => g.completedAt && !g.excludedAt).length;
+    return { ...session, completedCount };
+  }
+
+  // ── Gestion des élèves d'une session ───────────────────────────────────────
+
+  private async findStudentInScope(sessionId: string, guestId: string, user: AuthUser) {
+    const guest = await this.prisma.guestStudent.findFirst({
+      where: { id: guestId, diagnosticSession: { id: sessionId, ...this.scope(user) } },
+      select: { id: true },
+    });
+    if (!guest) throw new NotFoundException('Élève introuvable');
+    return guest;
+  }
+
+  async setStudentExcluded(sessionId: string, guestId: string, excluded: boolean, user: AuthUser) {
+    await this.findStudentInScope(sessionId, guestId, user);
+    return this.prisma.guestStudent.update({
+      where: { id: guestId },
+      data: { excludedAt: excluded ? new Date() : null },
+      select: { id: true, excludedAt: true },
+    });
+  }
+
+  // Suppression définitive : ses réponses d'abord (pas de cascade en base).
+  async removeStudent(sessionId: string, guestId: string, user: AuthUser) {
+    await this.findStudentInScope(sessionId, guestId, user);
+    await this.prisma.$transaction([
+      this.prisma.diagnosticResponse.deleteMany({ where: { guestStudentId: guestId } }),
+      this.prisma.guestStudent.delete({ where: { id: guestId } }),
+    ]);
   }
 
   findByAccessCode(accessCode: string) {

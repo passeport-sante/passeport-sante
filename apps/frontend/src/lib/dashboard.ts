@@ -28,7 +28,17 @@ export type SessionSummary = {
   createdAt: string;
   updatedAt: string;
   createdByUser: SessionUser | null;
+  // Les élèves exclus ne sont comptés nulle part.
   _count: { guestStudents: number; diagnosticResponses: number };
+  completedCount: number;
+};
+
+export type DiagnosticStudent = {
+  id: string;
+  createdAt: string;
+  completedAt: string | null;
+  excludedAt: string | null;
+  _count: { diagnosticResponses: number };
 };
 
 export type QuestionMeta = {
@@ -52,6 +62,9 @@ export type ResponseEntry = {
 export type SessionDetail = Omit<SessionSummary, "_count"> & {
   createdByUser: SessionUser | null;
   _count: { guestStudents: number; diagnosticResponses: number };
+  completedCount: number;
+  // Tous les élèves, exclus compris (pour le panel de gestion).
+  guestStudents: DiagnosticStudent[];
   diagnosticResponses: ResponseEntry[];
 };
 
@@ -167,6 +180,28 @@ export async function deleteSession(id: string, token: string): Promise<void> {
     const err = await res.json().catch(() => ({}));
     throw new Error(err.message ?? "Erreur lors de la suppression");
   }
+}
+
+export async function setStudentExcluded(
+  sessionId: string,
+  guestId: string,
+  excluded: boolean,
+  token: string,
+): Promise<void> {
+  const res = await fetch(`${API}/api/diagnostic/session/${sessionId}/students/${guestId}`, {
+    method: "PATCH",
+    headers: authHeaders(token),
+    body: JSON.stringify({ excluded }),
+  });
+  if (!res.ok) throw new Error("Impossible de modifier l'élève");
+}
+
+export async function deleteStudent(sessionId: string, guestId: string, token: string): Promise<void> {
+  const res = await fetch(`${API}/api/diagnostic/session/${sessionId}/students/${guestId}`, {
+    method: "DELETE",
+    headers: authHeaders(token),
+  });
+  if (!res.ok) throw new Error("Impossible de supprimer l'élève");
 }
 
 // ── Extraction défensive de la réponse ────────────────────────────────────────

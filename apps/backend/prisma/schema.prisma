@@ -260,14 +260,25 @@ model DiagnosticResponse {
 
   questionId String
   question   DiagnosticQuestion @relation(fields: [questionId], references: [id])
+
+  // Une seule réponse par élève et par question : un renvoi (réseau qui coupe,
+  // reprise après un rechargement) remplace la réponse au lieu de la doubler.
+  @@unique([guestStudentId, questionId])
 }
 
 // ─── Élèves ───────────────────────────────────────────────────────────────────
 
 model GuestStudent {
-  id     String  @id @default(cuid())
-  gender String?
-  age    Int?
+  id        String   @id @default(cuid())
+  gender    String?
+  age       Int?
+  createdAt DateTime @default(now())
+
+  // Diagnostic : posé par le serveur quand toutes les questions ont une réponse.
+  completedAt DateTime?
+  // Retiré des compteurs et des stats par l'enseignant (test, doublon…), sans
+  // rien supprimer : il suffit de remettre à null pour le réintégrer.
+  excludedAt  DateTime?
 
   sessionId String?
   session   ModuleSession? @relation(fields: [sessionId], references: [id])

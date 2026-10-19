@@ -10,6 +10,9 @@ import { QuestionRenderer }   from "@/components/diagnostic/question-renderer";
 import {
   fetchQuestions,
   createGuestStudent,
+  fetchGuestProgress,
+  getStoredGuestId,
+  storeGuestId,
   submitResponse,
   type DiagnosticSession,
   type Question,
@@ -42,14 +45,30 @@ export default function DiagnosticClient({ session }: Props) {
     if (initDone.current) return;
     initDone.current = true;
 
+    // Élève déjà passé par cette session sur ce navigateur : on le reprend là
+    // où il s'était arrêté. Sinon (ou s'il a été supprimé), nouvel élève.
+    const resume = async () => {
+      const storedId = getStoredGuestId(session.id);
+      if (storedId) {
+        const progress = await fetchGuestProgress(session.id, storedId);
+        if (progress) return { gId: storedId, progress };
+      }
+      const gId = await createGuestStudent(session.id);
+      storeGuestId(session.id, gId);
+      return { gId, progress: null };
+    };
+
     const init = async () => {
       try {
-        const [qs, gId] = await Promise.all([
-          fetchQuestions(),
-          createGuestStudent(session.id),
-        ]);
+        const [qs, { gId, progress }] = await Promise.all([fetchQuestions(), resume()]);
         setQuestions(qs);
         setGuestId(gId);
+        if (progress) {
+          const answered = new Set(progress.answeredQuestionIds);
+          const firstOpen = qs.findIndex((q) => !answered.has(q.id));
+          if (progress.completed || firstOpen === -1) setDone(true);
+          else setIndex(firstOpen);
+        }
         setStartTime(Date.now());
       } catch (err: any) {
         setError(err.message ?? "Une erreur est survenue");

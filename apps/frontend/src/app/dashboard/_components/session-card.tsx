@@ -69,6 +69,11 @@ export function SessionCard({ session, onClose, totalQuestions }: Props) {
         <div className="text-gray-500">
           <span className="font-semibold text-[#1A1A1A]">{responses}</span> réponses
         </div>
+        <div className="h-4 w-px bg-gray-200" />
+        <div className="text-gray-500">
+          <span className="font-semibold text-[#1A1A1A]">{session.completedCount}</span> terminé
+          {session.completedCount > 1 ? "s" : ""}
+        </div>
       </div>
 
       {/* Progress */}

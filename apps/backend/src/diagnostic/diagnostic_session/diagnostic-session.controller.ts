@@ -12,6 +12,7 @@ import {
 import { DiagnosticSessionService } from "./diagnostic-session.services";
 import { CreateDiagnosticSessionDto } from "./dto/create-diagnostic.dto";
 import { UpdateDiagnosticSessionDto } from "./dto/update-diagnostic.dto";
+import { UpdateDiagnosticStudentDto } from "./dto/update-student.dto";
 import { ApiBearerAuth } from "@nestjs/swagger";
 import { JwtAuthGuard } from "../../auth/jwt-auth.guard";
 import { CurrentUser, AuthUser } from "../../auth/decorators/current-user.decorator";
@@ -61,5 +62,26 @@ export class DiagnosticSessionController {
   @Delete(":id")
   remove(@Param("id") id: string, @CurrentUser() user: AuthUser) {
     return this.diagnosticSessionService.remove(id, user);
+  }
+
+  @UseGuards(JwtAuthGuard)
+  @Patch(":id/students/:guestId")
+  updateStudent(
+    @Param("id") id: string,
+    @Param("guestId") guestId: string,
+    @Body() dto: UpdateDiagnosticStudentDto,
+    @CurrentUser() user: AuthUser,
+  ) {
+    return this.diagnosticSessionService.setStudentExcluded(id, guestId, dto.excluded, user);
+  }
+
+  @UseGuards(JwtAuthGuard)
+  @Delete(":id/students/:guestId")
+  removeStudent(
+    @Param("id") id: string,
+    @Param("guestId") guestId: string,
+    @CurrentUser() user: AuthUser,
+  ) {
+    return this.diagnosticSessionService.removeStudent(id, guestId, user);
   }
 }
