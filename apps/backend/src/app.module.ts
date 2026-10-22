@@ -13,6 +13,7 @@ import { GuestStudendModule } from "./guest-studend/guest-studend.module";
 import { DataModule } from "./data/data.module";
 import { PrismaModule } from "./prisma/prisma.module";
 import { AuthModule } from "./auth/auth.module";
+import { StatsModule } from "./stats/stats.module";
 
 @Module({
   imports: [
@@ -33,6 +34,7 @@ import { AuthModule } from "./auth/auth.module";
     GuestStudendModule,
     DataModule,
     PrismaModule,
+    StatsModule,
   ],
 })
 export class AppModule {}

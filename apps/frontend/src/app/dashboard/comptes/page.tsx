@@ -5,13 +5,14 @@ import { createPortal } from "react-dom";
 import Link from "next/link";
 import {
   Plus, Trash2, Shield, User, Building2, Search,
-  MoreVertical, KeyRound, Ban, CheckCircle2, Copy, Check, MailCheck, MailX,
+  MoreVertical, KeyRound, Ban, CheckCircle2, Copy, Check, MailCheck, MailX, Pencil,
 } from "lucide-react";
 import {
   fetchAllUsers, deleteAccount, resetUserPassword, setSuspended,
-  fetchOrganizations, deleteOrganization,
+  fetchOrganizations, deleteOrganization, updateOrganizationLocation,
   type AccountUser, type Organization,
 } from "@/lib/admin-users";
+import { CollegeSearch } from "./_components/college-search";
 
 function RoleBadge({ role }: { role: "ADMIN" | "TRAINER" | "COLLABORATEUR" }) {
   if (role === "ADMIN") {
@@ -78,6 +79,8 @@ export default function ComptesPage() {
   const [orgs, setOrgs] = useState<Organization[]>([]);
   const [orgError, setOrgError] = useState<string | null>(null);
   const [orgDeleting, setOrgDeleting] = useState<string | null>(null);
+  const [orgEdit, setOrgEdit] = useState<{ id: string; city: string; postalCode: string; uai?: string } | null>(null);
+  const [orgSaving, setOrgSaving] = useState(false);
 
   const token = typeof window !== "undefined" ? (localStorage.getItem("access_token") ?? "") : "";
 
@@ -113,6 +116,32 @@ export default function ComptesPage() {
       setOrgError(err instanceof Error ? err.message : "Erreur lors de la suppression.");
     } finally {
       setOrgDeleting(null);
+    }
+  }
+
+  function startEditOrg(o: Organization) {
+    setOrgError(null);
+    setOrgEdit({ id: o.id, city: o.city ?? "", postalCode: o.postalCode ?? "", uai: o.uai ?? undefined });
+  }
+
+  async function handleSaveOrg(e: React.FormEvent) {
+    e.preventDefault();
+    if (!orgEdit) return;
+    if (!/^\d{5}$/.test(orgEdit.postalCode)) { setOrgError("Le code postal doit contenir 5 chiffres."); return; }
+    setOrgError(null);
+    setOrgSaving(true);
+    try {
+      const updated = await updateOrganizationLocation(token, orgEdit.id, {
+        city: orgEdit.city.trim(),
+        postalCode: orgEdit.postalCode,
+        ...(orgEdit.uai ? { uai: orgEdit.uai } : {}),
+      });
+      setOrgs((prev) => prev.map((o) => (o.id === updated.id ? updated : o)));
+      setOrgEdit(null);
+    } catch (err) {
+      setOrgError(err instanceof Error ? err.message : "Erreur lors de la mise à jour.");
+    } finally {
+      setOrgSaving(false);
     }
   }
 
@@ -461,7 +490,7 @@ export default function ComptesPage() {
               </div>
               <div>
                 <h2 className="text-base font-black text-gray-900">Établissements</h2>
-                <p className="text-xs text-gray-400">Supprimer un établissement vide</p>
+                <p className="text-xs text-gray-400">Localisation (pour les statistiques) et suppression d&apos;un établissement vide</p>
               </div>
             </div>
 
@@ -474,16 +503,66 @@ export default function ComptesPage() {
                 <p className="text-sm text-gray-400 italic px-2 py-4">Aucun établissement.</p>
               ) : (
                 orgs.map((o) => (
-                  <div key={o.id} className="flex items-center justify-between gap-3 px-2 py-3">
-                    <span className="text-sm font-semibold text-gray-800 truncate">{o.name}</span>
-                    <button
-                      onClick={() => handleDeleteOrg(o.id)}
-                      disabled={orgDeleting === o.id}
-                      className="p-1.5 rounded-lg text-gray-300 hover:text-red-500 hover:bg-red-50 transition-colors disabled:opacity-40"
-                      title="Supprimer cet établissement"
-                    >
-                      <Trash2 size={15} />
-                    </button>
+                  <div key={o.id} className="px-2 py-3 space-y-2">
+                    <div className="flex items-center justify-between gap-3">
+                      <div className="min-w-0">
+                        <p className="text-sm font-semibold text-gray-800 truncate">{o.name}</p>
+                        {o.postalCode ? (
+                          <p className="text-xs text-gray-400 truncate">
+                            {o.city} ({o.postalCode}){o.department ? ` · dép. ${o.department}` : ""}
+                            {o.uai ? ` · UAI ${o.uai}` : ""}
+                          </p>
+                        ) : (
+                          <p className="text-xs font-semibold text-amber-600">Ville et code postal à compléter</p>
+                        )}
+                      </div>
+                      <div className="flex items-center gap-1 shrink-0">
+                        <button
+                          onClick={() => startEditOrg(o)}
+                          className="p-1.5 rounded-lg text-gray-300 hover:text-[#1B6B8A] hover:bg-[#EBF4F8] transition-colors"
+                          title="Modifier la ville et le code postal"
+                        >
+                          <Pencil size={15} />
+                        </button>
+                        <button
+                          onClick={() => handleDeleteOrg(o.id)}
+                          disabled={orgDeleting === o.id}
+                          className="p-1.5 rounded-lg text-gray-300 hover:text-red-500 hover:bg-red-50 transition-colors disabled:opacity-40"
+                          title="Supprimer cet établissement"
+                        >
+                          <Trash2 size={15} />
+                        </button>
+                      </div>
+                    </div>
+                    {orgEdit?.id === o.id && (
+                      <div className="space-y-2">
+                      <p className="text-[11px] font-semibold text-gray-400">Retrouver ce collège dans l&apos;annuaire :</p>
+                      <CollegeSearch
+                        onSelect={(c) => setOrgEdit({ ...orgEdit, city: c.city, postalCode: c.postalCode, uai: c.uai })}
+                      />
+                      {orgEdit.uai && (
+                        <p className="text-[11px] text-emerald-700">Fiche officielle : UAI {orgEdit.uai}</p>
+                      )}
+                      <form onSubmit={handleSaveOrg} className="flex gap-2">
+                        <input
+                          type="text" required value={orgEdit.city} placeholder="Ville"
+                          onChange={(e) => setOrgEdit({ ...orgEdit, city: e.target.value })}
+                          className="flex-1 min-w-0 px-3 py-2 rounded-xl border border-gray-200 bg-gray-50 text-sm focus:outline-none focus:ring-2 focus:ring-[#1B6B8A]/30"
+                        />
+                        <input
+                          type="text" required inputMode="numeric" maxLength={5} value={orgEdit.postalCode} placeholder="CP"
+                          onChange={(e) => setOrgEdit({ ...orgEdit, postalCode: e.target.value.replace(/\D/g, "") })}
+                          className="w-20 px-3 py-2 rounded-xl border border-gray-200 bg-gray-50 text-sm focus:outline-none focus:ring-2 focus:ring-[#1B6B8A]/30"
+                        />
+                        <button
+                          type="submit" disabled={orgSaving}
+                          className="px-3 py-2 rounded-xl bg-[#1B6B8A] text-white text-xs font-bold hover:opacity-90 disabled:opacity-50"
+                        >
+                          {orgSaving ? "…" : "OK"}
+                        </button>
+                      </form>
+                      </div>
+                    )}
                   </div>
                 ))
               )}

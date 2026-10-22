@@ -272,6 +272,28 @@ function buildSlices(
   question: QuestionMeta,
   responses: ResponseEntry[],
 ): AnswerSlice[] {
+  const counts: Record<string, number> = {};
+  const multi = question.questionType === "MCQ_MULTI";
+  for (const r of responses) {
+    const keys = multi ? extractArrayAnswer(r.userAnswer) : [extractScalarAnswer(r.userAnswer)];
+    for (const ans of keys) if (ans) counts[ans] = (counts[ans] ?? 0) + 1;
+  }
+  return slicesFromCounts(
+    question,
+    counts,
+    responses.filter((r) => r.isCorrect === true).length,
+    responses.filter((r) => r.isCorrect === false).length,
+  );
+}
+
+// Barres de réponses d'une question à partir de comptes déjà agrégés
+// (détail d'une session, ou statistiques multi-sessions calculées par le serveur).
+export function slicesFromCounts(
+  question: QuestionMeta,
+  counts: Record<string, number>,
+  correctCount: number,
+  incorrectCount: number,
+): AnswerSlice[] {
   const type = question.questionType;
 
   if (type === "OPEN") return [];
@@ -282,11 +304,6 @@ function buildSlices(
     const choices: string[] = (
       question.options as { choices?: string[] } | null
     )?.choices ?? ["OUI", "NON"];
-    const counts: Record<string, number> = {};
-    for (const r of responses) {
-      const ans = extractScalarAnswer(r.userAnswer);
-      if (ans) counts[ans] = (counts[ans] ?? 0) + 1;
-    }
     return choices.map((label) => ({
       label,
       count: counts[label] ?? 0,
@@ -299,11 +316,6 @@ function buildSlices(
       (question.options as { choices?: string[] } | null)?.choices ?? [];
     const correct =
       (question.correctAnswer as { answer?: string } | null)?.answer ?? null;
-    const counts: Record<string, number> = {};
-    for (const r of responses) {
-      const ans = extractScalarAnswer(r.userAnswer);
-      if (ans) counts[ans] = (counts[ans] ?? 0) + 1;
-    }
     const seen = new Set<string>();
     const slices: AnswerSlice[] = [];
     for (const label of choices) {
@@ -323,12 +335,6 @@ function buildSlices(
       (question.options as { choices?: string[] } | null)?.choices ?? [];
     const correctAnswers: string[] =
       (question.correctAnswer as { answers?: string[] } | null)?.answers ?? [];
-    const counts: Record<string, number> = {};
-    for (const r of responses) {
-      for (const ans of extractArrayAnswer(r.userAnswer)) {
-        counts[ans] = (counts[ans] ?? 0) + 1;
-      }
-    }
     return choices.map((label) => ({
       label,
       count: counts[label] ?? 0,
@@ -337,11 +343,9 @@ function buildSlices(
   }
 
   if (type === "CLASSIFY") {
-    const correct = responses.filter((r) => r.isCorrect === true).length;
-    const incorrect = responses.filter((r) => r.isCorrect === false).length;
     return [
-      { label: "Bien classé", count: correct, isCorrect: true },
-      { label: "Mal classé", count: incorrect, isCorrect: false },
+      { label: "Bien classé", count: correctCount, isCorrect: true },
+      { label: "Mal classé", count: incorrectCount, isCorrect: false },
     ];
   }
 

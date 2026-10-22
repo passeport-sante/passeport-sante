@@ -63,6 +63,15 @@ model Organization {
   name        String
   description String?
   logo        String?
+  // Localisation, pour les statistiques par département. Le département est
+  // déduit du code postal par le serveur (voir common/department.ts) ; null
+  // pour les établissements créés avant l'ajout de ces champs.
+  city        String?
+  postalCode  String?
+  department  String?
+  // Numéro UAI (identifiant officiel Éducation nationale), renseigné quand
+  // l'établissement est choisi dans l'annuaire. Unique : empêche les doublons.
+  uai         String?  @unique
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 

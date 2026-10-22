@@ -24,6 +24,7 @@ export default function SessionDetailPage() {
   const [session, setSession] = useState<SessionDetail | null>(null);
   const [loading, setLoading] = useState(true);
   const [totalQuestions, setTotalQuestions] = useState(0);
+  const [tab, setTab] = useState<"results" | "students">("results");
 
   // Rechargée aussi après une action du panel élèves (exclusion, suppression).
   const load = useCallback(async () => {
@@ -132,6 +133,49 @@ export default function SessionDetailPage() {
         </div>
       </div>
 
+      {/* Onglets : résultats (après la séance) / élèves (pendant la séance) */}
+      <div role="tablist" className="flex gap-1 border-b border-gray-200">
+        {(
+          [
+            { key: "results", label: "Résultats" },
+            {
+              key: "students",
+              label: `Élèves · ${session.completedCount}/${session._count.guestStudents} terminés`,
+            },
+          ] as const
+        ).map((t) => (
+          <button
+            key={t.key}
+            role="tab"
+            aria-selected={tab === t.key}
+            onClick={() => setTab(t.key)}
+            className={`px-4 py-2.5 -mb-px border-b-2 text-sm font-semibold transition-colors ${
+              tab === t.key
+                ? "border-[#1B6B8A] text-[#1B6B8A]"
+                : "border-transparent text-gray-400 hover:text-gray-600"
+            }`}
+          >
+            {t.label}
+          </button>
+        ))}
+      </div>
+
+      {tab === "students" && (
+        <section>
+          <p className="text-sm text-gray-400 mb-4">
+            Un élève de test ou en double peut être exclu : il ne compte plus dans les effectifs ni dans les résultats.
+          </p>
+          <StudentsPanel
+            sessionId={session.id}
+            students={session.guestStudents}
+            totalQuestions={totalQuestions}
+            onChanged={load}
+          />
+        </section>
+      )}
+
+      {tab === "results" && (
+      <>
       {/* Score cards */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
         <ScoreCard
@@ -181,30 +225,14 @@ export default function SessionDetailPage() {
         </section>
       )}
 
-      <section>
-        <h2 className="text-lg font-bold text-[#1A1A1A] mb-1">
-          Élèves
-          <span className="ml-2 px-2 py-0.5 bg-gray-100 text-gray-500 text-xs font-semibold rounded-full">
-            {session.guestStudents.length}
-          </span>
-        </h2>
-        <p className="text-sm text-gray-400 mb-4">
-          Un élève de test ou en double peut être exclu : il ne compte plus dans les effectifs ni dans les résultats.
-        </p>
-        <StudentsPanel
-          sessionId={session.id}
-          students={session.guestStudents}
-          totalQuestions={totalQuestions}
-          onChanged={load}
-        />
-      </section>
-
       {session.diagnosticResponses.length === 0 && (
         <div className="bg-white rounded-2xl border border-dashed border-gray-200 p-16 text-center">
           <p className="text-gray-400">
             Aucune réponse enregistrée pour cette session.
           </p>
         </div>
+      )}
+      </>
       )}
     </div>
   );

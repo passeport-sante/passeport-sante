@@ -129,7 +129,8 @@ function getSliceColor(
   return "#9CA3AF";
 }
 
-function QuestionCard({ qs, index }: { qs: QuestionStats; index: number }) {
+// Réutilisée par le PDF des statistiques (dashboard/stats).
+export function QuestionCard({ qs, index }: { qs: QuestionStats; index: number }) {
   const isOpen = qs.question.questionType === "OPEN";
   const isSurvey =
     qs.slices.length > 0 && qs.slices.every((s) => s.isCorrect === null);

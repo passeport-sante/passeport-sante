@@ -11,6 +11,8 @@ import {
   type Organization,
   type UserRole,
 } from "@/lib/admin-users";
+import type { DirectoryCollege } from "@/lib/school-directory";
+import { CollegeSearch } from "../_components/college-search";
 
 export default function NouveauComptePage() {
   const router = useRouter();
@@ -29,6 +31,30 @@ export default function NouveauComptePage() {
   const [role, setRole] = useState<UserRole>("TRAINER");
   const [orgId, setOrgId] = useState("");
   const [newOrgName, setNewOrgName] = useState("");
+  const [newOrgCity, setNewOrgCity] = useState("");
+  const [newOrgPostalCode, setNewOrgPostalCode] = useState("");
+  const [newOrgUai, setNewOrgUai] = useState<string | null>(null);
+  const [manualOrg, setManualOrg] = useState(false);
+  const [orgNotice, setOrgNotice] = useState<string | null>(null);
+
+  // Collège choisi dans l'annuaire (null : on vide pour en choisir un autre).
+  // S'il existe déjà sur la plateforme, on le sélectionne au lieu d'en créer un doublon.
+  function fillNewOrg(college: DirectoryCollege | null) {
+    setOrgNotice(null);
+    if (college) {
+      const existing = orgs.find((o) => o.uai === college.uai);
+      if (existing) {
+        setCreatingOrg(false);
+        setOrgId(existing.id);
+        setOrgNotice(`« ${existing.name} » existe déjà sur la plateforme : il a été sélectionné.`);
+        return;
+      }
+    }
+    setNewOrgUai(college?.uai ?? null);
+    setNewOrgName(college?.name ?? "");
+    setNewOrgCity(college?.city ?? "");
+    setNewOrgPostalCode(college?.postalCode ?? "");
+  }
   const [creatingOrg, setCreatingOrg] = useState(false);
 
   useEffect(() => {
@@ -46,7 +72,13 @@ export default function NouveauComptePage() {
 
       if (creatingOrg) {
         if (!newOrgName.trim()) { setError("Nom de l'établissement requis"); setLoading(false); return; }
-        const org = await createOrganization(token, newOrgName.trim());
+        if (!newOrgCity.trim()) { setError("Ville de l'établissement requise"); setLoading(false); return; }
+        if (!/^\d{5}$/.test(newOrgPostalCode)) { setError("Le code postal doit contenir 5 chiffres"); setLoading(false); return; }
+        const org = await createOrganization(token, newOrgName.trim(), {
+          city: newOrgCity.trim(),
+          postalCode: newOrgPostalCode,
+          ...(newOrgUai ? { uai: newOrgUai } : {}),
+        });
         setOrgs((prev) => [...prev, org]);
         finalOrgId = org.id;
       }
@@ -168,7 +200,7 @@ export default function NouveauComptePage() {
             <div className="flex gap-2">
               <select
                 value={orgId}
-                onChange={(e) => setOrgId(e.target.value)}
+                onChange={(e) => { setOrgId(e.target.value); setOrgNotice(null); }}
                 className="flex-1 px-4 py-3 rounded-2xl border border-gray-200 bg-gray-50 text-sm text-gray-800 focus:outline-none focus:ring-2 focus:ring-[#1B6B8A]/30 focus:border-[#1B6B8A]"
               >
                 <option value="" disabled>Sélectionner un établissement</option>
@@ -187,22 +219,81 @@ export default function NouveauComptePage() {
           ) : (
             <div className="space-y-2 p-4 rounded-2xl border-2 border-[#1B6B8A]/30 bg-[#EBF4F8]/50">
               <p className="text-xs font-bold text-[#1B6B8A]">Nouvel établissement</p>
-              <input
-                type="text" value={newOrgName}
-                onChange={(e) => setNewOrgName(e.target.value)}
-                placeholder="Nom de l'établissement"
-                className="w-full px-4 py-3 rounded-xl border border-gray-200 bg-white text-sm text-gray-800 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-[#1B6B8A]/30"
-              />
+
+              {newOrgUai ? (
+                // Collège choisi dans l'annuaire : tout est rempli, rien à saisir.
+                <div className="flex items-start justify-between gap-3 px-4 py-3 rounded-xl border border-emerald-200 bg-white">
+                  <div className="min-w-0">
+                    <p className="text-sm font-semibold text-gray-800">{newOrgName}</p>
+                    <p className="text-xs text-gray-400">
+                      {newOrgCity} ({newOrgPostalCode}) · UAI {newOrgUai}
+                    </p>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => fillNewOrg(null)}
+                    className="text-xs font-semibold text-[#1B6B8A] hover:underline shrink-0"
+                  >
+                    Changer
+                  </button>
+                </div>
+              ) : !manualOrg ? (
+                <>
+                  <CollegeSearch onSelect={fillNewOrg} onUnavailable={() => setManualOrg(true)} autoFocus />
+                  <button
+                    type="button"
+                    onClick={() => setManualOrg(true)}
+                    className="text-xs text-gray-400 hover:text-gray-600 underline"
+                  >
+                    Établissement absent de l&apos;annuaire ? Saisir à la main
+                  </button>
+                </>
+              ) : (
+                <>
+                  <input
+                    type="text" value={newOrgName}
+                    onChange={(e) => setNewOrgName(e.target.value)}
+                    placeholder="Nom de l'établissement"
+                    className="w-full px-4 py-3 rounded-xl border border-gray-200 bg-white text-sm text-gray-800 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-[#1B6B8A]/30"
+                  />
+                  <div className="grid grid-cols-[1fr_9rem] gap-2">
+                    <input
+                      type="text" value={newOrgCity}
+                      onChange={(e) => setNewOrgCity(e.target.value)}
+                      placeholder="Ville"
+                      className="w-full px-4 py-3 rounded-xl border border-gray-200 bg-white text-sm text-gray-800 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-[#1B6B8A]/30"
+                    />
+                    <input
+                      type="text" inputMode="numeric" maxLength={5} value={newOrgPostalCode}
+                      onChange={(e) => setNewOrgPostalCode(e.target.value.replace(/\D/g, ""))}
+                      placeholder="Code postal"
+                      className="w-full px-4 py-3 rounded-xl border border-gray-200 bg-white text-sm text-gray-800 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-[#1B6B8A]/30"
+                    />
+                  </div>
+                  <p className="text-xs text-gray-400">Le département est déduit du code postal, pour les statistiques.</p>
+                  <button
+                    type="button"
+                    onClick={() => setManualOrg(false)}
+                    className="text-xs text-gray-400 hover:text-gray-600 underline"
+                  >
+                    Rechercher dans l&apos;annuaire
+                  </button>
+                </>
+              )}
+
               {orgs.length > 0 && (
                 <button
                   type="button"
-                  onClick={() => { setCreatingOrg(false); setNewOrgName(""); }}
+                  onClick={() => { setCreatingOrg(false); fillNewOrg(null); }}
                   className="text-xs text-gray-400 hover:text-gray-600 underline"
                 >
                   Utiliser un établissement existant
                 </button>
               )}
             </div>
+          )}
+          {orgNotice && !creatingOrg && (
+            <p className="text-xs font-semibold text-emerald-700 bg-emerald-50 px-3 py-2 rounded-xl">{orgNotice}</p>
           )}
         </div>
 

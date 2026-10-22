@@ -22,7 +22,14 @@ export type Organization = {
   id: string;
   name: string;
   description?: string | null;
+  city?: string | null;
+  postalCode?: string | null;
+  department?: string | null; // déduit du code postal par le serveur
+  uai?: string | null;
 };
+
+// uai : présent quand l'établissement vient de l'annuaire de l'Éducation nationale.
+export type OrganizationLocation = { city: string; postalCode: string; uai?: string };
 
 export type CreateAccountPayload = {
   name: string;
@@ -125,13 +132,37 @@ export async function fetchOrganizations(token: string): Promise<Organization[]>
 export async function createOrganization(
   token: string,
   name: string,
+  location: OrganizationLocation,
 ): Promise<Organization> {
   const res = await fetch(`${API}/api/organization`, {
     method: "POST",
     headers: auth(token),
-    body: JSON.stringify({ name }),
+    body: JSON.stringify({ name, ...location }),
   });
-  if (!res.ok) throw new Error("Erreur lors de la création de l'établissement");
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({}));
+    const message = Array.isArray(err.message) ? err.message[0] : err.message;
+    throw new Error(message ?? "Erreur lors de la création de l'établissement");
+  }
+  return res.json();
+}
+
+// Ville et code postal d'un établissement existant (le département suit).
+export async function updateOrganizationLocation(
+  token: string,
+  id: string,
+  location: OrganizationLocation,
+): Promise<Organization> {
+  const res = await fetch(`${API}/api/organization/${id}`, {
+    method: "PATCH",
+    headers: auth(token),
+    body: JSON.stringify(location),
+  });
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({}));
+    const message = Array.isArray(err.message) ? err.message[0] : err.message;
+    throw new Error(message ?? "Erreur lors de la mise à jour de l'établissement");
+  }
   return res.json();
 }
 
