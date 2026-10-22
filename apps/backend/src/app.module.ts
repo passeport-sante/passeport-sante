@@ -14,6 +14,7 @@ import { DataModule } from "./data/data.module";
 import { PrismaModule } from "./prisma/prisma.module";
 import { AuthModule } from "./auth/auth.module";
 import { StatsModule } from "./stats/stats.module";
+import { DirectoryModule } from "./directory/directory.module";
 
 @Module({
   imports: [
@@ -35,6 +36,7 @@ import { StatsModule } from "./stats/stats.module";
     DataModule,
     PrismaModule,
     StatsModule,
+    DirectoryModule,
   ],
 })
 export class AppModule {}
