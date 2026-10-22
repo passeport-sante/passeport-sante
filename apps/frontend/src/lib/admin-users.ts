@@ -29,7 +29,8 @@ export type Organization = {
 };
 
 // uai : présent quand l'établissement vient de l'annuaire de l'Éducation nationale.
-export type OrganizationLocation = { city: string; postalCode: string; uai?: string };
+// uai: null dissocie l'établissement de sa fiche de l'annuaire.
+export type OrganizationLocation = { city: string; postalCode: string; uai?: string | null };
 
 export type CreateAccountPayload = {
   name: string;

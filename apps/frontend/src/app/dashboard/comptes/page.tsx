@@ -79,7 +79,13 @@ export default function ComptesPage() {
   const [orgs, setOrgs] = useState<Organization[]>([]);
   const [orgError, setOrgError] = useState<string | null>(null);
   const [orgDeleting, setOrgDeleting] = useState<string | null>(null);
-  const [orgEdit, setOrgEdit] = useState<{ id: string; city: string; postalCode: string; uai?: string } | null>(null);
+  const [orgEdit, setOrgEdit] = useState<{
+    id: string;
+    city: string;
+    postalCode: string;
+    uai: string | null;
+    initialUai: string | null; // pour signaler une dissociation en attente
+  } | null>(null);
   const [orgSaving, setOrgSaving] = useState(false);
 
   const token = typeof window !== "undefined" ? (localStorage.getItem("access_token") ?? "") : "";
@@ -121,7 +127,7 @@ export default function ComptesPage() {
 
   function startEditOrg(o: Organization) {
     setOrgError(null);
-    setOrgEdit({ id: o.id, city: o.city ?? "", postalCode: o.postalCode ?? "", uai: o.uai ?? undefined });
+    setOrgEdit({ id: o.id, city: o.city ?? "", postalCode: o.postalCode ?? "", uai: o.uai ?? null, initialUai: o.uai ?? null });
   }
 
   async function handleSaveOrg(e: React.FormEvent) {
@@ -134,7 +140,7 @@ export default function ComptesPage() {
       const updated = await updateOrganizationLocation(token, orgEdit.id, {
         city: orgEdit.city.trim(),
         postalCode: orgEdit.postalCode,
-        ...(orgEdit.uai ? { uai: orgEdit.uai } : {}),
+        uai: orgEdit.uai, // null : dissocie de la fiche de l'annuaire
       });
       setOrgs((prev) => prev.map((o) => (o.id === updated.id ? updated : o)));
       setOrgEdit(null);
@@ -540,9 +546,32 @@ export default function ComptesPage() {
                       <CollegeSearch
                         onSelect={(c) => setOrgEdit({ ...orgEdit, city: c.city, postalCode: c.postalCode, uai: c.uai })}
                       />
-                      {orgEdit.uai && (
-                        <p className="text-[11px] text-emerald-700">Fiche officielle : UAI {orgEdit.uai}</p>
-                      )}
+                      {orgEdit.uai ? (
+                        <p className="text-[11px] text-emerald-700">
+                          Fiche officielle : UAI {orgEdit.uai}
+                          {" · "}
+                          <button
+                            type="button"
+                            onClick={() => setOrgEdit({ ...orgEdit, uai: null })}
+                            className="font-semibold text-red-500 hover:underline"
+                            title="Retirer le lien avec cette fiche de l'annuaire (mauvais collège choisi)"
+                          >
+                            Dissocier
+                          </button>
+                        </p>
+                      ) : orgEdit.initialUai ? (
+                        <p className="text-[11px] text-amber-700">
+                          Sera dissocié de la fiche UAI {orgEdit.initialUai} en validant (OK).
+                          {" "}
+                          <button
+                            type="button"
+                            onClick={() => setOrgEdit({ ...orgEdit, uai: orgEdit.initialUai })}
+                            className="font-semibold text-[#1B6B8A] hover:underline"
+                          >
+                            Annuler
+                          </button>
+                        </p>
+                      ) : null}
                       <form onSubmit={handleSaveOrg} className="flex gap-2">
                         <input
                           type="text" required value={orgEdit.city} placeholder="Ville"

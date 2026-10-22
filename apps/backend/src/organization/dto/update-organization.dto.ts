@@ -14,7 +14,8 @@ export class UpdateOrganizationDto extends PartialType(CreateOrganizationDto) {
   @Matches(/^\d{5}$/, { message: 'Le code postal doit contenir 5 chiffres' })
   postalCode?: string;
 
+  // null : dissocie l'établissement de sa fiche de l'annuaire (erreur de rattachement).
   @IsOptional()
   @Matches(/^\d{7}[A-Z]$/, { message: 'Numéro UAI invalide' })
-  uai?: string;
+  uai?: string | null;
 }

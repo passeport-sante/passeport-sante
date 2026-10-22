@@ -16,7 +16,7 @@ export class OrganizationService {
   }
 
   // Un même collège (même numéro UAI) ne peut exister qu'une fois.
-  private async assertUaiFree(uai: string | undefined, exceptId?: string) {
+  private async assertUaiFree(uai: string | null | undefined, exceptId?: string) {
     if (!uai) return;
     const existing = await this.prisma.organization.findUnique({ where: { uai }, select: { id: true, name: true } });
     if (existing && existing.id !== exceptId) {

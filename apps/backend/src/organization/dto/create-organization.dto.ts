@@ -32,5 +32,5 @@ export class CreateOrganizationDto {
   @ApiPropertyOptional({ example: "0541569M" })
   @IsOptional()
   @Matches(/^\d{7}[A-Z]$/, { message: "Numéro UAI invalide" })
-  uai?: string;
+  uai?: string | null;
 }
