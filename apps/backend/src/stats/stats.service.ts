@@ -96,8 +96,10 @@ export class StatsService {
     q: StatsQueryDto,
     singleOrg: boolean,
   ) {
+    // Seuls les vrais établissements scolaires (rattachés à l'annuaire, donc
+    // avec un UAI) sont proposés dans les filtres : pas les structures internes.
     const organizations = await this.prisma.organization.findMany({
-      where: global ? {} : { id: orgWhere.id as string },
+      where: global ? { uai: { not: null } } : { id: orgWhere.id as string },
       select: { id: true, name: true, city: true, postalCode: true, department: true },
       orderBy: { name: "asc" },
     });

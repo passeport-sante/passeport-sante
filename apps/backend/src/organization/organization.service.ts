@@ -36,8 +36,13 @@ export class OrganizationService {
     };
   }
 
+  // Avec le nombre de comptes, sessions et modules : la page de gestion montre ainsi
+  // quels établissements sont vides (seuls ceux-là peuvent être supprimés).
   findAll() {
-    return this.prisma.organization.findMany();
+    return this.prisma.organization.findMany({
+      include: { _count: { select: { users: true, diagnosticSessions: true, moduleSessions: true, modules: true } } },
+      orderBy: { name: "asc" },
+    });
   }
 
   findOne(id: string) {

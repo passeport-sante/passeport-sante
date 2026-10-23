@@ -5,14 +5,12 @@ import { createPortal } from "react-dom";
 import Link from "next/link";
 import {
   Plus, Trash2, Shield, User, Building2, Search,
-  MoreVertical, KeyRound, Ban, CheckCircle2, Copy, Check, MailCheck, MailX, Pencil,
+  MoreVertical, KeyRound, Ban, CheckCircle2, Copy, Check, MailCheck, MailX,
 } from "lucide-react";
 import {
   fetchAllUsers, deleteAccount, resetUserPassword, setSuspended,
-  fetchOrganizations, deleteOrganization, updateOrganizationLocation,
-  type AccountUser, type Organization,
+  type AccountUser,
 } from "@/lib/admin-users";
-import { CollegeSearch } from "./_components/college-search";
 
 function RoleBadge({ role }: { role: "ADMIN" | "TRAINER" | "COLLABORATEUR" }) {
   if (role === "ADMIN") {
@@ -74,20 +72,6 @@ export default function ComptesPage() {
   const [actionLoading, setActionLoading] = useState(false);
   const [mounted, setMounted] = useState(false);
 
-  // Gestion des établissements
-  const [orgsModal, setOrgsModal] = useState(false);
-  const [orgs, setOrgs] = useState<Organization[]>([]);
-  const [orgError, setOrgError] = useState<string | null>(null);
-  const [orgDeleting, setOrgDeleting] = useState<string | null>(null);
-  const [orgEdit, setOrgEdit] = useState<{
-    id: string;
-    city: string;
-    postalCode: string;
-    uai: string | null;
-    initialUai: string | null; // pour signaler une dissociation en attente
-  } | null>(null);
-  const [orgSaving, setOrgSaving] = useState(false);
-
   const token = typeof window !== "undefined" ? (localStorage.getItem("access_token") ?? "") : "";
 
   useEffect(() => { setMounted(true); }, []);
@@ -101,55 +85,6 @@ export default function ComptesPage() {
     }
   }
   useEffect(() => { load(); }, []);
-
-  async function openOrgsModal() {
-    setOrgError(null);
-    setOrgsModal(true);
-    try {
-      setOrgs(await fetchOrganizations(token));
-    } catch {
-      setOrgError("Impossible de charger les établissements.");
-    }
-  }
-
-  async function handleDeleteOrg(id: string) {
-    setOrgError(null);
-    setOrgDeleting(id);
-    try {
-      await deleteOrganization(token, id);
-      setOrgs((prev) => prev.filter((o) => o.id !== id));
-    } catch (err) {
-      setOrgError(err instanceof Error ? err.message : "Erreur lors de la suppression.");
-    } finally {
-      setOrgDeleting(null);
-    }
-  }
-
-  function startEditOrg(o: Organization) {
-    setOrgError(null);
-    setOrgEdit({ id: o.id, city: o.city ?? "", postalCode: o.postalCode ?? "", uai: o.uai ?? null, initialUai: o.uai ?? null });
-  }
-
-  async function handleSaveOrg(e: React.FormEvent) {
-    e.preventDefault();
-    if (!orgEdit) return;
-    if (!/^\d{5}$/.test(orgEdit.postalCode)) { setOrgError("Le code postal doit contenir 5 chiffres."); return; }
-    setOrgError(null);
-    setOrgSaving(true);
-    try {
-      const updated = await updateOrganizationLocation(token, orgEdit.id, {
-        city: orgEdit.city.trim(),
-        postalCode: orgEdit.postalCode,
-        uai: orgEdit.uai, // null : dissocie de la fiche de l'annuaire
-      });
-      setOrgs((prev) => prev.map((o) => (o.id === updated.id ? updated : o)));
-      setOrgEdit(null);
-    } catch (err) {
-      setOrgError(err instanceof Error ? err.message : "Erreur lors de la mise à jour.");
-    } finally {
-      setOrgSaving(false);
-    }
-  }
 
   // Fermer le dropdown quand on clique en dehors
   useEffect(() => {
@@ -248,13 +183,13 @@ export default function ComptesPage() {
           </p>
         </div>
         <div className="flex items-center gap-2 sm:gap-3 shrink-0">
-          <button
-            onClick={openOrgsModal}
+          <Link
+            href="/dashboard/comptes/etablissements"
             className="flex-1 sm:flex-none inline-flex items-center justify-center gap-2 px-4 sm:px-5 py-2.5 bg-white border border-gray-200 text-gray-700 text-sm font-bold rounded-full hover:bg-gray-50 transition-colors whitespace-nowrap"
           >
             <Building2 size={16} />
             Établissements
-          </button>
+          </Link>
           <Link
             href="/dashboard/comptes/nouveau"
             className="flex-1 sm:flex-none inline-flex items-center justify-center gap-2 px-4 sm:px-5 py-2.5 bg-[#1B6B8A] text-white text-sm font-bold rounded-full hover:opacity-90 transition-opacity whitespace-nowrap"
@@ -482,127 +417,6 @@ export default function ComptesPage() {
                 {actionLoading ? "Suppression…" : "Supprimer"}
               </button>
             </div>
-          </div>
-        </Modal>
-      )}
-
-      {/* ── Modal gestion des établissements ── */}
-      {mounted && orgsModal && (
-        <Modal>
-          <div className="bg-white rounded-2xl shadow-2xl p-8 max-w-md w-full space-y-5">
-            <div className="flex items-center gap-3">
-              <div className="w-11 h-11 rounded-xl bg-[#EBF4F8] flex items-center justify-center shrink-0">
-                <Building2 size={20} className="text-[#1B6B8A]" />
-              </div>
-              <div>
-                <h2 className="text-base font-black text-gray-900">Établissements</h2>
-                <p className="text-xs text-gray-400">Localisation (pour les statistiques) et suppression d&apos;un établissement vide</p>
-              </div>
-            </div>
-
-            {orgError && (
-              <p className="text-sm text-red-600 bg-red-50 border border-red-100 rounded-xl px-4 py-3">{orgError}</p>
-            )}
-
-            <div className="max-h-72 overflow-y-auto divide-y divide-gray-50 -mx-2">
-              {orgs.length === 0 ? (
-                <p className="text-sm text-gray-400 italic px-2 py-4">Aucun établissement.</p>
-              ) : (
-                orgs.map((o) => (
-                  <div key={o.id} className="px-2 py-3 space-y-2">
-                    <div className="flex items-center justify-between gap-3">
-                      <div className="min-w-0">
-                        <p className="text-sm font-semibold text-gray-800 truncate">{o.name}</p>
-                        {o.postalCode ? (
-                          <p className="text-xs text-gray-400 truncate">
-                            {o.city} ({o.postalCode}){o.department ? ` · dép. ${o.department}` : ""}
-                            {o.uai ? ` · UAI ${o.uai}` : ""}
-                          </p>
-                        ) : (
-                          <p className="text-xs font-semibold text-amber-600">Ville et code postal à compléter</p>
-                        )}
-                      </div>
-                      <div className="flex items-center gap-1 shrink-0">
-                        <button
-                          onClick={() => startEditOrg(o)}
-                          className="p-1.5 rounded-lg text-gray-300 hover:text-[#1B6B8A] hover:bg-[#EBF4F8] transition-colors"
-                          title="Modifier la ville et le code postal"
-                        >
-                          <Pencil size={15} />
-                        </button>
-                        <button
-                          onClick={() => handleDeleteOrg(o.id)}
-                          disabled={orgDeleting === o.id}
-                          className="p-1.5 rounded-lg text-gray-300 hover:text-red-500 hover:bg-red-50 transition-colors disabled:opacity-40"
-                          title="Supprimer cet établissement"
-                        >
-                          <Trash2 size={15} />
-                        </button>
-                      </div>
-                    </div>
-                    {orgEdit?.id === o.id && (
-                      <div className="space-y-2">
-                      <p className="text-[11px] font-semibold text-gray-400">Retrouver ce collège dans l&apos;annuaire :</p>
-                      <CollegeSearch
-                        onSelect={(c) => setOrgEdit({ ...orgEdit, city: c.city, postalCode: c.postalCode, uai: c.uai })}
-                      />
-                      {orgEdit.uai ? (
-                        <p className="text-[11px] text-emerald-700">
-                          Fiche officielle : UAI {orgEdit.uai}
-                          {" · "}
-                          <button
-                            type="button"
-                            onClick={() => setOrgEdit({ ...orgEdit, uai: null })}
-                            className="font-semibold text-red-500 hover:underline"
-                            title="Retirer le lien avec cette fiche de l'annuaire (mauvais collège choisi)"
-                          >
-                            Dissocier
-                          </button>
-                        </p>
-                      ) : orgEdit.initialUai ? (
-                        <p className="text-[11px] text-amber-700">
-                          Sera dissocié de la fiche UAI {orgEdit.initialUai} en validant (OK).
-                          {" "}
-                          <button
-                            type="button"
-                            onClick={() => setOrgEdit({ ...orgEdit, uai: orgEdit.initialUai })}
-                            className="font-semibold text-[#1B6B8A] hover:underline"
-                          >
-                            Annuler
-                          </button>
-                        </p>
-                      ) : null}
-                      <form onSubmit={handleSaveOrg} className="flex gap-2">
-                        <input
-                          type="text" required value={orgEdit.city} placeholder="Ville"
-                          onChange={(e) => setOrgEdit({ ...orgEdit, city: e.target.value })}
-                          className="flex-1 min-w-0 px-3 py-2 rounded-xl border border-gray-200 bg-gray-50 text-sm focus:outline-none focus:ring-2 focus:ring-[#1B6B8A]/30"
-                        />
-                        <input
-                          type="text" required inputMode="numeric" maxLength={5} value={orgEdit.postalCode} placeholder="CP"
-                          onChange={(e) => setOrgEdit({ ...orgEdit, postalCode: e.target.value.replace(/\D/g, "") })}
-                          className="w-20 px-3 py-2 rounded-xl border border-gray-200 bg-gray-50 text-sm focus:outline-none focus:ring-2 focus:ring-[#1B6B8A]/30"
-                        />
-                        <button
-                          type="submit" disabled={orgSaving}
-                          className="px-3 py-2 rounded-xl bg-[#1B6B8A] text-white text-xs font-bold hover:opacity-90 disabled:opacity-50"
-                        >
-                          {orgSaving ? "…" : "OK"}
-                        </button>
-                      </form>
-                      </div>
-                    )}
-                  </div>
-                ))
-              )}
-            </div>
-
-            <button
-              onClick={() => setOrgsModal(false)}
-              className="w-full py-2.5 bg-[#1B6B8A] text-white text-sm font-bold rounded-full hover:opacity-90 transition-opacity"
-            >
-              Fermer
-            </button>
           </div>
         </Modal>
       )}

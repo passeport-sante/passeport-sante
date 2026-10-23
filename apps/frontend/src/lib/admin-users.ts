@@ -26,6 +26,8 @@ export type Organization = {
   postalCode?: string | null;
   department?: string | null; // déduit du code postal par le serveur
   uai?: string | null;
+  // Renvoyé par la liste des établissements (GET /api/organization).
+  _count?: { users: number; diagnosticSessions: number; moduleSessions: number; modules: number };
 };
 
 // uai : présent quand l'établissement vient de l'annuaire de l'Éducation nationale.
