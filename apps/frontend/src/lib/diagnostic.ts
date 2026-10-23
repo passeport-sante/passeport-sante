@@ -50,6 +50,43 @@ export async function createGuestStudent(diagnosticSessionId: string): Promise<s
   return data.id;
 }
 
+// ── Reprise après une sortie de page ──────────────────────────────────────────
+//
+// L'identifiant de l'élève est gardé dans son navigateur, par session : s'il
+// recharge la page, revient en arrière ou ferme l'onglet, il reprend son
+// diagnostic au lieu de compter comme un nouvel élève.
+
+const guestKey = (sessionId: string) => `diagnostic_guest_${sessionId}`;
+
+export function getStoredGuestId(sessionId: string): string | null {
+  try {
+    return localStorage.getItem(guestKey(sessionId));
+  } catch {
+    return null;
+  }
+}
+
+export function storeGuestId(sessionId: string, id: string): void {
+  try {
+    localStorage.setItem(guestKey(sessionId), id);
+  } catch {
+    // Navigation privée ou stockage bloqué : on continue sans reprise possible.
+  }
+}
+
+export type GuestProgress = { answeredQuestionIds: string[]; completed: boolean };
+
+// null : élève inconnu pour cette session (supprimé, autre session…).
+export async function fetchGuestProgress(
+  sessionId: string,
+  guestId: string,
+): Promise<GuestProgress | null> {
+  const res = await fetch(`${API_PUBLIC}/api/diagnostic/response/progress/${sessionId}/${guestId}`);
+  if (res.status === 404) return null;
+  if (!res.ok) throw new Error("Impossible de retrouver ta progression");
+  return res.json();
+}
+
 export async function submitResponse(payload: {
   questionId: string;
   userAnswer: Record<string, any>;
@@ -57,9 +94,10 @@ export async function submitResponse(payload: {
   sessionId: string;
   timing?: number;
 }): Promise<void> {
-  await fetch(`${API_PUBLIC}/api/diagnostic/response`, {
+  const res = await fetch(`${API_PUBLIC}/api/diagnostic/response`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify(payload),
   });
+  if (!res.ok) throw new Error("Ta réponse n'a pas pu être enregistrée");
 }

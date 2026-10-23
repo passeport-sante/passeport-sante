@@ -4,9 +4,12 @@ import { useState, useEffect, useRef } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
 import Link from "next/link";
 import Image from "next/image";
-import { ArrowLeft, ChevronRight } from "lucide-react";
+import { ArrowLeft, ChevronRight, Download, Loader2 } from "lucide-react";
+import { PDFDownloadLink } from "@react-pdf/renderer";
 import { GameProgress } from "@/components/rive/GameProgress";
-import { createGuestStudent, setGuestStudentId, getGuestStudentId } from "@/lib/modules";
+import { mascotteUrl } from "@/lib/mascotte";
+import { ensureGuestStudentId, fetchProgress } from "@/lib/modules";
+import { ModuleCertificatePdf } from "./ModuleCertificatePdf";
 
 interface ModuleData {
   id: string;
@@ -16,7 +19,7 @@ interface ModuleData {
   colorPrimary: string | null;
   colorSecondary: string | null;
   category: { name: string } | null;
-  steps: { id: string; order: number; gameType: string }[];
+  steps: { id: string; order: number; gameType: string | null; kind?: "GAME" | "CONTENT" }[];
 }
 interface Props {
   module: ModuleData;
@@ -24,17 +27,6 @@ interface Props {
 
 const MAX_LEVEL = 5;
 
-const RIVE_FILES: Record<string, string> = {
-  vaccination: "/assets/rive/progressbar_vaccination.riv",
-  sommeil: "/assets/rive/progressbar_sommeil.riv",
-  "bien-manger": "/assets/rive/progressbar_alimentation.riv",
-  cyberharcelement: "/assets/rive/progressbar_addiction.riv",
-  "hygiene-bucco": "/assets/rive/progressbar_sexualite.riv",
-};
-
-function getRiveFile(slug: string): string {
-  return RIVE_FILES[slug] ?? "/assets/rive/progressbar_vaccination.riv";
-}
 
 
 const CANVAS_WIDTH = 1200;
@@ -43,32 +35,18 @@ const STEP_X_ARTBOARD = [95, 228.5, 370, 502, 640];
 const STEP_Y_ARTBOARD = [218, 145, 218, 145, 218];
 const ARTBOARD_HEIGHT = 320;
 const ARTBOARD_WIDTH = 750;
-const BUBBLE_WIDTH = 320;
 
 // Rive renders the artboard with uniform "contain" scale — width is the limiting axis.
 const RIVE_SCALE = CANVAS_WIDTH / ARTBOARD_WIDTH; // 1.6
 // Vertical offset from letterboxing (artboard rendered shorter than canvas height)
 const RIVE_Y_OFFSET = (CANVAS_HEIGHT - ARTBOARD_HEIGHT * RIVE_SCALE) / 2;
-// Horizontal offset to reach the mascot/circle center from the artboard X anchor
-const MASCOT_CENTER_X_OFFSET = 40;
 
-function mascotCenterX(level: number): number {
-  return (
-    (STEP_X_ARTBOARD[level - 1] ?? 75.5) * RIVE_SCALE + MASCOT_CENTER_X_OFFSET
-  );
-}
-
-function getBubbleLeft(level: number): number {
-  const cx = mascotCenterX(level);
-  const left = cx - BUBBLE_WIDTH / 2;
-  return Math.max(10, Math.min(CANVAS_WIDTH - BUBBLE_WIDTH - 10, left));
-}
-
-function getBubbleTriangleLeft(level: number): number {
-  const cx = mascotCenterX(level);
-  const pos = cx - getBubbleLeft(level) - 8;
-  return Math.max(16, Math.min(BUBBLE_WIDTH - 32, pos));
-}
+// Mascotte & bulle de dialogue
+const MASCOTTE_SIZE = 185;         // hauteur de la mascotte (agrandie)
+const MASCOTTE_HALF_W = 62;        // demi-largeur visuelle approx. (image portrait)
+const BUBBLE_WIDTH = 300;
+const BUBBLE_HEIGHT_EST = 150;     // estimation pour le placement vertical
+const BUBBLE_GAP = 22;             // écart entre la mascotte et la bulle
 
 function getStepCanvasPos(index: number) {
   return {
@@ -77,19 +55,59 @@ function getStepCanvasPos(index: number) {
   };
 }
 
-function resolveMascotte(raw: string | null): string | null {
-  if (!raw) return null;
-  if (raw.startsWith("/") || raw.startsWith("http")) return raw;
-  return `/assets/mascotte/${raw}`;
+// La bulle est placée SUR LE CÔTÉ de la mascotte (le canvas est large mais court,
+// impossible d'empiler mascotte + bulle verticalement sans chevauchement selon l'étape).
+// À droite si la place le permet, sinon à gauche ; centrée verticalement sur la mascotte.
+function getBubbleLayout(mascotteX: number, mascotteCenterY: number) {
+  const rightLeft = mascotteX + MASCOTTE_HALF_W + BUBBLE_GAP;
+  const placeRight = rightLeft + BUBBLE_WIDTH <= CANVAS_WIDTH - 10;
+  const left = placeRight
+    ? rightLeft
+    : mascotteX - MASCOTTE_HALF_W - BUBBLE_GAP - BUBBLE_WIDTH;
+  const top = Math.max(
+    8,
+    Math.min(CANVAS_HEIGHT - 8 - BUBBLE_HEIGHT_EST, mascotteCenterY - BUBBLE_HEIGHT_EST / 2),
+  );
+  // Position verticale du triangle, relative au haut de la bulle, pointant vers la mascotte
+  const triangleTop = Math.max(16, Math.min(BUBBLE_HEIGHT_EST - 28, mascotteCenterY - top - 8));
+  return { left, top, placeRight, triangleTop };
 }
 
 export function ModuleImmersiveClient({ module }: Props) {
-  const mascotteSrc = resolveMascotte(module.mascotte);
+  const mascotteSrc = mascotteUrl(module.mascotte, "card");
   const [riveLevel, setRiveLevel] = useState<number | null>(null);
   const [unlockedLevel, setUnlockedLevel] = useState<number | null>(null);
   const [showNextBtn, setShowNextBtn] = useState(false);
   const [showCompleteBtn, setShowCompleteBtn] = useState(false);
   const [showCompleteOverlay, setShowCompleteOverlay] = useState(false);
+  const [pdfMounted, setPdfMounted] = useState(false);
+  // Fin de module telle que la connaît le serveur. `verifieParServeur` reste
+  // faux tant qu'il n'a pas répondu : on ne prive personne de son attestation
+  // à cause d'un incident réseau.
+  const [moduleTermine, setModuleTermine] = useState(false);
+  const [verifieParServeur, setVerifieParServeur] = useState(false);
+
+  // Mise à l'échelle du canvas (1200px) pour tenir sur tous les écrans
+  const [canvasScale, setCanvasScale] = useState(1);
+  const canvasWrapRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const el = canvasWrapRef.current;
+    function update() {
+      const w = el?.clientWidth ?? 0;
+      // Ne jamais mettre l'échelle à 0 : si la largeur n'est pas encore connue, on garde 1 (visible)
+      if (w > 0) setCanvasScale(Math.min(1, w / CANVAS_WIDTH));
+    }
+    update();
+    // ResizeObserver : recalcule quand la mise en page est prête (fiable en prod), + fallback resize fenêtre
+    const ro = typeof ResizeObserver !== "undefined" && el ? new ResizeObserver(update) : null;
+    if (ro && el) ro.observe(el);
+    window.addEventListener("resize", update);
+    return () => {
+      if (ro) ro.disconnect();
+      window.removeEventListener("resize", update);
+    };
+  }, []);
 
   const searchParams = useSearchParams();
   const router = useRouter();
@@ -100,13 +118,11 @@ export function ModuleImmersiveClient({ module }: Props) {
     if (didInit.current) return;
     didInit.current = true;
 
-    // Si l'élève arrive depuis /session avec un sessionId, on crée son GuestStudent
+    // L'élève reste anonyme : on lui attribue simplement un GuestStudent, qui
+    // porte ses réponses et sa progression. Avec un sessionId (entrée par le
+    // code de la classe) il est rattaché à la séance ; sans, il est créé sans
+    // session et ne compte donc dans aucune statistique de classe.
     const sessionId = searchParams.get("sessionId");
-    if (sessionId && !getGuestStudentId(module.slug)) {
-      createGuestStudent(sessionId)
-        .then((id) => setGuestStudentId(module.slug, id))
-        .catch(() => {});
-    }
 
     const unlocked = Math.min(
       Math.max(parseInt(localStorage.getItem(storageKey) ?? "1", 10), 1),
@@ -115,6 +131,22 @@ export function ModuleImmersiveClient({ module }: Props) {
     const fromParam = searchParams.get("from");
 
     setUnlockedLevel(unlocked);
+
+    // Le serveur a le dernier mot sur l'avancement et sur la fin de module :
+    // le stockage local n'est qu'un affichage immédiat, et l'attestation ne
+    // s'obtient plus en tapant ?complete=true dans la barre d'adresse.
+    void ensureGuestStudentId(module.slug, sessionId).then(async (guestId) => {
+      if (!guestId) return;
+      const etat = await fetchProgress(guestId, module.id);
+      if (!etat) return;
+      const niveau = Math.min(Math.max(etat.unlockedLevel, 1), MAX_LEVEL);
+      setUnlockedLevel(niveau);
+      try {
+        localStorage.setItem(storageKey, String(niveau));
+      } catch {}
+      setModuleTermine(etat.isCompleted);
+      setVerifieParServeur(true);
+    });
 
     const completeParam = searchParams.get("complete");
 
@@ -134,6 +166,8 @@ export function ModuleImmersiveClient({ module }: Props) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
+  useEffect(() => { if (showCompleteOverlay) setPdfMounted(true); }, [showCompleteOverlay]);
+
   function handleNextStep() {
     if (!unlockedLevel) return;
     setRiveLevel(unlockedLevel);
@@ -150,8 +184,10 @@ export function ModuleImmersiveClient({ module }: Props) {
   const displayedUnlocked = unlockedLevel ?? 1;
   const pct = Math.round(((displayedUnlocked - 1) / (MAX_LEVEL - 1)) * 100);
 
-  const bubbleLeft = getBubbleLeft(displayedRiveLevel);
-  const triangleLeft = getBubbleTriangleLeft(displayedRiveLevel);
+  const mascottePos = getStepCanvasPos(displayedRiveLevel - 1);
+  const mascotteTop = Math.max(10, mascottePos.y - MASCOTTE_SIZE - 10);
+  const mascotteCenterY = mascotteTop + MASCOTTE_SIZE / 2;
+  const bubble = getBubbleLayout(mascottePos.x, mascotteCenterY);
 
   return (
     <div
@@ -161,61 +197,63 @@ export function ModuleImmersiveClient({ module }: Props) {
       }}
     >
       {/* Navbar */}
-      <header className="shrink-0 flex items-center justify-between px-8 py-5 bg-white">
+      <header className="shrink-0 flex items-center justify-between gap-3 px-4 md:px-8 py-3 md:py-5 bg-white">
         <Link
           href="/modules"
-          className="flex items-center gap-3 text-gray-700 hover:opacity-70 transition-opacity"
+          className="flex items-center gap-2 md:gap-3 text-gray-700 hover:opacity-70 transition-opacity shrink-0"
         >
-          <div className="w-10 h-10 rounded-full border-2 border-gray-300 flex items-center justify-center">
+          <div className="w-9 h-9 md:w-10 md:h-10 rounded-full border-2 border-gray-300 flex items-center justify-center">
             <ArrowLeft size={18} />
           </div>
-          <span className="font-bold text-sm tracking-widest uppercase">
+          <span className="hidden sm:inline font-bold text-sm tracking-widest uppercase">
             Retour aux modules
           </span>
         </Link>
 
-        <div className="text-center text-gray-900">
-          <h1 className="font-black text-xl tracking-wide">{module.title}</h1>
+        <div className="text-center text-gray-900 min-w-0">
+          <h1 className="font-black text-base md:text-xl tracking-wide truncate">{module.title}</h1>
           {module.category && (
-            <p className="text-sm text-gray-400 mt-0.5">
+            <p className="hidden sm:block text-sm text-gray-400 mt-0.5">
               {module.category.name}
             </p>
           )}
         </div>
 
-        <div className="flex items-center gap-3 text-gray-700">
-          <span className="text-xs font-bold tracking-widest uppercase text-gray-400">
+        <div className="flex items-center gap-2 md:gap-3 text-gray-700 shrink-0">
+          <span className="hidden lg:inline text-xs font-bold tracking-widest uppercase text-gray-400">
             Progression Global
           </span>
-          <div className="w-44 h-2.5 bg-gray-100 rounded-full overflow-hidden">
+          <div className="hidden sm:block w-24 lg:w-44 h-2.5 bg-gray-100 rounded-full overflow-hidden">
             <div
               className="h-full rounded-full transition-all duration-700"
               style={{ width: `${pct}%`, background: primaryColor }}
             />
           </div>
           <div
-            className="w-12 h-12 rounded-full border-2 flex items-center justify-center shrink-0"
+            className="w-10 h-10 md:w-12 md:h-12 rounded-full border-2 flex items-center justify-center shrink-0"
             style={{ borderColor: primaryColor, color: primaryColor }}
           >
-            <span className="font-black text-sm">{pct}%</span>
+            <span className="font-black text-xs md:text-sm">{pct}%</span>
           </div>
         </div>
       </header>
 
       {/* Contenu principal */}
-      <main className="flex-1 flex flex-col items-center justify-center pb-6 gap-6">
+      <main className="flex-1 flex flex-col items-center justify-center pb-6 gap-6 overflow-hidden">
+        <div ref={canvasWrapRef} className="w-full flex justify-center">
+        <div style={{ width: CANVAS_WIDTH * canvasScale, height: CANVAS_HEIGHT * canvasScale }}>
         <div
           className="relative"
-          style={{ width: CANVAS_WIDTH, height: CANVAS_HEIGHT }}
+          style={{ width: CANVAS_WIDTH, height: CANVAS_HEIGHT, transform: `scale(${canvasScale})`, transformOrigin: "top left" }}
         >
-          {/* Bulle de dialogue */}
+          {/* Bulle de dialogue — placée sur le côté de la mascotte */}
           <div
-            className="absolute z-10 rounded-2xl px-7 py-5 shadow-xl transition-all duration-500"
+            className="absolute z-10 rounded-2xl px-6 py-4 shadow-xl transition-all duration-500"
             style={{
               background: "rgba(255,255,255,0.92)",
               backdropFilter: "blur(8px)",
-              top: 20,
-              left: bubbleLeft,
+              top: bubble.top,
+              left: bubble.left,
               width: BUBBLE_WIDTH,
             }}
           >
@@ -223,13 +261,24 @@ export function ModuleImmersiveClient({ module }: Props) {
               Bienvenue dans mon module ! Je vais t&apos;apprendre énormément de
               chose utile pour toi !
             </p>
+            {/* Triangle pointant horizontalement vers la mascotte */}
             <div
-              className="absolute -bottom-2.5 w-0 h-0"
+              className="absolute w-0 h-0"
               style={{
-                left: triangleLeft,
-                borderLeft: "10px solid transparent",
-                borderRight: "10px solid transparent",
-                borderTop: "10px solid rgba(255,255,255,0.92)",
+                top: bubble.triangleTop,
+                ...(bubble.placeRight
+                  ? {
+                      left: -10,
+                      borderTop: "10px solid transparent",
+                      borderBottom: "10px solid transparent",
+                      borderRight: "10px solid rgba(255,255,255,0.92)",
+                    }
+                  : {
+                      right: -10,
+                      borderTop: "10px solid transparent",
+                      borderBottom: "10px solid transparent",
+                      borderLeft: "10px solid rgba(255,255,255,0.92)",
+                    }),
               }}
             />
           </div>
@@ -238,18 +287,43 @@ export function ModuleImmersiveClient({ module }: Props) {
           {riveLevel !== null && (
             <GameProgress
               level={displayedRiveLevel}
-              src={getRiveFile(module.slug)}
+              src="/assets/rive/progressbar_default_enchenced.riv"
+              stepColor={module.colorPrimary ?? undefined}
               width={CANVAS_WIDTH}
               height={CANVAS_HEIGHT}
             />
           )}
 
-          {/* Zones cliquables */}
+          {/* Mascotte HTML overlay positionnée sur le step actuel */}
+          {mascotteSrc && riveLevel !== null && (
+            <div
+              className="absolute pointer-events-none"
+              style={{
+                left: mascottePos.x,
+                top: mascotteTop,
+                transform: "translateX(-50%)",
+                zIndex: 5,
+                transition: "left 0.6s cubic-bezier(0.34,1.56,0.64,1), top 0.6s cubic-bezier(0.34,1.56,0.64,1)",
+              }}
+            >
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img
+                src={mascotteSrc}
+                alt="mascotte"
+                style={{ height: MASCOTTE_SIZE, width: "auto", maxWidth: "none", display: "block" }}
+                className="drop-shadow-lg"
+              />
+            </div>
+          )}
+
+          {/* Zones cliquables — uniquement les étapes de jeu (les sous-étapes de contenu n'ont pas de cercle) */}
           {module.steps
+            .filter((s) => (s.kind ?? "GAME") === "GAME")
             .sort((a, b) => a.order - b.order)
             .map((step, index) => {
               const pos = getStepCanvasPos(index);
-              const isUnlocked = step.order <= displayedUnlocked;
+              // Déblocage par rang parmi les jeux (1..5), pas par l'order global
+              const isUnlocked = index + 1 <= displayedUnlocked;
               const R = 58;
 
               const zoneStyle: React.CSSProperties = {
@@ -265,7 +339,7 @@ export function ModuleImmersiveClient({ module }: Props) {
                   href={`/modules/${module.slug}/step/${step.id}`}
                   className="absolute z-20 rounded-full hover:scale-110 transition-transform"
                   style={zoneStyle}
-                  title={`Étape ${step.order}`}
+                  title={`Étape ${index + 1}`}
                 />
               ) : (
                 <div
@@ -275,6 +349,8 @@ export function ModuleImmersiveClient({ module }: Props) {
                 />
               );
             })}
+        </div>
+        </div>
         </div>
 
         {/* Bouton étape suivante */}
@@ -340,6 +416,48 @@ export function ModuleImmersiveClient({ module }: Props) {
               J&apos;espère que tu as appris plein de choses et que tu t&apos;es
               bien amusé !
             </p>
+
+            {/* Attestation : réservée à un module réellement terminé */}
+            {verifieParServeur && !moduleTermine ? (
+              <p className="mt-2 text-sm text-gray-500 font-semibold">
+                Termine toutes les étapes du module pour obtenir ton attestation.
+              </p>
+            ) : pdfMounted ? (
+              <PDFDownloadLink
+                document={
+                  <ModuleCertificatePdf
+                    moduleTitle={module.title}
+                    categoryName={module.category?.name ?? null}
+                    color={primaryColor}
+                    date={new Date().toLocaleDateString("fr-FR", {
+                      day: "numeric",
+                      month: "long",
+                      year: "numeric",
+                    })}
+                  />
+                }
+                fileName={`attestation-${module.slug}.pdf`}
+              >
+                {({ loading: pdfLoading }) => (
+                  <button
+                    className="mt-2 flex items-center justify-center gap-2 px-8 py-3 rounded-2xl font-bold text-sm border-2 transition-all hover:scale-105 active:scale-95"
+                    style={{ borderColor: primaryColor, color: primaryColor, background: "rgba(255,255,255,0.9)" }}
+                  >
+                    {pdfLoading
+                      ? <><Loader2 size={15} className="animate-spin" /> Génération…</>
+                      : <><Download size={15} /> Télécharger mon attestation</>
+                    }
+                  </button>
+                )}
+              </PDFDownloadLink>
+            ) : (
+              <div
+                className="mt-2 flex items-center justify-center gap-2 px-8 py-3 rounded-2xl font-bold text-sm border-2 opacity-50"
+                style={{ borderColor: primaryColor, color: primaryColor, background: "rgba(255,255,255,0.9)" }}
+              >
+                <Loader2 size={15} className="animate-spin" /> Préparation…
+              </div>
+            )}
 
             <Link
               href="/modules"

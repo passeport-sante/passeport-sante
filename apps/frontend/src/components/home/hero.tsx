@@ -2,12 +2,26 @@ import Link from "next/link";
 import { ArrowRight } from "lucide-react";
 import type { CSSProperties } from "react";
 import { PhoneSvg } from "./phone-svg";
+import { PhoneVideo } from "./phone-video";
 import { TaSanteSvg } from "./ta-sante-svg";
 
-const CIRCLE_BLUE = "#7FB8D9";
-const CIRCLE_NAVY = "#3E6A9C";
-const CIRCLE_SAGE = "#9CC084";
 const INK = "#0F1B2D";
+
+// Reflet spéculaire blanc commun (haut-gauche) — donne l'effet sphère vitrée
+const GLOSS =
+  "radial-gradient(circle at 38% 28%, rgba(255,255,255,0.9) 0%, rgba(255,255,255,0.35) 16%, rgba(255,255,255,0) 46%)";
+
+// Helper : fond glossy = reflet + corps blanc translucide au centre, couleur repoussée au bord
+// (alpha en hex 8 chiffres : 66 ≈ 40%, b3 ≈ 70%)
+function glossyBg(mid: string, edge: string) {
+  return (
+    `${GLOSS}, radial-gradient(circle at 50% 44%, ` +
+    `rgba(255,255,255,0.92) 0%, ` +
+    `rgba(255,255,255,0.6) 42%, ` +
+    `${mid}66 72%, ` +
+    `${edge}b3 100%)`
+  );
+}
 
 const circlesStyles: Record<string, CSSProperties> = {
   wrap: { position: "relative", width: 470, height: 280 },
@@ -17,27 +31,28 @@ const circlesStyles: Record<string, CSSProperties> = {
     width: 245,
     height: 175,
     borderRadius: "50%",
-    opacity: 0.78,
-    mixBlendMode: "multiply",
   },
-  // Inner shadow : inset 0 -3px 58px 0px (couleur de la bulle elle-même)
+  // Bulles glossy : reflet + volume radial + inner shadow colorée (profondeur) + ombre portée douce
   circleTop: {
-    background: CIRCLE_BLUE,
+    background: glossyBg("#7FB8D9", "#5891ba"),
     top: 0,
     left: 88,
-    boxShadow: `inset 0 -3px 58px 0px ${CIRCLE_BLUE}`,
+    boxShadow:
+      "inset 0 3px 36px 2px #5891ba, 0 14px 30px -14px rgba(15,27,45,0.28)",
   },
   circleBL: {
-    background: CIRCLE_NAVY,
+    background: glossyBg("#3E6A9C", "#2f527a"),
     top: 95,
     left: 0,
-    boxShadow: `inset 0 -3px 58px 0px ${CIRCLE_NAVY}`,
+    boxShadow:
+      "inset 0 3px 36px 2px #2f527a, 0 14px 30px -14px rgba(15,27,45,0.28)",
   },
   circleMR: {
-    background: CIRCLE_SAGE,
+    background: glossyBg("#9CC084", "#79a35f"),
     top: 75,
     left: 225,
-    boxShadow: `inset 0 -3px 58px 0px ${CIRCLE_SAGE}`,
+    boxShadow:
+      "inset 0 3px 36px 2px #79a35f, 0 14px 30px -14px rgba(15,27,45,0.28)",
   },
   label: {
     position: "absolute",
@@ -79,11 +94,11 @@ export function Hero() {
       <div className="relative z-10 brand-container flex flex-col min-h-[calc(100vh-72px)]">
         {/* ─── Zone TITRE ──────────────────────────────────────── */}
         <div className="relative pt-6 pb-2">
-          <div className="max-w-[58%]">
-            <h1 className="font-display text-[clamp(2.5rem,4.2vw,4.5rem)] font-black text-brand-ink leading-none whitespace-nowrap tracking-tight">
+          <div className="max-w-full lg:max-w-[58%]">
+            <h1 className="font-display text-[clamp(2rem,7vw,4.5rem)] font-black text-brand-ink leading-none lg:whitespace-nowrap tracking-tight">
               Ton corps, tes choix
             </h1>
-            <p className="text-gray-600 text-lg leading-relaxed mt-10 max-w-lg">
+            <p className="text-gray-600 text-base md:text-lg leading-relaxed mt-6 md:mt-10 max-w-lg">
               Marre qu&apos;on te dise quoi faire sans t&apos;expliquer pourquoi&nbsp;?
               Ici, c&apos;est toi qui prends les commandes. Mon Passeport Santé,
               ce n&apos;est pas un cours de plus, c&apos;est ton outil perso pour
@@ -95,15 +110,13 @@ export function Hero() {
           {/* "Ta santé" — SVG : bold sans-serif, gradient vert→bleu, inner shadow vert,
                           + blur vert dégradé tout autour (drop-shadows empilés) */}
           <div
-            className="absolute select-none pointer-events-none"
+            className="absolute select-none pointer-events-none hidden lg:block"
             style={{
-              top: "45px",
+              top: "50px",
               left: "calc(44% + 8px)",
               transform: "rotate(-8deg)",
               transformOrigin: "left center",
-              width: "37vw",
-              filter:
-                "drop-shadow(0 0 12px rgba(76,175,80,0.55)) drop-shadow(0 0 32px rgba(76,175,80,0.4)) drop-shadow(0 0 64px rgba(37,118,12,0.25))",
+              width: "37vw"
             }}
           >
             <TaSanteSvg className="w-full h-auto" />
@@ -111,30 +124,48 @@ export function Hero() {
         </div>
 
         {/* ─── Zone INFÉRIEURE : 3 colonnes ───────────────────── */}
-        <div className="flex flex-1 items-start gap-8 pb-10 pt-4">
-          {/* Colonne 1 : téléphone (SVG, vide pour l'instant) */}
-          <div className="flex-shrink-0">
-            <PhoneSvg
-              className="w-[280px] lg:w-[320px] h-auto"
-              stroke="#1F6F8B"
-              accent="#1F6F8B"
-            />
+        <div className="flex flex-col lg:flex-row flex-1 items-center lg:items-start gap-8 pb-10 pt-4">
+          {/* Colonne 1 : téléphone avec vidéo mascotte.
+              La vidéo est un overlay HTML (et non un foreignObject SVG) car iOS/Safari
+              ne clippe pas correctement le contenu d'un foreignObject → la vidéo débordait. */}
+          <div className="flex-shrink-0 relative w-[220px] sm:w-[280px] lg:w-[320px]">
+            <PhoneSvg className="w-full h-auto" stroke="#1F6F8B" accent="#1F6F8B" />
+            <div
+              className="absolute overflow-hidden bg-white"
+              style={{ left: "25.8%", top: "17.7%", width: "48.4%", height: "63.2%", borderRadius: "6%" }}
+            >
+              <PhoneVideo />
+            </div>
           </div>
 
           {/* Colonne 2 : "C'est quoi" + 3 bulles venn — remontée */}
-          <div className="flex-1 space-y-3 -mt-4">
+          <div className="flex-1 space-y-3 lg:-mt-4 text-center lg:text-left">
             <h2 className="font-display text-2xl font-extrabold text-brand-ink leading-snug">
               C&apos;est quoi le{" "}
               <span className="text-brand-green">passeport santé&nbsp;?</span>
             </h2>
-            <p className="text-gray-600 text-sm leading-relaxed max-w-[400px]">
+            <p className="text-gray-600 text-sm leading-relaxed max-w-[400px] mx-auto lg:mx-0">
               Parce que la santé, ce n&apos;est pas juste « ne pas être malade ».
               C&apos;est avoir l&apos;énergie pour tes projets, comprendre tes
               émotions et savoir faire des choix qui TE font du bien.
             </p>
 
-            {/* 3 cercles overlappants */}
-            <div style={circlesStyles.wrap}>
+            {/* Version mobile : liste simple des 3 atouts (le venn en px ne tient pas) */}
+            <div className="lg:hidden space-y-3 pt-2 text-left">
+              {[
+                { t: "Zéro pression", d: "Teste tes connaissances sans notes, juste pour toi." },
+                { t: "Prends le pouvoir", d: "Plus tu en sais, moins on peut décider à ta place." },
+                { t: "Deviens incollable", d: "Démonte les idées reçues et les fake news des réseaux." },
+              ].map((it) => (
+                <div key={it.t} className="bg-white/70 rounded-2xl px-4 py-3 shadow-sm">
+                  <h3 className="font-bold text-brand-ink text-sm">{it.t}</h3>
+                  <p className="text-gray-600 text-sm mt-0.5">{it.d}</p>
+                </div>
+              ))}
+            </div>
+
+            {/* 3 cercles overlappants — desktop uniquement */}
+            <div style={circlesStyles.wrap} className="hidden lg:block">
               <div style={circlesStyles.fills} aria-hidden="true">
                 <div
                   style={{ ...circlesStyles.circle, ...circlesStyles.circleTop }}
@@ -177,10 +208,10 @@ export function Hero() {
           </div>
 
           {/* Colonne 3 : CTAs */}
-          <div className="flex-shrink-0 flex flex-col gap-4 mt-12">
+          <div className="flex-shrink-0 flex flex-col gap-4 w-full sm:w-auto lg:mt-12">
             <Link
-              href="/sign-in"
-              className="group inline-flex items-center gap-3 px-8 py-5 bg-brand-dark-green text-white font-bold rounded-full text-base shadow-lg hover:shadow-xl hover:-translate-y-0.5 transition-all whitespace-nowrap"
+              href="/modules"
+              className="group inline-flex items-center justify-center gap-3 px-8 py-4 lg:py-5 bg-brand-dark-green text-white font-bold rounded-full text-base shadow-lg hover:shadow-xl hover:-translate-y-0.5 transition-all whitespace-nowrap"
             >
               Commencer le parcours
               <ArrowRight
@@ -190,7 +221,7 @@ export function Hero() {
             </Link>
             <Link
               href="/modules"
-              className="inline-flex items-center justify-center px-8 py-5 bg-white text-brand-ink font-bold rounded-2xl text-base border-2 border-gray-200 hover:border-brand-dark-green hover:text-brand-dark-green transition-colors whitespace-nowrap"
+              className="inline-flex items-center justify-center px-8 py-4 lg:py-5 bg-white text-brand-ink font-bold rounded-2xl text-base border-2 border-blue-200 hover:border-blue-500 hover:text-blue-500 transition-colors whitespace-nowrap"
             >
               Voir les thèmes
             </Link>

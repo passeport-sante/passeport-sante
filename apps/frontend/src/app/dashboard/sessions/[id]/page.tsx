@@ -1,17 +1,19 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import Link from "next/link";
 import { ArrowLeft, Calendar, Users } from "lucide-react";
 import {
   fetchSessionDetail,
+  fetchDiagnosticQuestionCount,
   computeQuestionStats,
   computeAvgScore,
 } from "@/lib/dashboard";
 import type { SessionDetail } from "@/lib/dashboard";
 import { ScoreCard } from "./_components/score-card";
 import { QuestionResultCard } from "./_components/question-result-card";
+import { StudentsPanel } from "./_components/students-panel";
 import { PDFDownloadLink } from "@react-pdf/renderer";
 import { FileDown } from "lucide-react";
 import { SessionPdfDocument } from "./_components/SessionPdfDocument";
@@ -21,16 +23,21 @@ export default function SessionDetailPage() {
   const router = useRouter();
   const [session, setSession] = useState<SessionDetail | null>(null);
   const [loading, setLoading] = useState(true);
+  const [totalQuestions, setTotalQuestions] = useState(0);
+  const [tab, setTab] = useState<"results" | "students">("results");
+
+  // Rechargée aussi après une action du panel élèves (exclusion, suppression).
+  const load = useCallback(async () => {
+    const token = localStorage.getItem("access_token") ?? "";
+    const data = await fetchSessionDetail(id, token);
+    if (!data) router.replace("/dashboard");
+    else setSession(data);
+  }, [id, router]);
 
   useEffect(() => {
-    const token = localStorage.getItem("access_token") ?? "";
-    fetchSessionDetail(id, token)
-      .then((data) => {
-        if (!data) router.replace("/dashboard");
-        else setSession(data);
-      })
-      .finally(() => setLoading(false));
-  }, [id, router]);
+    load().finally(() => setLoading(false));
+    fetchDiagnosticQuestionCount().then(setTotalQuestions);
+  }, [load]);
 
   if (loading) {
     return (
@@ -54,7 +61,7 @@ export default function SessionDetailPage() {
   const questionStats = computeQuestionStats(session.diagnosticResponses);
 
   return (
-    <div className="p-8 space-y-8 min-h-screen">
+    <div className="p-4 md:p-8 space-y-6 md:space-y-8 min-h-screen">
       {/* Header */}
       <div className="flex items-start gap-4">
         <Link
@@ -66,6 +73,7 @@ export default function SessionDetailPage() {
         <div className="flex-1">
           <h1 className="text-2xl font-black text-[#1A1A1A]">
             {session.className}
+            <span className="ml-2 text-base font-semibold text-gray-400">{session.schoolYear}</span>
           </h1>
           <div className="flex items-center gap-4 mt-1 text-sm text-gray-400">
             <span className="flex items-center gap-1.5">
@@ -125,12 +133,55 @@ export default function SessionDetailPage() {
         </div>
       </div>
 
+      {/* Onglets : résultats (après la séance) / élèves (pendant la séance) */}
+      <div role="tablist" className="flex gap-1 border-b border-gray-200">
+        {(
+          [
+            { key: "results", label: "Résultats" },
+            {
+              key: "students",
+              label: `Élèves · ${session.completedCount}/${session._count.guestStudents} terminés`,
+            },
+          ] as const
+        ).map((t) => (
+          <button
+            key={t.key}
+            role="tab"
+            aria-selected={tab === t.key}
+            onClick={() => setTab(t.key)}
+            className={`px-4 py-2.5 -mb-px border-b-2 text-sm font-semibold transition-colors ${
+              tab === t.key
+                ? "border-[#1B6B8A] text-[#1B6B8A]"
+                : "border-transparent text-gray-400 hover:text-gray-600"
+            }`}
+          >
+            {t.label}
+          </button>
+        ))}
+      </div>
+
+      {tab === "students" && (
+        <section>
+          <p className="text-sm text-gray-400 mb-4">
+            Un élève de test ou en double peut être exclu : il ne compte plus dans les effectifs ni dans les résultats.
+          </p>
+          <StudentsPanel
+            sessionId={session.id}
+            students={session.guestStudents}
+            totalQuestions={totalQuestions}
+            onChanged={load}
+          />
+        </section>
+      )}
+
+      {tab === "results" && (
+      <>
       {/* Score cards */}
-      <div className="grid grid-cols-4 gap-4">
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
         <ScoreCard
           label="Participants"
           value={session._count.guestStudents}
-          sub="élèves ont rejoint"
+          sub={`élèves ont rejoint, dont ${session.completedCount} ont terminé`}
           color="#1B6B8A"
         />
         <ScoreCard
@@ -162,7 +213,7 @@ export default function SessionDetailPage() {
               {questionStats.length}
             </span>
           </h2>
-          <div className="grid grid-cols-2 gap-3">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-3">
             {questionStats.map((qs, i) => (
               <QuestionResultCard
                 key={qs.question.id}
@@ -180,6 +231,8 @@ export default function SessionDetailPage() {
             Aucune réponse enregistrée pour cette session.
           </p>
         </div>
+      )}
+      </>
       )}
     </div>
   );

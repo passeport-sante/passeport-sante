@@ -9,15 +9,17 @@ import { TOTAL_DIAGNOSTIC_QUESTIONS } from "@/lib/dashboard";
 interface Props {
   session: SessionSummary;
   onClose: (id: string) => void;
+  totalQuestions?: number;
 }
 
-export function SessionCard({ session, onClose }: Props) {
+export function SessionCard({ session, onClose, totalQuestions }: Props) {
   const [copied, setCopied] = useState(false);
 
   const students = session._count.guestStudents;
   const responses = session._count.diagnosticResponses;
+  const questionsPerStudent = totalQuestions && totalQuestions > 0 ? totalQuestions : TOTAL_DIAGNOSTIC_QUESTIONS;
   const progress =
-    students > 0 ? Math.min(100, Math.round((responses / (students * TOTAL_DIAGNOSTIC_QUESTIONS)) * 100)) : 0;
+    students > 0 ? Math.min(100, Math.round((responses / (students * questionsPerStudent)) * 100)) : 0;
 
   function copyCode() {
     navigator.clipboard.writeText(session.accessCode);
@@ -26,12 +28,13 @@ export function SessionCard({ session, onClose }: Props) {
   }
 
   return (
-    <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 flex flex-col gap-4">
+    <div className="bg-white rounded-xl border border-gray-200 p-6 flex flex-col gap-4">
       {/* Header */}
       <div className="flex items-start justify-between gap-3">
         <div className="flex-1 min-w-0">
           <h3 className="font-bold text-[#1A1A1A] text-lg truncate">{session.className}</h3>
           <p className="text-gray-400 text-xs mt-0.5">
+            <span className="font-semibold text-gray-500">{session.schoolYear}</span> ·{" "}
             {new Date(session.createdAt).toLocaleDateString("fr-FR", {
               day: "numeric",
               month: "long",
@@ -67,12 +70,19 @@ export function SessionCard({ session, onClose }: Props) {
         <div className="text-gray-500">
           <span className="font-semibold text-[#1A1A1A]">{responses}</span> réponses
         </div>
+        <div className="h-4 w-px bg-gray-200" />
+        <div className="text-gray-500">
+          <span className="font-semibold text-[#1A1A1A]">{session.completedCount}</span> terminé
+          {session.completedCount > 1 ? "s" : ""}
+        </div>
       </div>
 
       {/* Progress */}
       <div className="space-y-1.5">
         <div className="flex justify-between text-xs text-gray-400">
-          <span>Progression</span>
+          <span title={`${responses} réponses sur ${students * questionsPerStudent} attendues (${students} élève(s) × ${questionsPerStudent} questions)`}>
+            Complétion moyenne
+          </span>
           <span className="font-semibold text-[#2A8970]">{progress}%</span>
         </div>
         <div className="h-2 bg-gray-100 rounded-full overflow-hidden">

@@ -1,8 +1,10 @@
-import { Injectable } from "@nestjs/common";
+import { Injectable, NotFoundException } from "@nestjs/common";
 import { ConfigService } from "@nestjs/config";
 import { PrismaService } from "@/prisma/prisma.service";
+import { AuthUser } from "../../auth/decorators/current-user.decorator";
 import { CreateModuleSessionDto } from "./dto/create-module.dto";
 import { UpdateModuleSessionDto } from "./dto/update-module.dto";
+import { schoolYearOf } from "../../common/school-year";
 
 @Injectable()
 export class ModuleSessionService {
@@ -11,18 +13,27 @@ export class ModuleSessionService {
     private config: ConfigService,
   ) {}
 
-  create(dto: CreateModuleSessionDto) {
+  // Portée d'accès : un ADMIN voit/gère toutes les sessions (super-admin),
+  // un TRAINER est limité à son propre établissement.
+  private scope(user: AuthUser) {
+    return user.role === "ADMIN" ? {} : { organizationId: user.organizationId };
+  }
+
+  // organizationId/createdByUserId proviennent du token de l'utilisateur authentifié,
+  // jamais du body envoyé par le client (sinon une session pourrait être rattachée à un autre établissement).
+  create(dto: CreateModuleSessionDto, organizationId: string, createdByUserId: string) {
     const accessCode = this.generateCode();
     const baseUrl = this.config.get<string>("FRONTEND_URL") ?? "http://localhost:3000";
     const accessUrl = `${baseUrl}/session/${accessCode}`;
 
     return this.prisma.moduleSession.create({
-      data: { ...dto, accessCode, accessUrl },
+      data: { ...dto, organizationId, createdByUserId, accessCode, accessUrl, schoolYear: schoolYearOf() },
     });
   }
 
-  findAll() {
+  findAll(user: AuthUser) {
     return this.prisma.moduleSession.findMany({
+      where: this.scope(user),
       include: {
         _count: { select: { guestStudents: true } },
         module: { select: { id: true, title: true, colorPrimary: true } },
@@ -31,9 +42,9 @@ export class ModuleSessionService {
     });
   }
 
-  findOne(id: string) {
-    return this.prisma.moduleSession.findUnique({
-      where: { id },
+  findOne(id: string, user: AuthUser) {
+    return this.prisma.moduleSession.findFirst({
+      where: { id, ...this.scope(user) },
       include: {
         module: {
           select: {
@@ -42,7 +53,7 @@ export class ModuleSessionService {
             slug: true,
             colorPrimary: true,
             steps: {
-              select: { id: true, order: true, gameType: true, content: true },
+              select: { id: true, order: true, kind: true, gameType: true, content: true },
               orderBy: { order: "asc" },
             },
           },
@@ -69,12 +80,43 @@ export class ModuleSessionService {
     });
   }
 
-  update(id: string, dto: UpdateModuleSessionDto) {
-    return this.prisma.moduleSession.update({ where: { id }, data: dto });
+  async update(id: string, user: AuthUser, dto: UpdateModuleSessionDto) {
+    // organizationId/createdByUserId ne sont jamais modifiables via l'update, même si présents dans le body
+    const { organizationId: _orgId, createdByUserId: _ownerId, ...data } = dto;
+    const { count } = await this.prisma.moduleSession.updateMany({
+      where: { id, ...this.scope(user) },
+      data,
+    });
+    if (count === 0) throw new NotFoundException("Session introuvable");
+    return this.prisma.moduleSession.findUnique({ where: { id } });
   }
 
-  remove(id: string) {
-    return this.prisma.moduleSession.delete({ where: { id } });
+  // Suppression définitive : on retire d'abord les réponses, progressions et élèves
+  // invités liés (pas de cascade en base), le tout dans une transaction.
+  async remove(id: string, user: AuthUser) {
+    const found = await this.prisma.moduleSession.findFirst({
+      where: { id, ...this.scope(user) },
+      select: { id: true },
+    });
+    if (!found) throw new NotFoundException("Session introuvable");
+
+    await this.prisma.$transaction(async (tx) => {
+      const guests = await tx.guestStudent.findMany({
+        where: { sessionId: id },
+        select: { id: true },
+      });
+      const guestIds = guests.map((g) => g.id);
+
+      if (guestIds.length) {
+        const where = { guestStudentId: { in: guestIds } };
+        await tx.kanbanResponse.deleteMany({ where });
+        await tx.quizResponse.deleteMany({ where });
+        await tx.puzzleResponse.deleteMany({ where });
+        await tx.moduleProgress.deleteMany({ where });
+        await tx.guestStudent.deleteMany({ where: { id: { in: guestIds } } });
+      }
+      await tx.moduleSession.delete({ where: { id } });
+    });
   }
 
   private generateCode(): string {

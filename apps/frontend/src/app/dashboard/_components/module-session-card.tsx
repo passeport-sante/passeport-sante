@@ -15,7 +15,7 @@ export function ModuleSessionCard({ session, onClose }: Props) {
   const [copiedUrl, setCopiedUrl] = useState(false);
 
   const students = session._count.guestStudents;
-  const color = session.module.colorPrimary ?? "#1D4ED8";
+  const color = session.module?.colorPrimary ?? "#1D4ED8";
 
   function copyCode() {
     navigator.clipboard.writeText(session.accessCode);
@@ -30,7 +30,7 @@ export function ModuleSessionCard({ session, onClose }: Props) {
   }
 
   return (
-    <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 flex flex-col gap-4">
+    <div className="bg-white rounded-xl border border-gray-200 p-6 flex flex-col gap-4">
       {/* Header */}
       <div className="flex items-start justify-between gap-3">
         <div className="flex items-center gap-3 flex-1 min-w-0">
@@ -43,7 +43,7 @@ export function ModuleSessionCard({ session, onClose }: Props) {
           <div className="min-w-0">
             <h3 className="font-bold text-[#1A1A1A] text-base truncate">{session.className}</h3>
             <p className="text-xs font-medium truncate" style={{ color }}>
-              {session.module.title}
+              {session.module?.title} <span className="text-gray-400">· {session.schoolYear}</span>
             </p>
           </div>
         </div>

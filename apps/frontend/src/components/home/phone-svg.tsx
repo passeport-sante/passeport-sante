@@ -74,11 +74,7 @@ export function PhoneSvg({
           <line x1="-10" y1="0" x2="10" y2="0" />
           <line x1="0" y1="-10" x2="0" y2="10" />
         </g>
-      </g>
-
-      {/* ── Ombre douce sous le téléphone ─────────────────────── */}
-      <ellipse cx="180" cy="425" rx="110" ry="6" fill={stroke} opacity="0.08" />
-
+      </g>  
       {/* ── Corps du téléphone (compact, ratio ~0.51) ─────────── */}
       <path
         d="
@@ -127,20 +123,20 @@ export function PhoneSvg({
       {screen ? (
         <>
           <rect
-            x="105"
-            y="85"
-            width="150"
-            height="265"
+            x="93"
+            y="78"
+            width="174"
+            height="278"
             rx="14"
             ry="14"
             fill="white"
           />
-          <foreignObject x="108" y="88" width="144" height="259">
+          <foreignObject x="93" y="78" width="174" height="278">
             <div
               style={{
                 width: "100%",
                 height: "100%",
-                borderRadius: "12px",
+                borderRadius: "14px",
                 overflow: "hidden",
                 display: "flex",
                 alignItems: "center",

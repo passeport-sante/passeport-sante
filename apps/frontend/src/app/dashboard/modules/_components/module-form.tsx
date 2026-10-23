@@ -1,12 +1,15 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useState } from "react";
 import Image from "next/image";
-import { Check, Loader2, Sparkles } from "lucide-react";
+import { BarChart3, Loader2, Sparkles } from "lucide-react";
+import { GameProgress } from "@/components/rive/GameProgress";
+import { MascottePicker } from "./mascotte-picker";
+import { mascotteUrl } from "@/lib/mascotte";
 import {
-  AVAILABLE_MASCOTTES,
   COLOR_PRESETS,
   SLUG_REGEX,
+  isSlugTaken,
   slugify,
   type AdminModuleDetail,
   type CategoryLite,
@@ -36,7 +39,9 @@ const DEFAULTS: ModuleFormValues = {
   slug: "",
   duration: 20,
   categoryId: "",
-  mascotte: AVAILABLE_MASCOTTES[0] ?? "",
+  // Vide par défaut : le catalogue est chargé par MascottePicker, on ne peut pas
+  // présélectionner sans connaître son contenu.
+  mascotte: "",
   colorPrimary: "#1B6B8A",
   colorSecondary: "#2A8970",
   colorCard: "#EBF4F8",
@@ -68,7 +73,7 @@ export function ModuleForm({
           slug: initial.slug,
           duration: initial.duration ?? "",
           categoryId: initial.categoryId ?? "",
-          mascotte: initial.mascotte ?? AVAILABLE_MASCOTTES[0] ?? "",
+          mascotte: initial.mascotte ?? "",
           colorPrimary: initial.colorPrimary ?? "#1B6B8A",
           colorSecondary: initial.colorSecondary ?? "#2A8970",
           colorCard: initial.colorCard ?? "#EBF4F8",
@@ -80,6 +85,7 @@ export function ModuleForm({
   const [slugTouched, setSlugTouched] = useState(!!initial);
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [slugStatus, setSlugStatus] = useState<"idle" | "checking" | "available" | "taken">("idle");
 
   // Auto-slug à partir du titre tant que l'utilisateur n'a pas édité le slug manuellement
   useEffect(() => {
@@ -89,7 +95,22 @@ export function ModuleForm({
 
   const slugValid = SLUG_REGEX.test(values.slug);
   const titleValid = values.title.trim().length >= 2;
-  const formValid = titleValid && slugValid;
+  const formValid = titleValid && slugValid && slugStatus !== "taken" && slugStatus !== "checking";
+
+  // Vérifie en direct (avec un léger délai) si le slug est déjà pris par un autre module
+  useEffect(() => {
+    if (!slugValid || values.slug === initial?.slug) {
+      setSlugStatus("idle");
+      return;
+    }
+    setSlugStatus("checking");
+    const timer = setTimeout(() => {
+      isSlugTaken(values.slug)
+        .then((taken) => setSlugStatus(taken ? "taken" : "available"))
+        .catch(() => setSlugStatus("idle"));
+    }, 400);
+    return () => clearTimeout(timer);
+  }, [values.slug, slugValid, initial?.slug]);
 
   function update<K extends keyof ModuleFormValues>(key: K, val: ModuleFormValues[K]) {
     setValues((v) => ({ ...v, [key]: val }));
@@ -151,8 +172,20 @@ export function ModuleForm({
 
           <Field
             label="Slug (URL)"
-            hint="Identifiant unique en kebab-case. Auto-généré à partir du titre."
-            error={!slugValid && values.slug.length > 0 ? "Format invalide — utilisez uniquement des lettres minuscules, chiffres et tirets" : undefined}
+            hint={
+              slugValid && slugStatus === "checking"
+                ? "Vérification de la disponibilité…"
+                : slugValid && slugStatus === "available"
+                ? "✓ Ce slug est disponible"
+                : "Identifiant unique en kebab-case. Auto-généré à partir du titre."
+            }
+            error={
+              !slugValid && values.slug.length > 0
+                ? "Format invalide — utilisez uniquement des lettres minuscules, chiffres et tirets"
+                : slugStatus === "taken"
+                ? "Ce slug est déjà utilisé par un autre module"
+                : undefined
+            }
           >
             <div className="flex items-center gap-2">
               <span className="text-xs text-gray-400 font-mono">/modules/</span>
@@ -161,7 +194,7 @@ export function ModuleForm({
                 value={values.slug}
                 onChange={(e) => { setSlugTouched(true); update("slug", slugify(e.target.value)); }}
                 placeholder="vaccination"
-                className={`${INPUT_CLASS} flex-1 font-mono`}
+                className={`${INPUT_CLASS} flex-1 font-mono ${slugStatus === "taken" ? "ring-2 ring-red-300" : ""}`}
                 required
               />
             </div>
@@ -260,37 +293,14 @@ export function ModuleForm({
           </div>
 
           {/* Mascotte picker */}
-          <Field label="Mascotte" hint="Choisissez le personnage qui accompagne le module">
-            <div className="grid grid-cols-5 gap-2">
-              {AVAILABLE_MASCOTTES.map((m) => {
-                const selected = values.mascotte === m;
-                return (
-                  <button
-                    key={m}
-                    type="button"
-                    onClick={() => update("mascotte", m)}
-                    className={`relative aspect-square rounded-xl border-2 p-2 transition-all ${
-                      selected
-                        ? "border-[#2A8970] bg-[#EBF6F3]"
-                        : "border-gray-100 bg-gray-50 hover:border-gray-200"
-                    }`}
-                  >
-                    {selected && (
-                      <span className="absolute top-1 right-1 w-4 h-4 rounded-full bg-[#2A8970] flex items-center justify-center">
-                        <Check size={9} className="text-white" strokeWidth={3} />
-                      </span>
-                    )}
-                    <Image
-                      src={`/assets/mascotte/${m}`}
-                      alt={m}
-                      width={60}
-                      height={60}
-                      className="w-full h-full object-contain"
-                    />
-                  </button>
-                );
-              })}
-            </div>
+          <Field
+            label="Mascotte"
+            hint="Choisissez le personnage qui accompagne le module, ou ajoutez-en un"
+          >
+            <MascottePicker
+              value={values.mascotte}
+              onChange={(url) => update("mascotte", url)}
+            />
           </Field>
         </Section>
 
@@ -322,6 +332,7 @@ export function ModuleForm({
       {/* Colonne aperçu (2/5), sticky */}
       <div className="lg:col-span-2">
         <div className="lg:sticky lg:top-[160px] space-y-3">
+          {/* Aperçu carte module */}
           <div className="flex items-center gap-2 text-xs font-semibold text-gray-500 uppercase tracking-wider">
             <Sparkles size={13} className="text-amber-500" />
             Aperçu en direct
@@ -329,6 +340,35 @@ export function ModuleForm({
           <ModuleCardPreview values={values} />
           <p className="text-xs text-gray-400 leading-relaxed">
             Voici ce que verront vos éducateurs et élèves dans le catalogue.
+          </p>
+
+          {/* Aperçu barre de progression */}
+          <div className="flex items-center gap-2 text-xs font-semibold text-gray-500 uppercase tracking-wider pt-4 mt-2 border-t border-gray-100">
+            <BarChart3 size={13} className="text-[#1B6B8A]" />
+            Barre de progression
+          </div>
+          <div className="rounded-2xl border border-gray-100 bg-white overflow-hidden relative">
+            <GameProgress
+              level={1}
+              src="/assets/rive/progressbar_default_enchenced.riv"
+              stepColor={values.colorPrimary}
+              width={340}
+              height={145}
+            />
+            {values.mascotte && (
+              <div className="absolute bottom-2 left-2 w-12 h-12 rounded-xl bg-white shadow-sm border border-gray-100 flex items-center justify-center">
+                <Image
+                  src={mascotteUrl(values.mascotte, "thumb") ?? ""}
+                  alt="mascotte"
+                  width={40}
+                  height={40}
+                  className="object-contain"
+                />
+              </div>
+            )}
+          </div>
+          <p className="text-xs text-gray-400 leading-relaxed">
+            Mascotte et couleur des steps appliquées en temps réel.
           </p>
         </div>
       </div>
@@ -447,7 +487,7 @@ function ModuleCardPreview({ values }: { values: ModuleFormValues }) {
         >
           {values.mascotte && (
             <Image
-              src={`/assets/mascotte/${values.mascotte}`}
+              src={mascotteUrl(values.mascotte, "thumb") ?? ""}
               alt="mascotte"
               width={56}
               height={56}
@@ -478,3 +518,4 @@ function ModuleCardPreview({ values }: { values: ModuleFormValues }) {
     </div>
   );
 }
+

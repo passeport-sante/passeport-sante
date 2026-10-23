@@ -35,7 +35,7 @@ const s = StyleSheet.create({
     marginBottom: 28,
   },
   brandRow: { flexDirection: "row", alignItems: "center", gap: 8 },
-  brandBlue: { fontSize: 14, fontFamily: "Helvetica-Bold", color: "#2563EB" },
+  brandBlue: { fontSize: 14, fontFamily: "Helvetica-Bold", color: "#175D95" },
   brandGreen: { fontSize: 14, fontFamily: "Helvetica-Bold", color: "#2A8970" },
   headerRight: { alignItems: "flex-end" },
   pill: { paddingHorizontal: 10, paddingVertical: 3, borderRadius: 20 },
@@ -129,7 +129,8 @@ function getSliceColor(
   return "#9CA3AF";
 }
 
-function QuestionCard({ qs, index }: { qs: QuestionStats; index: number }) {
+// Réutilisée par le PDF des statistiques (dashboard/stats).
+export function QuestionCard({ qs, index }: { qs: QuestionStats; index: number }) {
   const isOpen = qs.question.questionType === "OPEN";
   const isSurvey =
     qs.slices.length > 0 && qs.slices.every((s) => s.isCorrect === null);
@@ -259,7 +260,7 @@ export function SessionPdfDocument({
               <Text style={s.brandBlue}>PASSEPORT</Text>
               <Text style={s.brandGreen}> SANTÉ</Text>
             </View>
-            <Text style={s.title}>{session.className}</Text>
+            <Text style={s.title}>{session.className} · {session.schoolYear}</Text>
             <Text style={s.subtitle}>
               Session du {date} · Code : {session.accessCode}
             </Text>

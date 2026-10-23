@@ -3,13 +3,18 @@ import { ConfigModule } from "@nestjs/config";
 import { OrganizationModule } from "./organization/organization.module";
 import { UserModule } from "./user/user.module";
 import { ModulesModule } from "./modules/modules.module";
+import { MascotteModule } from "./mascotte/mascotte.module";
+import { CategoryModule } from "./category/category.module";
 import { StepModule } from "./step/step.module";
+import { ModuleVersionsModule } from "./module-versions/module-versions.module";
 import { DiagnosticModule } from "./diagnostic/diagnostic.module";
 import { ResponseModule } from "./response/response.module";
 import { GuestStudendModule } from "./guest-studend/guest-studend.module";
 import { DataModule } from "./data/data.module";
 import { PrismaModule } from "./prisma/prisma.module";
 import { AuthModule } from "./auth/auth.module";
+import { StatsModule } from "./stats/stats.module";
+import { DirectoryModule } from "./directory/directory.module";
 
 @Module({
   imports: [
@@ -21,12 +26,17 @@ import { AuthModule } from "./auth/auth.module";
     OrganizationModule,
     UserModule,
     ModulesModule,
+    MascotteModule,
+    CategoryModule,
     StepModule,
+    ModuleVersionsModule,
     DiagnosticModule,
     ResponseModule,
     GuestStudendModule,
     DataModule,
     PrismaModule,
+    StatsModule,
+    DirectoryModule,
   ],
 })
 export class AppModule {}

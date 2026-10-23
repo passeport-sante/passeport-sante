@@ -6,9 +6,10 @@ import { ModuleSessionService } from './modules_session/module-session.services'
 import { ModuleProgressController } from './module_progress/module-progress.controller';
 import { ModuleProgressService } from './module_progress/module-progress.services';
 import { AuthModule } from '../auth/auth.module';
+import { ModuleVersionsModule } from '../module-versions/module-versions.module';
 
 @Module({
-  imports: [AuthModule],
+  imports: [AuthModule, ModuleVersionsModule],
   controllers: [
     ModulesController,
     ModuleSessionController,

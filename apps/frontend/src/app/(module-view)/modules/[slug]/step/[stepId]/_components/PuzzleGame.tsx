@@ -6,6 +6,7 @@ import Link from "next/link";
 import { ArrowLeft, GripVertical } from "lucide-react";
 import { FeedbackOverlay } from "@/components/modules/FeedbackOverlay";
 import { getGuestStudentId, submitPuzzleResponse } from "@/lib/modules";
+import { goToNextStep, gameProgress, type FlowStep } from "@/lib/step-flow";
 
 interface PuzzleItem {
   id: string;
@@ -27,7 +28,7 @@ interface StepData {
     mascotte?: string | null;
     colorPrimary: string | null;
     colorSecondary: string | null;
-    steps: { id: string; order: number }[];
+    steps: FlowStep[];
   };
 }
 
@@ -47,7 +48,7 @@ export function PuzzleGame({ step }: { step: StepData }) {
 
   const primaryColor = step.module.colorPrimary ?? "#16A34A";
   const bottomColor = step.module.colorSecondary ?? "#052e16";
-  const totalSteps = step.module.steps.length;
+  const { level: gameLevel, total: totalGameLevels } = gameProgress(step.module.steps, step.order);
 
   const gameData = allGameData[currentIndex];
   const items = gameData?.questionData?.items ?? [];
@@ -103,46 +104,37 @@ export function PuzzleGame({ step }: { step: StepData }) {
       setCards(shuffle(nextItems));
       setCurrentIndex((i) => i + 1);
     } else {
-      const nextLevel = step.order + 1;
-      const key = `module_level_${step.module.slug}`;
-      const stored = parseInt(localStorage.getItem(key) ?? "1", 10);
-      if (nextLevel > stored) localStorage.setItem(key, String(nextLevel));
-      const isLast = step.order === totalSteps;
-      router.push(
-        isLast
-          ? `/modules/${step.module.slug}?complete=true`
-          : `/modules/${step.module.slug}?from=${step.order}`,
-      );
+      goToNextStep(router, step.module.slug, step.module.steps, step.order);
     }
   }
 
   return (
     <div
-      className="h-screen flex flex-col overflow-hidden"
+      className="min-h-screen flex flex-col"
       style={{ background: `linear-gradient(160deg, ${primaryColor} 0%, ${bottomColor} 100%)` }}
     >
-      <header className="shrink-0 flex items-center justify-between px-8 py-5 bg-white">
+      <header className="shrink-0 flex items-center justify-between gap-3 px-4 md:px-8 py-4 md:py-5 bg-white">
         <Link
           href={`/modules/${step.module.slug}`}
-          className="flex items-center gap-3 text-gray-700 hover:opacity-70 transition-opacity"
+          className="flex items-center gap-3 text-gray-700 hover:opacity-70 transition-opacity flex-1 basis-0 min-w-9 md:min-w-10"
         >
-          <div className="w-10 h-10 rounded-full border-2 border-gray-300 flex items-center justify-center">
+          <div className="w-9 h-9 md:w-10 md:h-10 shrink-0 rounded-full border-2 border-gray-300 flex items-center justify-center">
             <ArrowLeft size={18} />
           </div>
-          <span className="font-bold text-sm tracking-widest uppercase">{step.module.title}</span>
+          <span className="hidden sm:inline truncate font-bold text-sm tracking-widest uppercase">{step.module.title}</span>
         </Link>
 
-        <div className="text-center">
+        <div className="text-center min-w-0">
           <h1 className="font-black text-xl text-gray-900">{step.content?.title ?? "Reconstitue la scène"}</h1>
           <p className="text-sm text-gray-400 mt-0.5">{step.content?.instructions}</p>
         </div>
 
-        <div className="text-gray-400 font-bold text-sm">
-          Étape <span className="text-gray-900 text-xl font-black">{step.order}</span> / {totalSteps}
+        <div className="flex-1 basis-0 text-right text-gray-400 font-bold text-sm whitespace-nowrap">
+          Étape <span className="text-gray-900 text-xl font-black">{gameLevel}</span> / {totalGameLevels}
         </div>
       </header>
 
-      <main className="flex-1 flex flex-col items-center justify-center gap-6 px-8">
+      <main className="flex-1 flex flex-col items-center justify-center gap-6 px-4 md:px-8 py-6">
         {/* Progression inter-puzzles */}
         {total > 1 && (
           <div className="flex items-center gap-2">

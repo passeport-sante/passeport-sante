@@ -1,6 +1,31 @@
 const API = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:5000";
 
+// Valeur de repli si le comptage dynamique échoue.
 export const TOTAL_DIAGNOSTIC_QUESTIONS = 61;
+
+// Nombre réel de questions du diagnostic (dynamique, pour un calcul de progression exact).
+export async function fetchDiagnosticQuestionCount(): Promise<number> {
+  try {
+    const res = await fetch(`${API}/api/diagnostic/question`, { cache: "no-store" });
+    if (!res.ok) return TOTAL_DIAGNOSTIC_QUESTIONS;
+    const data = await res.json();
+    return Array.isArray(data) && data.length > 0 ? data.length : TOTAL_DIAGNOSTIC_QUESTIONS;
+  } catch {
+    return TOTAL_DIAGNOSTIC_QUESTIONS;
+  }
+}
+
+// ── Niveaux de classe ─────────────────────────────────────────────────────────
+// Collège uniquement. Mêmes valeurs que l'enum ClassLevel du backend.
+
+export const CLASS_LEVELS = [
+  { value: "SIXIEME", label: "6e" },
+  { value: "CINQUIEME", label: "5e" },
+  { value: "QUATRIEME", label: "4e" },
+  { value: "TROISIEME", label: "3e" },
+] as const;
+
+export type ClassLevel = (typeof CLASS_LEVELS)[number]["value"];
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 
@@ -9,13 +34,25 @@ export type SessionUser = { id: string; name: string; email?: string };
 export type SessionSummary = {
   id: string;
   className: string;
+  schoolYear: string; // "2026-2027"
+  level: ClassLevel | null; // null : ancienne session sans niveau
   accessCode: string;
   accessUrl: string;
   isActive: boolean;
   createdAt: string;
   updatedAt: string;
-  createdByUser: SessionUser;
+  createdByUser: SessionUser | null;
+  // Les élèves exclus ne sont comptés nulle part.
   _count: { guestStudents: number; diagnosticResponses: number };
+  completedCount: number;
+};
+
+export type DiagnosticStudent = {
+  id: string;
+  createdAt: string;
+  completedAt: string | null;
+  excludedAt: string | null;
+  _count: { diagnosticResponses: number };
 };
 
 export type QuestionMeta = {
@@ -37,19 +74,24 @@ export type ResponseEntry = {
 };
 
 export type SessionDetail = Omit<SessionSummary, "_count"> & {
-  createdByUser: SessionUser;
+  createdByUser: SessionUser | null;
   _count: { guestStudents: number; diagnosticResponses: number };
+  completedCount: number;
+  // Tous les élèves, exclus compris (pour le panel de gestion).
+  guestStudents: DiagnosticStudent[];
   diagnosticResponses: ResponseEntry[];
 };
 
 export type ModuleSessionSummary = {
   id: string;
   className: string;
+  schoolYear: string;
+  level: ClassLevel | null;
   accessCode: string;
   accessUrl: string;
   isActive: boolean;
   createdAt: string;
-  module: { id: string; title: string; colorPrimary: string | null };
+  module: { id: string; title: string; colorPrimary: string | null } | null;
   _count: { guestStudents: number };
 };
 
@@ -65,6 +107,7 @@ export type ModuleGuestStudent = {
 export type ModuleStepMeta = {
   id: string;
   order: number;
+  kind: string;
   gameType: string;
   content: { title?: string } | null;
 };
@@ -72,6 +115,7 @@ export type ModuleStepMeta = {
 export type ModuleSessionDetail = {
   id: string;
   className: string;
+  schoolYear: string;
   accessCode: string;
   isActive: boolean;
   createdAt: string;
@@ -81,7 +125,7 @@ export type ModuleSessionDetail = {
     slug: string;
     colorPrimary: string | null;
     steps: ModuleStepMeta[];
-  };
+  } | null;
   _count: { guestStudents: number };
   guestStudents: ModuleGuestStudent[];
 };
@@ -144,6 +188,39 @@ export async function closeSession(id: string, token: string): Promise<void> {
   });
 }
 
+export async function deleteSession(id: string, token: string): Promise<void> {
+  const res = await fetch(`${API}/api/diagnostic/session/${id}`, {
+    method: "DELETE",
+    headers: authHeaders(token),
+  });
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({}));
+    throw new Error(err.message ?? "Erreur lors de la suppression");
+  }
+}
+
+export async function setStudentExcluded(
+  sessionId: string,
+  guestId: string,
+  excluded: boolean,
+  token: string,
+): Promise<void> {
+  const res = await fetch(`${API}/api/diagnostic/session/${sessionId}/students/${guestId}`, {
+    method: "PATCH",
+    headers: authHeaders(token),
+    body: JSON.stringify({ excluded }),
+  });
+  if (!res.ok) throw new Error("Impossible de modifier l'élève");
+}
+
+export async function deleteStudent(sessionId: string, guestId: string, token: string): Promise<void> {
+  const res = await fetch(`${API}/api/diagnostic/session/${sessionId}/students/${guestId}`, {
+    method: "DELETE",
+    headers: authHeaders(token),
+  });
+  if (!res.ok) throw new Error("Impossible de supprimer l'élève");
+}
+
 // ── Extraction défensive de la réponse ────────────────────────────────────────
 // Gère les deux formats : { answer: "texte" } et l'ancien { answer: { answer: "texte" } }
 function extractScalarAnswer(userAnswer: Record<string, unknown>): string {
@@ -195,6 +272,28 @@ function buildSlices(
   question: QuestionMeta,
   responses: ResponseEntry[],
 ): AnswerSlice[] {
+  const counts: Record<string, number> = {};
+  const multi = question.questionType === "MCQ_MULTI";
+  for (const r of responses) {
+    const keys = multi ? extractArrayAnswer(r.userAnswer) : [extractScalarAnswer(r.userAnswer)];
+    for (const ans of keys) if (ans) counts[ans] = (counts[ans] ?? 0) + 1;
+  }
+  return slicesFromCounts(
+    question,
+    counts,
+    responses.filter((r) => r.isCorrect === true).length,
+    responses.filter((r) => r.isCorrect === false).length,
+  );
+}
+
+// Barres de réponses d'une question à partir de comptes déjà agrégés
+// (détail d'une session, ou statistiques multi-sessions calculées par le serveur).
+export function slicesFromCounts(
+  question: QuestionMeta,
+  counts: Record<string, number>,
+  correctCount: number,
+  incorrectCount: number,
+): AnswerSlice[] {
   const type = question.questionType;
 
   if (type === "OPEN") return [];
@@ -205,11 +304,6 @@ function buildSlices(
     const choices: string[] = (
       question.options as { choices?: string[] } | null
     )?.choices ?? ["OUI", "NON"];
-    const counts: Record<string, number> = {};
-    for (const r of responses) {
-      const ans = extractScalarAnswer(r.userAnswer);
-      if (ans) counts[ans] = (counts[ans] ?? 0) + 1;
-    }
     return choices.map((label) => ({
       label,
       count: counts[label] ?? 0,
@@ -222,11 +316,6 @@ function buildSlices(
       (question.options as { choices?: string[] } | null)?.choices ?? [];
     const correct =
       (question.correctAnswer as { answer?: string } | null)?.answer ?? null;
-    const counts: Record<string, number> = {};
-    for (const r of responses) {
-      const ans = extractScalarAnswer(r.userAnswer);
-      if (ans) counts[ans] = (counts[ans] ?? 0) + 1;
-    }
     const seen = new Set<string>();
     const slices: AnswerSlice[] = [];
     for (const label of choices) {
@@ -246,12 +335,6 @@ function buildSlices(
       (question.options as { choices?: string[] } | null)?.choices ?? [];
     const correctAnswers: string[] =
       (question.correctAnswer as { answers?: string[] } | null)?.answers ?? [];
-    const counts: Record<string, number> = {};
-    for (const r of responses) {
-      for (const ans of extractArrayAnswer(r.userAnswer)) {
-        counts[ans] = (counts[ans] ?? 0) + 1;
-      }
-    }
     return choices.map((label) => ({
       label,
       count: counts[label] ?? 0,
@@ -260,11 +343,9 @@ function buildSlices(
   }
 
   if (type === "CLASSIFY") {
-    const correct = responses.filter((r) => r.isCorrect === true).length;
-    const incorrect = responses.filter((r) => r.isCorrect === false).length;
     return [
-      { label: "Bien classé", count: correct, isCorrect: true },
-      { label: "Mal classé", count: incorrect, isCorrect: false },
+      { label: "Bien classé", count: correctCount, isCorrect: true },
+      { label: "Mal classé", count: incorrectCount, isCorrect: false },
     ];
   }
 
@@ -307,8 +388,20 @@ export async function closeModuleSession(id: string, token: string): Promise<voi
   });
 }
 
+export async function deleteModuleSession(id: string, token: string): Promise<void> {
+  const res = await fetch(`${API}/api/module-sessions/${id}`, {
+    method: "DELETE",
+    headers: authHeaders(token),
+  });
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({}));
+    throw new Error(err.message ?? "Erreur lors de la suppression");
+  }
+}
+
 export function computeModuleStepStats(detail: ModuleSessionDetail): StepStats[] {
-  return detail.module.steps.map((step) => {
+  if (!detail.module) return [];
+  return detail.module.steps.filter((step) => step.kind === "GAME").map((step) => {
     const allResponses: { isCorrect: boolean | null }[] = [];
     for (const gs of detail.guestStudents) {
       allResponses.push(

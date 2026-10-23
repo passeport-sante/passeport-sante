@@ -68,7 +68,7 @@ export function DeleteModuleModal({ module, onCancel, onConfirm }: Props) {
         {sessionCount > 0 && (
           <div className="bg-amber-50 border border-amber-200 rounded-xl px-4 py-3 text-sm text-amber-800">
             <p className="font-semibold">{sessionCount} session{sessionCount > 1 ? "s" : ""} référence{sessionCount > 1 ? "nt" : ""} ce module.</p>
-            <p className="text-xs mt-0.5">La suppression échouera tant que ces sessions existent. Désactivez le module à la place.</p>
+            <p className="text-xs mt-0.5">Les sessions clôturées seront supprimées avec le module. La suppression échouera si des sessions sont encore actives.</p>
           </div>
         )}
 

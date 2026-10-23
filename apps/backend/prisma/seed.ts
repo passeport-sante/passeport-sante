@@ -1,5 +1,6 @@
 import { PrismaClient } from "@prisma/client";
 import * as bcrypt from "bcrypt";
+import { seedMascottes } from "./mascottes";
 
 const prisma = new PrismaClient();
 
@@ -87,6 +88,13 @@ async function main() {
     catNumerique.name,
     catNutrition.name,
   );
+
+  // ─── Mascottes ────────────────────────────────────────────────────────────────
+  // Catalogue initial des visuels livrés dans public/assets/mascotte/.
+  // La liste vit dans prisma/mascottes.ts (source unique), aussi utilisée par le
+  // seed dédié prisma/seed-mascottes.ts pour peupler la prod sans re-seeder tout.
+  const mascottesCount = await seedMascottes(prisma);
+  console.log(` ${mascottesCount} mascottes créées`);
 
   // ─── Modules ──────────────────────────────────────────────────────────────────
   const moduleVaccination = await prisma.module.upsert({
@@ -851,6 +859,8 @@ async function main() {
       className: "CM2 - École Pasteur",
       accessCode: "TEST2024",
       accessUrl: "http://localhost:3000/session/TEST2024",
+      schoolYear: "2026-2027",
+      level: "SIXIEME",
       isActive: true,
       moduleId: moduleVaccination.id,
       createdByUserId: trainer.id,
@@ -902,6 +912,8 @@ async function main() {
       className: "CM2 - École Pasteur",
       accessCode: "DIAG2024",
       accessUrl: "http://localhost:3000/diagnostic/DIAG2024",
+      schoolYear: "2026-2027",
+      level: "SIXIEME",
       isActive: true,
       createdByUserId: trainer.id,
       organizationId: org.id,

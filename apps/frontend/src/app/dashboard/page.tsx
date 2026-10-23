@@ -6,8 +6,11 @@ import { Plus } from "lucide-react";
 import {
   fetchSessions,
   closeSession,
+  deleteSession,
   fetchModuleSessions,
   closeModuleSession,
+  deleteModuleSession,
+  fetchDiagnosticQuestionCount,
 } from "@/lib/dashboard";
 import type { ModuleSessionSummary, SessionSummary } from "@/lib/dashboard";
 import { SessionCard } from "./_components/session-card";
@@ -18,10 +21,12 @@ import { StatsRow } from "./_components/stats-row";
 export default function DashboardPage() {
   const [diagSessions, setDiagSessions] = useState<SessionSummary[]>([]);
   const [moduleSessions, setModuleSessions] = useState<ModuleSessionSummary[]>([]);
+  const [questionCount, setQuestionCount] = useState<number | undefined>(undefined);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     const token = localStorage.getItem("access_token") ?? "";
+    fetchDiagnosticQuestionCount().then(setQuestionCount).catch(() => {});
     Promise.all([fetchSessions(token), fetchModuleSessions(token)])
       .then(([diag, mod]) => {
         setDiagSessions(diag);
@@ -46,13 +51,24 @@ export default function DashboardPage() {
     );
   }
 
+  async function handleDelete(id: string, type: "diagnostic" | "module") {
+    const token = localStorage.getItem("access_token") ?? "";
+    if (type === "diagnostic") {
+      await deleteSession(id, token);
+      setDiagSessions((prev) => prev.filter((s) => s.id !== id));
+    } else {
+      await deleteModuleSession(id, token);
+      setModuleSessions((prev) => prev.filter((s) => s.id !== id));
+    }
+  }
+
   const diagActive = diagSessions.filter((s) => s.isActive);
   const diagTerminated = diagSessions.filter((s) => !s.isActive);
   const moduleActive = moduleSessions.filter((s) => s.isActive);
   const moduleTerminated = moduleSessions.filter((s) => !s.isActive);
 
   return (
-    <div className="p-8 space-y-8 min-h-screen">
+    <div className="p-4 md:p-8 space-y-6 md:space-y-8 min-h-screen">
       {/* Page header */}
       <div className="flex items-center justify-between">
         <div>
@@ -61,7 +77,7 @@ export default function DashboardPage() {
         </div>
         <Link
           href="/dashboard/sessions/new"
-          className="flex items-center gap-2 px-5 py-2.5 text-white text-sm font-semibold rounded-xl shadow hover:opacity-90 transition-opacity"
+          className="flex items-center gap-2 px-5 py-2.5 text-white text-sm font-semibold rounded-xl hover:opacity-90 transition-opacity"
           style={{ background: "linear-gradient(135deg, #1B6B8A, #2A8970)" }}
         >
           <Plus size={17} />
@@ -75,7 +91,7 @@ export default function DashboardPage() {
         </div>
       ) : (
         <>
-          <StatsRow sessions={diagSessions} />
+          <StatsRow sessions={diagSessions} moduleSessions={moduleSessions} />
 
           {/* ── Sessions diagnostic actives ── */}
           <section>
@@ -88,7 +104,7 @@ export default function DashboardPage() {
               )}
             </h2>
             {diagActive.length === 0 ? (
-              <div className="bg-white rounded-2xl border border-dashed border-gray-200 p-10 text-center">
+              <div className="bg-white rounded-xl border border-dashed border-gray-200 p-10 text-center">
                 <p className="text-gray-400 text-sm">Aucune session diagnostic active.</p>
                 <Link
                   href="/dashboard/sessions/new"
@@ -100,9 +116,9 @@ export default function DashboardPage() {
                 </Link>
               </div>
             ) : (
-              <div className="grid grid-cols-3 gap-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
                 {diagActive.map((s) => (
-                  <SessionCard key={s.id} session={s} onClose={handleClose} />
+                  <SessionCard key={s.id} session={s} onClose={handleClose} totalQuestions={questionCount} />
                 ))}
               </div>
             )}
@@ -113,13 +129,13 @@ export default function DashboardPage() {
             <h2 className="text-lg font-bold text-[#1A1A1A] mb-4">
               Sessions modules
               {moduleActive.length > 0 && (
-                <span className="ml-2 px-2 py-0.5 bg-blue-100 text-blue-600 text-xs font-semibold rounded-full">
+                <span className="ml-2 px-2 py-0.5 bg-blue-100 text-brand-blue text-xs font-semibold rounded-full">
                   {moduleActive.length}
                 </span>
               )}
             </h2>
             {moduleActive.length === 0 ? (
-              <div className="bg-white rounded-2xl border border-dashed border-gray-200 p-10 text-center">
+              <div className="bg-white rounded-xl border border-dashed border-gray-200 p-10 text-center">
                 <p className="text-gray-400 text-sm">Aucune session module active.</p>
                 <Link
                   href="/dashboard/sessions/new"
@@ -131,7 +147,7 @@ export default function DashboardPage() {
                 </Link>
               </div>
             ) : (
-              <div className="grid grid-cols-3 gap-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
                 {moduleActive.map((s) => (
                   <ModuleSessionCard key={s.id} session={s} onClose={handleCloseModule} />
                 ))}
@@ -149,7 +165,7 @@ export default function DashboardPage() {
                 </span>
               )}
             </h2>
-            <SessionsTable sessions={diagTerminated} moduleSessions={moduleTerminated} />
+            <SessionsTable sessions={diagTerminated} moduleSessions={moduleTerminated} onDelete={handleDelete} />
           </section>
         </>
       )}

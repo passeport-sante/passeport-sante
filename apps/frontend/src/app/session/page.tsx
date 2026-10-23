@@ -51,7 +51,7 @@ export default function SessionEntryPage() {
   return (
     <div className="min-h-screen flex flex-col items-center justify-center px-6">
       <div
-        className="bg-[#0F3A5C]/80 backdrop-blur-sm rounded-3xl p-10 w-full max-w-sm flex flex-col items-center gap-6 text-white"
+        className="bg-[#0F3A5C]/80 backdrop-blur-sm rounded-3xl p-6 sm:p-10 w-full max-w-sm flex flex-col items-center gap-6 text-white"
         style={{ boxShadow: "0 0 60px rgba(78,175,90,0.2), 0 8px 40px rgba(0,0,0,0.3)" }}
       >
         <Image

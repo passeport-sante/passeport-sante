@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import Link from "next/link";
-import { ArrowLeft, Calendar, Users, CheckCircle2, XCircle } from "lucide-react";
+import { ArrowLeft, Calendar, Users, CheckCircle2, XCircle, FileDown } from "lucide-react";
 import {
   fetchModuleSessionDetail,
   computeModuleStepStats,
@@ -11,6 +11,8 @@ import {
 } from "@/lib/dashboard";
 import type { ModuleSessionDetail, StepStats } from "@/lib/dashboard";
 import { ScoreCard } from "../../sessions/[id]/_components/score-card";
+import { PDFDownloadLink } from "@react-pdf/renderer";
+import { ModuleSessionPdfDocument } from "./_components/ModuleSessionPdfDocument";
 
 const GAME_TYPE_LABEL: Record<string, string> = {
   KANBAN:      "Trie les éléments",
@@ -18,6 +20,8 @@ const GAME_TYPE_LABEL: Record<string, string> = {
   PUZZLE:      "Puzzle",
   SCENARIO:    "Mise en situation",
   QUIZ:        "Quiz final",
+  MOTS_CROISES: "Mots croisés",
+  HISTOIRE:    "Histoire",
 };
 
 export default function ModuleSessionDetailPage() {
@@ -62,10 +66,10 @@ export default function ModuleSessionDetailPage() {
   const avgSuccess = stepStats.filter((s) => s.totalAttempts > 0).length > 0
     ? Math.round(stepStats.filter((s) => s.totalAttempts > 0).reduce((s, st) => s + st.successRate, 0) / stepStats.filter((s) => s.totalAttempts > 0).length)
     : 0;
-  const color = session.module.colorPrimary ?? "#1B6B8A";
+  const color = session.module?.colorPrimary ?? "#1B6B8A";
 
   return (
-    <div className="p-8 space-y-8 min-h-screen">
+    <div className="p-4 md:p-8 space-y-6 md:space-y-8 min-h-screen">
       {/* Header */}
       <div className="flex items-start gap-4">
         <Link
@@ -75,7 +79,10 @@ export default function ModuleSessionDetailPage() {
           <ArrowLeft size={18} className="text-gray-500" />
         </Link>
         <div className="flex-1">
-          <h1 className="text-2xl font-black text-[#1A1A1A]">{session.className}</h1>
+          <h1 className="text-2xl font-black text-[#1A1A1A]">
+            {session.className}
+            <span className="ml-2 text-base font-semibold text-gray-400">{session.schoolYear}</span>
+          </h1>
           <div className="flex items-center gap-4 mt-1 text-sm text-gray-400 flex-wrap">
             <span className="flex items-center gap-1.5">
               <Calendar size={14} />
@@ -87,12 +94,18 @@ export default function ModuleSessionDetailPage() {
               <Users size={14} />
               {totalStudents} élève{totalStudents > 1 ? "s" : ""}
             </span>
-            <span
-              className="font-semibold text-xs px-2.5 py-1 rounded-full"
-              style={{ background: `${color}18`, color }}
-            >
-              {session.module.title}
-            </span>
+            {session.module ? (
+              <span
+                className="font-semibold text-xs px-2.5 py-1 rounded-full"
+                style={{ background: `${color}18`, color }}
+              >
+                {session.module.title}
+              </span>
+            ) : (
+              <span className="text-xs px-2.5 py-1 rounded-full bg-gray-100 text-gray-400 italic">
+                Module supprimé
+              </span>
+            )}
             <span
               className={`px-2.5 py-0.5 rounded-full text-xs font-semibold ${
                 session.isActive
@@ -111,6 +124,30 @@ export default function ModuleSessionDetailPage() {
                 {closing ? "Clôture…" : "Clôturer la session"}
               </button>
             )}
+            <PDFDownloadLink
+              document={
+                <ModuleSessionPdfDocument
+                  session={session}
+                  stepStats={stepStats}
+                  avgSuccess={avgSuccess}
+                  totalResponses={totalResponses}
+                />
+              }
+              fileName={`resultats-module-${session.className.replace(/\s+/g, "-")}-${session.accessCode}.pdf`}
+            >
+              {({ loading: pdfLoading }) => (
+                <button
+                  className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm font-semibold transition-colors"
+                  style={{
+                    background: pdfLoading ? "#F3F4F6" : `${color}18`,
+                    color: pdfLoading ? "#9CA3AF" : color,
+                  }}
+                >
+                  <FileDown size={14} />
+                  {pdfLoading ? "Génération..." : "Exporter PDF"}
+                </button>
+              )}
+            </PDFDownloadLink>
           </div>
         </div>
         <div className="px-4 py-2 bg-gray-50 rounded-xl border border-gray-100">
@@ -122,7 +159,7 @@ export default function ModuleSessionDetailPage() {
       </div>
 
       {/* Stats */}
-      <div className="grid grid-cols-3 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
         <ScoreCard
           label="Participants"
           value={totalStudents}
@@ -152,7 +189,7 @@ export default function ModuleSessionDetailPage() {
               {stepStats.length}
             </span>
           </h2>
-          <div className="grid grid-cols-2 gap-3">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-3">
             {stepStats.map((stats) => (
               <StepResultCard key={stats.step.id} stats={stats} color={color} />
             ))}

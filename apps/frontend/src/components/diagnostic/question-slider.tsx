@@ -22,14 +22,14 @@ export function QuestionSlider({
   const pct = ((value - min) / (max - min)) * 100;
 
   return (
-    <div className="flex flex-col items-center gap-8 w-full max-w-2xl">
+    <div className="flex flex-col items-center gap-6 sm:gap-8 w-full max-w-2xl">
       {/* Question */}
-      <div className="bg-[#1A527A]/80 backdrop-blur-sm rounded-2xl px-12 py-8 w-full text-center">
-        <p className="text-3xl font-black text-white leading-snug">{question}</p>
+      <div className="bg-[#1A527A]/80 backdrop-blur-sm rounded-2xl px-6 py-6 sm:px-12 sm:py-8 w-full text-center">
+        <p className="text-2xl sm:text-3xl font-black text-white leading-snug">{question}</p>
       </div>
 
       {/* Valeur affichée */}
-      <span className="text-9xl font-black text-white leading-none">{value}</span>
+      <span className="text-7xl sm:text-9xl font-black text-white leading-none">{value}</span>
 
       {/* Slider */}
       <div className="w-full px-2">

@@ -1,14 +1,20 @@
 import { Activity, CheckCircle, Users, BarChart2 } from "lucide-react";
-import type { SessionSummary } from "@/lib/dashboard";
+import type { SessionSummary, ModuleSessionSummary } from "@/lib/dashboard";
 
 interface Props {
   sessions: SessionSummary[];
+  // Optionnel : quand fourni, les compteurs combinent diagnostic + module.
+  moduleSessions?: ModuleSessionSummary[];
 }
 
-export function StatsRow({ sessions }: Props) {
-  const totalSessions = sessions.length;
-  const activeSessions = sessions.filter((s) => s.isActive).length;
-  const totalStudents = sessions.reduce((acc, s) => acc + s._count.guestStudents, 0);
+export function StatsRow({ sessions, moduleSessions = [] }: Props) {
+  const totalSessions = sessions.length + moduleSessions.length;
+  const activeSessions =
+    sessions.filter((s) => s.isActive).length +
+    moduleSessions.filter((s) => s.isActive).length;
+  const totalStudents =
+    sessions.reduce((acc, s) => acc + s._count.guestStudents, 0) +
+    moduleSessions.reduce((acc, s) => acc + s._count.guestStudents, 0);
   const totalResponses = sessions.reduce((acc, s) => acc + s._count.diagnosticResponses, 0);
 
   const stats = [
@@ -34,7 +40,7 @@ export function StatsRow({ sessions }: Props) {
       bg: "#EDF7EE",
     },
     {
-      label: "Réponses collectées",
+      label: "Réponses diagnostic",
       value: totalResponses,
       icon: CheckCircle,
       color: "#6366F1",
@@ -43,9 +49,9 @@ export function StatsRow({ sessions }: Props) {
   ];
 
   return (
-    <div className="grid grid-cols-4 gap-4">
+    <div className="grid grid-cols-2 lg:grid-cols-4 rounded-xl border border-gray-200 bg-white divide-x divide-gray-100">
       {stats.map(({ label, value, icon: Icon, color, bg }) => (
-        <div key={label} className="bg-white rounded-2xl p-5 shadow-sm border border-gray-100 flex items-center gap-4">
+        <div key={label} className="p-5 flex items-center gap-4">
           <div className="w-12 h-12 rounded-xl flex items-center justify-center shrink-0" style={{ background: bg }}>
             <Icon size={22} style={{ color }} />
           </div>

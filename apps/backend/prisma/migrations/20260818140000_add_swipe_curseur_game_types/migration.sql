@@ -1,0 +1,3 @@
+-- AlterEnum
+ALTER TYPE "GameType" ADD VALUE 'SWIPE';
+ALTER TYPE "GameType" ADD VALUE 'CURSEUR';

@@ -12,19 +12,39 @@ import {
   Layers,
   Users,
   Clock,
+  Download,
+  Loader2,
+  Play,
 } from "lucide-react";
 import type { AdminModule } from "@/lib/modules-admin";
+import { mascotteUrl } from "@/lib/mascotte";
+import { downloadModuleExport } from "@/lib/module-export";
 
 interface Props {
   module: AdminModule;
+  // false pour un collaborateur : lecture seule, il peut uniquement tester.
+  canManage?: boolean;
   onDuplicate: (id: string) => void;
   onToggleActive: (m: AdminModule) => void;
   onDelete: (m: AdminModule) => void;
 }
 
-export function AdminModuleCard({ module, onDuplicate, onToggleActive, onDelete }: Props) {
+export function AdminModuleCard({ module, canManage = true, onDuplicate, onToggleActive, onDelete }: Props) {
   const [menuOpen, setMenuOpen] = useState(false);
+  const [exporting, setExporting] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
+
+  async function handleExport() {
+    setExporting(true);
+    try {
+      await downloadModuleExport(module.id, module.slug);
+      setMenuOpen(false);
+    } catch (err) {
+      alert(err instanceof Error ? err.message : "Échec de l'export");
+    } finally {
+      setExporting(false);
+    }
+  }
 
   useEffect(() => {
     if (!menuOpen) return;
@@ -38,9 +58,10 @@ export function AdminModuleCard({ module, onDuplicate, onToggleActive, onDelete 
   }, [menuOpen]);
 
   const color = module.colorPrimary ?? "#1B6B8A";
+  const mascotteSrc = mascotteUrl(module.mascotte, "thumb");
 
   return (
-    <div className="group relative bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden flex flex-col hover:shadow-md transition-shadow">
+    <div className="group relative bg-white rounded-xl border border-gray-200 flex flex-col hover:border-gray-300 transition-colors">
       <div className="p-5 flex flex-col gap-4 flex-1">
         {/* Header : icône, titre, statut, menu */}
         <div className="flex items-start gap-3">
@@ -48,9 +69,9 @@ export function AdminModuleCard({ module, onDuplicate, onToggleActive, onDelete 
             className="w-12 h-12 rounded-xl flex items-center justify-center shrink-0 overflow-hidden"
             style={{ background: module.colorCard ?? `${color}15` }}
           >
-            {module.mascotte ? (
+            {mascotteSrc ? (
               <Image
-                src={`/assets/mascotte/${module.mascotte}`}
+                src={mascotteSrc}
                 alt={module.title}
                 width={40}
                 height={40}
@@ -86,6 +107,7 @@ export function AdminModuleCard({ module, onDuplicate, onToggleActive, onDelete 
               </span>
             )}
 
+            {canManage && (
             <div className="relative" ref={menuRef}>
               <button
                 onClick={() => setMenuOpen((o) => !o)}
@@ -113,6 +135,18 @@ export function AdminModuleCard({ module, onDuplicate, onToggleActive, onDelete 
                     Dupliquer
                   </button>
                   <button
+                    onClick={handleExport}
+                    disabled={exporting}
+                    className="w-full flex items-center gap-2 px-3 py-2 text-sm text-gray-700 hover:bg-gray-50 transition-colors text-left disabled:opacity-50"
+                  >
+                    {exporting ? (
+                      <Loader2 size={14} className="text-gray-400 animate-spin" />
+                    ) : (
+                      <Download size={14} className="text-gray-400" />
+                    )}
+                    Exporter le contenu
+                  </button>
+                  <button
                     onClick={() => { onToggleActive(module); setMenuOpen(false); }}
                     className="w-full flex items-center gap-2 px-3 py-2 text-sm text-gray-700 hover:bg-gray-50 transition-colors text-left"
                   >
@@ -130,6 +164,7 @@ export function AdminModuleCard({ module, onDuplicate, onToggleActive, onDelete 
                 </div>
               )}
             </div>
+            )}
           </div>
         </div>
 
@@ -164,15 +199,27 @@ export function AdminModuleCard({ module, onDuplicate, onToggleActive, onDelete 
           )}
         </div>
 
-        {/* CTA modifier */}
-        <Link
-          href={`/dashboard/modules/${module.id}/edit`}
-          className="mt-auto inline-flex items-center justify-center gap-1.5 px-4 py-2 text-white text-sm font-semibold rounded-xl hover:opacity-90 transition-opacity"
-          style={{ background: color }}
-        >
-          <Pencil size={13} />
-          Modifier
-        </Link>
+        {/* CTA : Modifier (admin) ou Tester (collaborateur) */}
+        {canManage ? (
+          <Link
+            href={`/dashboard/modules/${module.id}/edit`}
+            className="mt-auto inline-flex items-center justify-center gap-1.5 px-4 py-2 text-white text-sm font-semibold rounded-xl hover:opacity-90 transition-opacity"
+            style={{ background: color }}
+          >
+            <Pencil size={13} />
+            Modifier
+          </Link>
+        ) : (
+          <Link
+            href={`/modules/${module.slug}`}
+            target="_blank"
+            className="mt-auto inline-flex items-center justify-center gap-1.5 px-4 py-2 text-white text-sm font-semibold rounded-xl hover:opacity-90 transition-opacity"
+            style={{ background: color }}
+          >
+            <Play size={13} />
+            Tester
+          </Link>
+        )}
       </div>
     </div>
   );

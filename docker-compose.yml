@@ -30,7 +30,15 @@ services:
       NODE_ENV: development
       PORT: 5000
       JWT_SECRET: ${JWT_SECRET:-changeme_in_production}
+      FRONTEND_URL: ${FRONTEND_URL:-http://localhost:3000}
       NODE_PATH: /app/apps/backend/node_modules
+      CHOKIDAR_USEPOLLING: "true"
+      CHOKIDAR_INTERVAL: "1000"
+      TSC_WATCHFILE: "DynamicPriorityPolling"
+      SMTP_HOST: ${SMTP_HOST}
+      SMTP_PORT: ${SMTP_PORT:-465}
+      SMTP_USER: ${SMTP_USER}
+      SMTP_PASS: ${SMTP_PASS}
     ports:
       - "5000:5000"
     volumes:
@@ -48,12 +56,16 @@ services:
       dockerfile: apps/frontend/Dockerfile.dev
     container_name: prevention_frontend
     environment:
-      NEXT_PUBLIC_API_URL: http://localhost:5000
+      NEXT_PUBLIC_API_URL: ${NEXT_PUBLIC_API_URL:-http://localhost:5000}
       API_INTERNAL_URL: http://backend:5000
       WATCHPACK_POLLING: "true"
       WATCHPACK_POLLING_INTERVAL: "1000"
       CHOKIDAR_USEPOLLING: "true"
       CHOKIDAR_INTERVAL: "1000"
+      SMTP_HOST: ${SMTP_HOST}
+      SMTP_PORT: ${SMTP_PORT:-465}
+      SMTP_USER: ${SMTP_USER}
+      SMTP_PASS: ${SMTP_PASS}
     ports:
       - "3000:3000"
     volumes:

@@ -1,19 +1,23 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
-import { Plus, Search, Layers } from "lucide-react";
+import { Plus, Search, Layers, FolderCog, Upload, Loader2 } from "lucide-react";
 import {
   fetchAdminModules,
   duplicateModule,
   updateModule,
   deleteModule,
   fetchCategories,
+  importModule,
   type AdminModule,
   type CategoryLite,
+  type ImportModuleFile,
 } from "@/lib/modules-admin";
 import { AdminModuleCard } from "./_components/admin-module-card";
 import { DeleteModuleModal } from "./_components/delete-module-modal";
+import { ManageCategoriesModal } from "./_components/manage-categories-modal";
+import { getToken, decodeJwt, type UserRole } from "@/lib/auth";
 
 type StatusFilter = "all" | "active" | "inactive";
 type SortKey = "recent" | "alpha" | "steps";
@@ -30,6 +34,16 @@ export default function AdminModulesPage() {
   const [sort, setSort] = useState<SortKey>("recent");
 
   const [toDelete, setToDelete] = useState<AdminModule | null>(null);
+  const [manageCategories, setManageCategories] = useState(false);
+  const [importing, setImporting] = useState(false);
+  const importInputRef = useRef<HTMLInputElement>(null);
+
+  // Le collaborateur voit tous les modules mais ne peut que les tester.
+  const [canManage, setCanManage] = useState(false);
+  useEffect(() => {
+    const role = decodeJwt<{ role?: UserRole }>(getToken())?.role;
+    setCanManage(role === "ADMIN");
+  }, []);
 
   async function refresh() {
     try {
@@ -78,6 +92,21 @@ export default function AdminModulesPage() {
     await refresh();
   }
 
+  async function handleImportFile(file: File) {
+    setImporting(true);
+    try {
+      const parsed = JSON.parse(await file.text()) as ImportModuleFile;
+      const created = await importModule(parsed);
+      await refresh();
+      alert(`Module « ${parsed.title} » importé avec succès (${created.slug}).`);
+    } catch (err) {
+      const msg = err instanceof SyntaxError ? "Le fichier n'est pas un JSON valide." : err instanceof Error ? err.message : "Échec de l'import";
+      alert(msg);
+    } finally {
+      setImporting(false);
+    }
+  }
+
   const filtered = useMemo(() => {
     const q = query.trim().toLowerCase();
     let list = modules.filter((m) => {
@@ -113,7 +142,7 @@ export default function AdminModulesPage() {
   );
 
   return (
-    <div className="p-8 space-y-6 min-h-screen">
+    <div className="p-4 md:p-8 space-y-6 min-h-screen">
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
@@ -122,25 +151,55 @@ export default function AdminModulesPage() {
             Créez et personnalisez les contenus pédagogiques
           </p>
         </div>
-        <Link
-          href="/dashboard/modules/new"
-          className="flex items-center gap-2 px-5 py-2.5 text-white text-sm font-semibold rounded-xl shadow hover:opacity-90 transition-opacity"
-          style={{ background: "linear-gradient(135deg, #1B6B8A, #2A8970)" }}
-        >
-          <Plus size={17} />
-          Nouveau module
-        </Link>
+        {canManage && (
+          <div className="flex items-center gap-2">
+            <input
+              ref={importInputRef}
+              type="file"
+              accept="application/json,.json"
+              className="hidden"
+              onChange={(e) => {
+                const f = e.target.files?.[0];
+                if (f) handleImportFile(f);
+                e.target.value = "";
+              }}
+            />
+            <button
+              onClick={() => importInputRef.current?.click()}
+              disabled={importing}
+              className="flex items-center gap-2 px-4 py-2.5 text-sm font-semibold rounded-xl border border-gray-200 text-gray-600 hover:bg-gray-50 transition-colors disabled:opacity-50"
+            >
+              {importing ? <Loader2 size={16} className="animate-spin" /> : <Upload size={16} />}
+              Importer
+            </button>
+            <button
+              onClick={() => setManageCategories(true)}
+              className="flex items-center gap-2 px-4 py-2.5 text-sm font-semibold rounded-xl border border-gray-200 text-gray-600 hover:bg-gray-50 transition-colors"
+            >
+              <FolderCog size={16} />
+              Catégories
+            </button>
+            <Link
+              href="/dashboard/modules/new"
+              className="flex items-center gap-2 px-5 py-2.5 text-white text-sm font-semibold rounded-xl hover:opacity-90 transition-opacity"
+              style={{ background: "linear-gradient(135deg, #1B6B8A, #2A8970)" }}
+            >
+              <Plus size={17} />
+              Nouveau module
+            </Link>
+          </div>
+        )}
       </div>
 
       {/* Stats row */}
-      <div className="grid grid-cols-3 gap-3">
+      <div className="grid grid-cols-3 rounded-xl border border-gray-200 bg-white divide-x divide-gray-100 text-center sm:text-left">
         <StatTile label="Modules" value={counts.total} icon={<Layers size={16} />} />
         <StatTile label="Actifs" value={counts.active} accent="emerald" />
         <StatTile label="Inactifs" value={counts.inactive} accent="gray" />
       </div>
 
       {/* Toolbar */}
-      <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-3 flex flex-wrap items-center gap-2 sticky top-[72px] z-30">
+      <div className="bg-white rounded-xl border border-gray-200 p-3 flex flex-wrap items-center gap-2 sticky top-[72px] z-30">
         {/* Search */}
         <div className="relative flex-1 min-w-[200px]">
           <Search
@@ -203,17 +262,18 @@ export default function AdminModulesPage() {
           <div className="w-8 h-8 border-4 border-[#2A8970] border-t-transparent rounded-full animate-spin" />
         </div>
       ) : error ? (
-        <div className="bg-red-50 border border-red-200 rounded-2xl p-6 text-sm text-red-700">
+        <div className="bg-red-50 border border-red-200 rounded-xl p-6 text-sm text-red-700">
           {error}
         </div>
       ) : filtered.length === 0 ? (
-        <EmptyState onReset={() => { setQuery(""); setCategoryId("all"); setStatus("all"); }} hasFilters={!!query || categoryId !== "all" || status !== "all"} />
+        <EmptyState canManage={canManage} onReset={() => { setQuery(""); setCategoryId("all"); setStatus("all"); }} hasFilters={!!query || categoryId !== "all" || status !== "all"} />
       ) : (
         <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-4">
           {filtered.map((m) => (
             <AdminModuleCard
               key={m.id}
               module={m}
+              canManage={canManage}
               onDuplicate={handleDuplicate}
               onToggleActive={handleToggleActive}
               onDelete={(mod) => setToDelete(mod)}
@@ -226,6 +286,12 @@ export default function AdminModulesPage() {
         module={toDelete}
         onCancel={() => setToDelete(null)}
         onConfirm={handleConfirmDelete}
+      />
+
+      <ManageCategoriesModal
+        open={manageCategories}
+        onClose={() => setManageCategories(false)}
+        onChanged={refresh}
       />
     </div>
   );
@@ -251,7 +317,7 @@ function StatTile({
       ? "text-gray-500"
       : "text-[#1B6B8A]";
   return (
-    <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-4 flex items-center gap-3">
+    <div className="p-4 flex items-center gap-3">
       {icon && <div className={`${color}`}>{icon}</div>}
       <div>
         <p className="text-xs text-gray-400 font-medium">{label}</p>
@@ -292,10 +358,10 @@ function FilterChip({
   );
 }
 
-function EmptyState({ onReset, hasFilters }: { onReset: () => void; hasFilters: boolean }) {
+function EmptyState({ onReset, hasFilters, canManage }: { onReset: () => void; hasFilters: boolean; canManage: boolean }) {
   return (
-    <div className="bg-white rounded-2xl border border-dashed border-gray-200 p-12 text-center">
-      <div className="w-12 h-12 rounded-2xl bg-[#EBF4F8] flex items-center justify-center mx-auto mb-4">
+    <div className="bg-white rounded-xl border border-dashed border-gray-200 p-12 text-center">
+      <div className="w-12 h-12 rounded-xl bg-[#EBF4F8] flex items-center justify-center mx-auto mb-4">
         <Layers size={20} className="text-[#1B6B8A]" />
       </div>
       <p className="text-base font-semibold text-[#1A1A1A]">
@@ -315,14 +381,16 @@ function EmptyState({ onReset, hasFilters }: { onReset: () => void; hasFilters: 
             Réinitialiser
           </button>
         )}
-        <Link
-          href="/dashboard/modules/new"
-          className="inline-flex items-center gap-2 px-5 py-2 text-white text-sm font-semibold rounded-xl"
-          style={{ background: "linear-gradient(135deg, #1B6B8A, #2A8970)" }}
-        >
-          <Plus size={15} />
-          Nouveau module
-        </Link>
+        {canManage && (
+          <Link
+            href="/dashboard/modules/new"
+            className="inline-flex items-center gap-2 px-5 py-2 text-white text-sm font-semibold rounded-xl"
+            style={{ background: "linear-gradient(135deg, #1B6B8A, #2A8970)" }}
+          >
+            <Plus size={15} />
+            Nouveau module
+          </Link>
+        )}
       </div>
     </div>
   );

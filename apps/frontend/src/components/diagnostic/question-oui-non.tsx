@@ -8,20 +8,20 @@ type Props = {
 
 export function QuestionOuiNon({ question, selected, onAnswer }: Props) {
   return (
-    <div className="flex flex-col items-center gap-10 w-full max-w-2xl">
+    <div className="flex flex-col items-center gap-8 sm:gap-10 w-full max-w-2xl">
       {/* Question */}
       <div
-        className="bg-[#1A527A]/80 backdrop-blur-sm rounded-2xl px-12 py-8 w-full text-center"
+        className="bg-[#1A527A]/80 backdrop-blur-sm rounded-2xl px-6 py-6 sm:px-12 sm:py-8 w-full text-center"
         style={{ boxShadow: "0 0 40px rgba(78,175,90,0.35), 0 8px 32px rgba(0,0,0,0.25)" }}
       >
-        <p className="text-3xl font-black text-white leading-snug">{question}</p>
+        <p className="text-2xl sm:text-3xl font-black text-white leading-snug">{question}</p>
       </div>
 
       {/* Boutons */}
-      <div className="flex gap-8">
+      <div className="flex gap-4 sm:gap-8 w-full justify-center">
         <button
           onClick={() => onAnswer(true)}
-          className={`w-52 h-28 rounded-2xl font-black text-4xl text-white border-4 transition-all duration-200 ${
+          className={`w-36 h-24 sm:w-52 sm:h-28 rounded-2xl font-black text-3xl sm:text-4xl text-white border-4 transition-all duration-200 ${
             selected === true
               ? "bg-green-500/80 border-green-400 scale-105"
               : "bg-green-500/30 border-green-400 hover:bg-green-500/50"
@@ -31,7 +31,7 @@ export function QuestionOuiNon({ question, selected, onAnswer }: Props) {
         </button>
         <button
           onClick={() => onAnswer(false)}
-          className={`w-52 h-28 rounded-2xl font-black text-4xl text-white border-4 transition-all duration-200 ${
+          className={`w-36 h-24 sm:w-52 sm:h-28 rounded-2xl font-black text-3xl sm:text-4xl text-white border-4 transition-all duration-200 ${
             selected === false
               ? "bg-red-400/70 border-red-400 scale-105"
               : "bg-red-400/20 border-red-400 hover:bg-red-400/40"

@@ -16,6 +16,7 @@ datasource db {
 enum UserRole {
   ADMIN
   TRAINER
+  COLLABORATEUR
 }
 
 enum GameType {
@@ -24,6 +25,19 @@ enum GameType {
   PUZZLE
   PHRASE_A_TROU
   SCENARIO
+  MOTS_CROISES
+  HISTOIRE
+  DIALOGUE
+  SWIPE
+  CURSEUR
+  CORPS
+  FRISE
+}
+
+// Distingue une étape de jeu (comptée, cercle Rive) d'une sous-étape de contenu (intercalée, non comptée)
+enum StepKind {
+  GAME
+  CONTENT
 }
 
 enum QuestionType {
@@ -34,6 +48,14 @@ enum QuestionType {
   CLASSIFY
 }
 
+// Niveau de la classe d'une session (collège uniquement), pour filtrer les statistiques.
+enum ClassLevel {
+  SIXIEME
+  CINQUIEME
+  QUATRIEME
+  TROISIEME
+}
+
 // ─── Organisation & Utilisateurs ─────────────────────────────────────────────
 
 model Organization {
@@ -41,6 +63,15 @@ model Organization {
   name        String
   description String?
   logo        String?
+  // Localisation, pour les statistiques par département. Le département est
+  // déduit du code postal par le serveur (voir common/department.ts) ; null
+  // pour les établissements créés avant l'ajout de ces champs.
+  city        String?
+  postalCode  String?
+  department  String?
+  // Numéro UAI (identifiant officiel Éducation nationale), renseigné quand
+  // l'établissement est choisi dans l'annuaire. Unique : empêche les doublons.
+  uai         String?  @unique
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 
@@ -51,11 +82,16 @@ model Organization {
 }
 
 model User {
-  id       String   @id @default(cuid())
-  email    String   @unique
-  name     String
-  password String
-  role     UserRole @default(TRAINER)
+  id          String   @id @default(cuid())
+  email       String   @unique
+  name        String
+  password    String
+  role        UserRole @default(TRAINER)
+  isSuspended Boolean  @default(false)
+
+  // Réinitialisation de mot de passe (lien à usage unique) — on stocke le HASH du token
+  resetTokenHash   String?
+  resetTokenExpiry DateTime?
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -65,6 +101,7 @@ model User {
 
   moduleSessions     ModuleSession[]
   diagnosticSessions DiagnosticSession[]
+  moduleVersions     ModuleVersion[]
 }
 
 // ─── Catégories ───────────────────────────────────────────────────────────────
@@ -79,6 +116,25 @@ model Category {
   updatedAt DateTime @updatedAt
 
   modules Module[]
+}
+
+// ─── Mascottes ────────────────────────────────────────────────────────────────
+
+// Catalogue commun des mascottes proposées à la création d'un module.
+// Alimenté par les admins depuis le back-office ; les visuels sont hébergés sur
+// Cloudinary. Volontairement non rattaché à une Organization : la gestion des
+// mascottes est réservée aux admins, le catalogue est donc partagé.
+//
+// `url` accepte deux formats, cf. le helper mascotteUrl() côté front :
+//  - un nom de fichier ("mascotte1.png") pour les mascottes livrées avec le build
+//  - une URL Cloudinary absolue pour celles uploadées
+model Mascotte {
+  id        String   @id @default(cuid())
+  label     String
+  url       String   @unique
+  order     Int      @default(0)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 }
 
 // ─── Modules ──────────────────────────────────────────────────────────────────
@@ -111,22 +167,47 @@ model Module {
   kanbanResponses  KanbanResponse[]
   quizResponses    QuizResponse[]
   puzzleResponses  PuzzleResponse[]
+  moduleVersions   ModuleVersion[]
+}
+
+// Snapshot complet (module + steps + gameData) pris automatiquement avant
+// chaque mutation de contenu, pour permettre à un admin de revenir en arrière.
+model ModuleVersion {
+  id        String   @id @default(cuid())
+  createdAt DateTime @default(now())
+  snapshot  Json
+
+  moduleId String
+  module   Module @relation(fields: [moduleId], references: [id], onDelete: Cascade)
+
+  createdByUserId String?
+  createdByUser   User?   @relation(fields: [createdByUserId], references: [id], onDelete: SetNull)
+
+  @@index([moduleId, createdAt])
 }
 
 model ModuleSession {
   id         String   @id @default(cuid())
   className  String
+  // Année scolaire ("2026-2027"), fixée à la création : distingue la 6e B
+  // d'une année de celle de l'année suivante.
+  schoolYear String
+  // Obligatoire à la création ; null pour les anciennes sessions dont le nom
+  // ne permettait pas de le déduire.
+  level      ClassLevel?
   accessCode String   @unique
   accessUrl  String   @unique
   isActive   Boolean  @default(true)
   createdAt  DateTime @default(now())
   updatedAt  DateTime @updatedAt
 
-  moduleId String
-  module   Module @relation(fields: [moduleId], references: [id])
+  moduleId String?
+  module   Module? @relation(fields: [moduleId], references: [id], onDelete: SetNull)
 
-  createdByUserId String
-  createdByUser   User   @relation(fields: [createdByUserId], references: [id])
+  // Info secondaire "créée par" : la session appartient à l'établissement (organizationId).
+  // Si le compte créateur est supprimé, le champ passe à null (la session survit).
+  createdByUserId String?
+  createdByUser   User?   @relation(fields: [createdByUserId], references: [id], onDelete: SetNull)
 
   organizationId String
   organization   Organization @relation(fields: [organizationId], references: [id])
@@ -136,7 +217,8 @@ model ModuleSession {
 
 model Step {
   id            String   @id @default(cuid())
-  gameType      GameType
+  kind          StepKind @default(GAME)
+  gameType      GameType?
   order         Int      @default(0)
   mascotteImage String?
   content       Json?
@@ -157,14 +239,21 @@ model Step {
 model DiagnosticSession {
   id         String   @id @default(cuid())
   className  String
+  // Année scolaire ("2026-2027"), fixée à la création (voir ModuleSession).
+  schoolYear String
+  // Obligatoire à la création ; null pour les anciennes sessions dont le nom
+  // ne permettait pas de le déduire.
+  level      ClassLevel?
   accessCode String   @unique
   accessUrl  String   @unique
   isActive   Boolean  @default(true)
   createdAt  DateTime @default(now())
   updatedAt  DateTime @updatedAt
 
-  createdByUserId String
-  createdByUser   User   @relation(fields: [createdByUserId], references: [id])
+  // Info secondaire "créée par" : la session appartient à l'établissement (organizationId).
+  // Si le compte créateur est supprimé, le champ passe à null (la session survit).
+  createdByUserId String?
+  createdByUser   User?   @relation(fields: [createdByUserId], references: [id], onDelete: SetNull)
 
   organizationId String
   organization   Organization @relation(fields: [organizationId], references: [id])
@@ -199,14 +288,25 @@ model DiagnosticResponse {
 
   questionId String
   question   DiagnosticQuestion @relation(fields: [questionId], references: [id])
+
+  // Une seule réponse par élève et par question : un renvoi (réseau qui coupe,
+  // reprise après un rechargement) remplace la réponse au lieu de la doubler.
+  @@unique([guestStudentId, questionId])
 }
 
 // ─── Élèves ───────────────────────────────────────────────────────────────────
 
 model GuestStudent {
-  id     String  @id @default(cuid())
-  gender String?
-  age    Int?
+  id        String   @id @default(cuid())
+  gender    String?
+  age       Int?
+  createdAt DateTime @default(now())
+
+  // Diagnostic : posé par le serveur quand toutes les questions ont une réponse.
+  completedAt DateTime?
+  // Retiré des compteurs et des stats par l'enseignant (test, doublon…), sans
+  // rien supprimer : il suffit de remettre à null pour le réintégrer.
+  excludedAt  DateTime?
 
   sessionId String?
   session   ModuleSession? @relation(fields: [sessionId], references: [id])
@@ -291,6 +391,12 @@ model ModuleProgress {
   score       Float?
   completion  Float   @default(0)
   isCompleted Boolean @default(false)
+
+  // Rang du dernier niveau de jeu ouvert (1 = seule la première étape l'est).
+  // C'est le serveur qui le fait avancer, après avoir vérifié qu'une réponse
+  // existe bien pour l'étape terminée : le navigateur ne peut plus s'ouvrir
+  // les étapes suivantes en modifiant son stockage local.
+  unlockedLevel Int @default(1)
 
   guestStudentId String
   guestStudent   GuestStudent @relation(fields: [guestStudentId], references: [id])

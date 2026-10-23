@@ -8,8 +8,28 @@ async function bootstrap() {
 
   app.setGlobalPrefix('api');
   app.useGlobalPipes(new ValidationPipe({ whitelist: true, transform: true }));
+
+  // FRONTEND_URL peut contenir plusieurs origines séparées par des virgules.
+  // On accepte aussi la variante avec/sans "www." : le site répond sur les deux,
+  // et sans ça un élève qui tape www.… voit « Failed to fetch » (blocage CORS).
+  const allowedOrigins = new Set<string>();
+  for (const raw of (process.env.FRONTEND_URL || 'http://localhost:3000').split(',')) {
+    const url = raw.trim().replace(/\/$/, '');
+    if (!url) continue;
+    allowedOrigins.add(url);
+    allowedOrigins.add(
+      url.includes('://www.') ? url.replace('://www.', '://') : url.replace('://', '://www.'),
+    );
+  }
+
   app.enableCors({
-    origin: process.env.FRONTEND_URL || 'http://localhost:3000',
+    origin: (
+      origin: string | undefined,
+      callback: (err: Error | null, allow?: boolean) => void,
+    ) => {
+      // Pas d'en-tête Origin (curl, appels serveur à serveur) : autorisé.
+      callback(null, !origin || allowedOrigins.has(origin));
+    },
     credentials: true,
   });
 

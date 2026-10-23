@@ -1,6 +1,7 @@
 "use client";
 
 import Image from "next/image";
+import { mascotteUrl } from "@/lib/mascotte";
 
 interface Props {
   show: boolean;
@@ -24,6 +25,7 @@ export function FeedbackOverlay({
   if (!show) return null;
 
   const label = closeLabel ?? (isCorrect ? "Continuer →" : "Réessayer");
+  const mascotteSrc = mascotteUrl(mascotte, "overlay");
 
   return (
     <div className="fixed inset-0 z-50 flex items-end justify-center pb-0">
@@ -39,10 +41,10 @@ export function FeedbackOverlay({
         style={{ background: "#fff" }}
       >
         {/* Mascotte qui dépasse en haut */}
-        {mascotte && (
+        {mascotteSrc && (
           <div className="absolute -top-130 left-1/2 -translate-x-1/2 w-144 h-144">
             <Image
-              src={`/assets/mascotte/${mascotte}`}
+              src={mascotteSrc}
               alt="mascotte"
               fill
               className="object-contain object-bottom drop-shadow-xl"

@@ -6,6 +6,7 @@ import Link from "next/link";
 import { ArrowLeft, Trophy } from "lucide-react";
 import { FeedbackOverlay } from "@/components/modules/FeedbackOverlay";
 import { getGuestStudentId, submitQuizResponse } from "@/lib/modules";
+import { goToNextStep, gameProgress, type FlowStep } from "@/lib/step-flow";
 
 interface Option {
   id: string;
@@ -25,7 +26,9 @@ interface StepData {
   content: { title: string; instructions: string };
   gameData: {
     questionData: { questions: Question[] };
-    correctAnswer: { answers: Record<string, string> };
+    // Une réponse par question, historiquement une string, désormais un tableau
+    // (multi-réponses). Les deux formats sont acceptés en lecture.
+    correctAnswer: { answers: Record<string, string | string[]> };
   }[];
   module: {
     id: string;
@@ -34,8 +37,20 @@ interface StepData {
     mascotte?: string | null;
     colorPrimary: string | null;
     colorSecondary: string | null;
-    steps: { id: string; order: number }[];
+    steps: FlowStep[];
   };
+}
+
+// Normalise une réponse correcte (string historique ou string[]) en tableau.
+function toIds(value: string | string[] | undefined): string[] {
+  if (Array.isArray(value)) return value.filter(Boolean);
+  return value ? [value] : [];
+}
+// Égalité d'ensembles (tout ou rien) : mêmes ids, quel que soit l'ordre.
+function sameSet(a: string[], b: string[]): boolean {
+  if (a.length !== b.length) return false;
+  const sb = new Set(b);
+  return a.every((id) => sb.has(id));
 }
 
 export function QuizGame({ step }: { step: StepData }) {
@@ -46,26 +61,41 @@ export function QuizGame({ step }: { step: StepData }) {
   const correctAnswers = gameData?.correctAnswer?.answers ?? {};
 
   const [currentIndex, setCurrentIndex] = useState(0);
-  const [selected, setSelected] = useState<string | null>(null);
-  const [userAnswers, setUserAnswers] = useState<Record<string, string>>({});
+  const [selected, setSelected] = useState<string[]>([]);
+  const [userAnswers, setUserAnswers] = useState<Record<string, string[]>>({});
   const [overlay, setOverlay] = useState<{ show: boolean; isCorrect: boolean } | null>(null);
   const [finished, setFinished] = useState(false);
   const startTimeRef = useRef(Date.now());
 
   const primaryColor = step.module.colorPrimary ?? "#16A34A";
   const bottomColor = step.module.colorSecondary ?? "#052e16";
-  const totalSteps = step.module.steps.length;
+  const { level: gameLevel, total: totalGameLevels } = gameProgress(step.module.steps, step.order);
+  const hasNextStep = step.module.steps.some((s) => s.order > step.order);
 
   const currentQuestion = questions[currentIndex];
   const isLastQuestion = currentIndex === questions.length - 1;
 
-  const score = Object.entries(userAnswers).filter(([qId, ans]) => correctAnswers[qId] === ans).length;
+  // Une question à choix multiple attend plusieurs bonnes réponses.
+  const currentCorrectIds = currentQuestion ? toIds(correctAnswers[currentQuestion.id]) : [];
+  const isMulti = currentCorrectIds.length > 1;
+
+  const score = Object.entries(userAnswers).filter(([qId, ans]) =>
+    sameSet(ans, toIds(correctAnswers[qId])),
+  ).length;
   const total = questions.length;
   const passed = total > 0 && score / total >= 0.7;
 
+  // Choix multiple → on coche/décoche ; choix unique → on remplace la sélection.
+  function handleSelect(optId: string) {
+    setSelected((prev) => {
+      if (!isMulti) return [optId];
+      return prev.includes(optId) ? prev.filter((id) => id !== optId) : [...prev, optId];
+    });
+  }
+
   function handleConfirm() {
-    if (!selected || !currentQuestion) return;
-    const isCorrect = correctAnswers[currentQuestion.id] === selected;
+    if (selected.length === 0 || !currentQuestion) return;
+    const isCorrect = sameSet(selected, currentCorrectIds);
     const timing = Math.round((Date.now() - startTimeRef.current) / 1000);
     setUserAnswers((prev) => ({ ...prev, [currentQuestion.id]: selected }));
 
@@ -91,25 +121,17 @@ export function QuizGame({ step }: { step: StepData }) {
       setFinished(true);
     } else {
       setCurrentIndex((i) => i + 1);
-      setSelected(null);
+      setSelected([]);
     }
   }
 
   function handleContinue() {
-    const nextLevel = step.order + 1;
-    const key = `module_level_${step.module.slug}`;
-    const stored = parseInt(localStorage.getItem(key) ?? "1", 10);
-    if (nextLevel > stored) localStorage.setItem(key, String(nextLevel));
-    const isLast = step.order === totalSteps;
-    router.push(isLast
-      ? `/modules/${step.module.slug}?complete=true`
-      : `/modules/${step.module.slug}?from=${step.order}`
-    );
+    goToNextStep(router, step.module.slug, step.module.steps, step.order);
   }
 
   function handleRetry() {
     setCurrentIndex(0);
-    setSelected(null);
+    setSelected([]);
     setUserAnswers({});
     setFinished(false);
     setOverlay(null);
@@ -122,31 +144,31 @@ export function QuizGame({ step }: { step: StepData }) {
 
   return (
     <div
-      className="h-screen flex flex-col overflow-hidden"
+      className="min-h-screen flex flex-col"
       style={{ background: `linear-gradient(160deg, ${primaryColor} 0%, ${bottomColor} 100%)` }}
     >
-      <header className="shrink-0 flex items-center justify-between px-8 py-5 bg-white">
+      <header className="shrink-0 flex items-center justify-between gap-3 px-4 md:px-8 py-4 md:py-5 bg-white">
         <Link
           href={`/modules/${step.module.slug}`}
-          className="flex items-center gap-3 text-gray-700 hover:opacity-70 transition-opacity"
+          className="flex items-center gap-3 text-gray-700 hover:opacity-70 transition-opacity flex-1 basis-0 min-w-9 md:min-w-10"
         >
-          <div className="w-10 h-10 rounded-full border-2 border-gray-300 flex items-center justify-center">
+          <div className="w-9 h-9 md:w-10 md:h-10 shrink-0 rounded-full border-2 border-gray-300 flex items-center justify-center">
             <ArrowLeft size={18} />
           </div>
-          <span className="font-bold text-sm tracking-widest uppercase">{step.module.title}</span>
+          <span className="hidden sm:inline truncate font-bold text-sm tracking-widest uppercase">{step.module.title}</span>
         </Link>
 
-        <div className="text-center">
+        <div className="text-center min-w-0">
           <h1 className="font-black text-xl text-gray-900">{step.content?.title ?? "Quiz final"}</h1>
           <p className="text-sm text-gray-400 mt-0.5">{step.content?.instructions}</p>
         </div>
 
-        <div className="text-gray-400 font-bold text-sm">
-          Étape <span className="text-gray-900 text-xl font-black">{step.order}</span> / {totalSteps}
+        <div className="flex-1 basis-0 text-right text-gray-400 font-bold text-sm whitespace-nowrap">
+          Étape <span className="text-gray-900 text-xl font-black">{gameLevel}</span> / {totalGameLevels}
         </div>
       </header>
 
-      <main className="flex-1 flex flex-col items-center justify-center gap-8 px-8 py-6">
+      <main className="flex-1 flex flex-col items-center justify-center gap-6 md:gap-8 px-4 md:px-8 py-6">
         {!finished ? (
           <>
             {/* Barre de progression */}
@@ -168,16 +190,21 @@ export function QuizGame({ step }: { step: StepData }) {
               <p className="text-gray-800 text-lg font-semibold leading-relaxed">
                 {currentQuestion?.text}
               </p>
+              {isMulti && (
+                <p className="mt-3 inline-block px-3 py-1 rounded-full text-xs font-bold text-white" style={{ background: primaryColor }}>
+                  Plusieurs réponses possibles
+                </p>
+              )}
             </div>
 
             {/* Options */}
             <div className="flex flex-col gap-3 w-full max-w-2xl">
               {currentQuestion?.options.map((option) => {
-                const isSel = selected === option.id;
+                const isSel = selected.includes(option.id);
                 return (
                   <button
                     key={option.id}
-                    onClick={() => setSelected(option.id)}
+                    onClick={() => handleSelect(option.id)}
                     className="w-full text-left px-6 py-4 rounded-2xl font-semibold text-sm transition-all"
                     style={
                       isSel
@@ -203,13 +230,13 @@ export function QuizGame({ step }: { step: StepData }) {
 
             <button
               onClick={handleConfirm}
-              disabled={!selected}
+              disabled={selected.length === 0}
               className="px-10 py-3.5 rounded-2xl text-white font-black text-base transition-all"
               style={{
-                background: selected ? "rgba(255,255,255,0.25)" : "rgba(255,255,255,0.1)",
+                background: selected.length ? "rgba(255,255,255,0.25)" : "rgba(255,255,255,0.1)",
                 backdropFilter: "blur(8px)",
-                border: `2px solid ${selected ? "rgba(255,255,255,0.6)" : "rgba(255,255,255,0.2)"}`,
-                opacity: selected ? 1 : 0.5,
+                border: `2px solid ${selected.length ? "rgba(255,255,255,0.6)" : "rgba(255,255,255,0.2)"}`,
+                opacity: selected.length ? 1 : 0.5,
               }}
             >
               Valider ma réponse
@@ -254,7 +281,7 @@ export function QuizGame({ step }: { step: StepData }) {
                 className="px-10 py-3.5 rounded-2xl text-white font-black text-base hover:opacity-90"
                 style={{ background: "rgba(255,255,255,0.2)", border: "2px solid rgba(255,255,255,0.4)" }}
               >
-                Terminer le module →
+                {hasNextStep ? "Étape suivante →" : "Terminer le module →"}
               </button>
             ) : (
               <button

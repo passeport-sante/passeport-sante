@@ -4,6 +4,15 @@ import { PhraseATrou } from "./_components/PhraseATrou";
 import { KanbanGame } from "./_components/KanbanGame";
 import { ScenarioGame } from "./_components/ScenarioGame";
 import { QuizGame } from "./_components/QuizGame";
+import { MotsCroises } from "./_components/MotsCroises";
+import { HistoireGame } from "./_components/HistoireGame";
+import { DialogueGame } from "./_components/DialogueGame";
+import { SwipeGame } from "./_components/SwipeGame";
+import { CurseurGame } from "./_components/CurseurGame";
+import { CorpsGame } from "./_components/CorpsGame";
+import { FriseGame } from "./_components/FriseGame";
+import { ContentPanel } from "./_components/ContentPanel";
+import { StepGate } from "./_components/StepGate";
 
 async function getStep(stepId: string) {
   try {
@@ -28,15 +37,47 @@ export default async function StepPage({
 
   if (!step) notFound();
 
-  if (step.gameType === "KANBAN") return <KanbanGame step={step} />;
-  if (step.gameType === "SCENARIO") return <ScenarioGame step={step} />;
-  if (step.gameType === "QUIZ") return <QuizGame step={step} />;
-  if (step.gameType === "PUZZLE") return <PuzzleGame step={step} />;
-  if (step.gameType === "PHRASE_A_TROU") return <PhraseATrou step={step} />;
+  const content =
+    step.kind === "CONTENT" && !step.gameType ? (
+      <ContentPanel step={step} />
+    ) : step.gameType === "KANBAN" ? (
+      <KanbanGame step={step} />
+    ) : step.gameType === "SCENARIO" ? (
+      <ScenarioGame step={step} />
+    ) : step.gameType === "QUIZ" ? (
+      <QuizGame step={step} />
+    ) : step.gameType === "PUZZLE" ? (
+      <PuzzleGame step={step} />
+    ) : step.gameType === "HISTOIRE" ? (
+      <HistoireGame step={step} />
+    ) : step.gameType === "PHRASE_A_TROU" ? (
+      <PhraseATrou step={step} />
+    ) : step.gameType === "MOTS_CROISES" ? (
+      <MotsCroises step={step} />
+    ) : step.gameType === "DIALOGUE" ? (
+      <DialogueGame step={step} />
+    ) : step.gameType === "SWIPE" ? (
+      <SwipeGame step={step} />
+    ) : step.gameType === "CURSEUR" ? (
+      <CurseurGame step={step} />
+    ) : step.gameType === "CORPS" ? (
+      <CorpsGame step={step} />
+    ) : step.gameType === "FRISE" ? (
+      <FriseGame step={step} />
+    ) : (
+      <div className="h-screen flex items-center justify-center text-gray-500 text-xl font-bold">
+        Jeu {step.gameType} — à venir
+      </div>
+    );
 
   return (
-    <div className="h-screen flex items-center justify-center text-gray-500 text-xl font-bold">
-      Jeu {step.gameType} — à venir
-    </div>
+    <StepGate
+      slug={step.module.slug}
+      moduleId={step.module.id}
+      steps={step.module.steps}
+      order={step.order}
+    >
+      {content}
+    </StepGate>
   );
 }
