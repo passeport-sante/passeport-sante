@@ -1,11 +1,12 @@
 "use client";
 
-import { useRef, useState } from "react";
+import { useMemo, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { ArrowLeft, Check, X } from "lucide-react";
 import { getGuestStudentId, submitQuizResponse } from "@/lib/modules";
 import { goToNextStep, gameProgress, type FlowStep } from "@/lib/step-flow";
+import { stableShuffle } from "@/lib/shuffle";
 
 type Answer = "vrai" | "faux";
 interface Card { id: string; text: string; answer: Answer; explanation?: string }
@@ -30,7 +31,19 @@ const THRESHOLD = 110; // px de balayage pour valider
 export function SwipeGame({ step }: { step: StepData }) {
   const router = useRouter();
 
-  const cards = step.gameData?.[0]?.questionData?.cards ?? [];
+  // Les cartes sont souvent saisies groupées (tous les « vrai », puis tous les
+  // « faux ») : affichées dans cet ordre, l'élève repère le motif et répond
+  // sans lire. On mélange donc le paquet, comme le Quiz et le Tri en colonnes.
+  const cards = useMemo(
+    () =>
+      stableShuffle(
+        step.gameData?.[0]?.questionData?.cards ?? [],
+        (c) => `${c.id}|${c.text}`,
+        step.id,
+      ),
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [step.id],
+  );
   const total = cards.length;
   const trueLabel = step.gameData?.[0]?.questionData?.trueLabel?.trim() || "Vrai";
   const falseLabel = step.gameData?.[0]?.questionData?.falseLabel?.trim() || "Faux";
