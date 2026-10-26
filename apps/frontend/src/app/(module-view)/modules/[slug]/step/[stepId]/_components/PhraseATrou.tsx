@@ -1,12 +1,13 @@
 "use client";
 
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { ArrowLeft } from "lucide-react";
 import { FeedbackOverlay } from "@/components/modules/FeedbackOverlay";
 import { getGuestStudentId, submitQuizResponse } from "@/lib/modules";
 import { goToNextStep, gameProgress, type FlowStep } from "@/lib/step-flow";
+import { stableShuffle } from "@/lib/shuffle";
 
 interface StepData {
   id: string;
@@ -44,6 +45,12 @@ export function PhraseATrou({ step }: { step: StepData }) {
   const phrase = gameData?.questionData?.phrase ?? "";
   const options = gameData?.questionData?.options ?? [];
   const correctBlanks = gameData?.correctAnswer?.blanks ?? [];
+  // Mots proposés mélangés : ils sont souvent saisis dans l'ordre des trous.
+  const shuffledOptions = useMemo(
+    () => stableShuffle(options, (w) => w, `${step.id}|${currentIndex}|${phrase}`),
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [step.id, currentIndex, phrase],
+  );
 
   const parts = phrase.split(/_{2,}/);
   const blankCount = parts.length - 1;
@@ -229,7 +236,7 @@ export function PhraseATrou({ step }: { step: StepData }) {
 
         {/* Options */}
         <div className="flex flex-wrap gap-3 justify-center max-w-xl">
-          {options.map((word) => {
+          {shuffledOptions.map((word) => {
             const isUsed = usedOptions.includes(word);
             return (
               <button

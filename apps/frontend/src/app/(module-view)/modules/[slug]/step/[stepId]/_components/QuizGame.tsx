@@ -1,12 +1,13 @@
 "use client";
 
-import { useState, useRef } from "react";
+import { useMemo, useState, useRef } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { ArrowLeft, Trophy } from "lucide-react";
 import { FeedbackOverlay } from "@/components/modules/FeedbackOverlay";
 import { getGuestStudentId, submitQuizResponse } from "@/lib/modules";
 import { goToNextStep, gameProgress, type FlowStep } from "@/lib/step-flow";
+import { stableShuffle } from "@/lib/shuffle";
 
 interface Option {
   id: string;
@@ -74,6 +75,14 @@ export function QuizGame({ step }: { step: StepData }) {
 
   const currentQuestion = questions[currentIndex];
   const isLastQuestion = currentIndex === questions.length - 1;
+  // Propositions mélangées : la bonne réponse est souvent saisie en premier.
+  const shuffledOptions = useMemo(
+    () =>
+      currentQuestion
+        ? stableShuffle(currentQuestion.options, (o) => `${o.id}|${o.text}`, `${step.id}|${currentQuestion.id}|${currentQuestion.text}`)
+        : [],
+    [currentQuestion, step.id],
+  );
 
   // Une question à choix multiple attend plusieurs bonnes réponses.
   const currentCorrectIds = currentQuestion ? toIds(correctAnswers[currentQuestion.id]) : [];
@@ -199,7 +208,7 @@ export function QuizGame({ step }: { step: StepData }) {
 
             {/* Options */}
             <div className="flex flex-col gap-3 w-full max-w-2xl">
-              {currentQuestion?.options.map((option) => {
+              {shuffledOptions.map((option) => {
                 const isSel = selected.includes(option.id);
                 return (
                   <button

@@ -7,6 +7,7 @@ import { ArrowLeft, Shield } from "lucide-react";
 import { FeedbackOverlay } from "@/components/modules/FeedbackOverlay";
 import { getGuestStudentId, submitQuizResponse } from "@/lib/modules";
 import { goToNextStep, gameProgress, type FlowStep } from "@/lib/step-flow";
+import { stableShuffle } from "@/lib/shuffle";
 import { scenarioCorrectIds, type ScenarioCorrectAnswer } from "@/lib/steps-admin";
 
 interface Choice {
@@ -61,6 +62,12 @@ export function ScenarioGame({ step }: { step: StepData }) {
   const correctChoiceIds = scenarioCorrectIds(gameData?.correctAnswer);
   const explanation = gameData?.correctAnswer?.explanation ?? "";
   const isLastItem = currentIndex === total - 1;
+  // Choix mélangés : la bonne réponse est souvent saisie en premier.
+  const shuffledChoices = useMemo(
+    () => stableShuffle(choices, (c) => `${c.id}|${c.text}`, `${step.id}|${currentIndex}|${situation}`),
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [step.id, currentIndex, situation],
+  );
 
   const pts = (c: Choice) => c.points ?? 0;
   const scenarioMax = (i: number) =>
@@ -242,7 +249,7 @@ export function ScenarioGame({ step }: { step: StepData }) {
 
         {/* Choix */}
         <div className="flex flex-col gap-3 w-full max-w-2xl">
-          {choices.map((choice) => {
+          {shuffledChoices.map((choice) => {
             const isSel = selected === choice.id;
             // En mode bouclier, après réponse : surligne le choix retenu
             const revealed = shieldMode && answered && isSel;

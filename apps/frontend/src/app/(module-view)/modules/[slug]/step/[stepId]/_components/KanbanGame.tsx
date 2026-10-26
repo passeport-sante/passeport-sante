@@ -1,12 +1,13 @@
 "use client";
 
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { ArrowLeft, Backpack } from "lucide-react";
 import { FeedbackOverlay } from "@/components/modules/FeedbackOverlay";
 import { getGuestStudentId, submitKanbanResponse } from "@/lib/modules";
 import { goToNextStep, gameProgress, type FlowStep } from "@/lib/step-flow";
+import { stableShuffle } from "@/lib/shuffle";
 
 interface StepData {
   id: string;
@@ -31,7 +32,13 @@ export function KanbanGame({ step }: { step: StepData }) {
   const router = useRouter();
 
   const gameData = step.gameData?.[0];
-  const items = gameData?.questionData?.items ?? [];
+  // Éléments mélangés : ils sont souvent saisis groupés par catégorie, ce qui
+  // donnerait la réponse. La correction compare les valeurs, pas les positions.
+  const items = useMemo(
+    () => stableShuffle(gameData?.questionData?.items ?? [], (item) => item, step.id),
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [step.id],
+  );
   const categories = gameData?.questionData?.categories ?? [];
   const correctAnswer = gameData?.correctAnswer ?? {};
 

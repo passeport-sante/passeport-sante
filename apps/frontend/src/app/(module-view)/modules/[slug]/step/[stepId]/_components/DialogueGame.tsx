@@ -6,6 +6,7 @@ import Link from "next/link";
 import { ArrowLeft, RotateCcw } from "lucide-react";
 import { getGuestStudentId, submitQuizResponse } from "@/lib/modules";
 import { goToNextStep, gameProgress, type FlowStep } from "@/lib/step-flow";
+import { stableShuffle } from "@/lib/shuffle";
 
 type Tone = "good" | "neutral" | "bad";
 interface Choice { id: string; text: string; goto: string }
@@ -55,6 +56,11 @@ export function DialogueGame({ step }: { step: StepData }) {
 
   const scene = sceneById.get(currentId);
   const ending = endingById.get(currentId);
+  // Choix mélangés : le « bon » choix est souvent saisi en premier.
+  const sceneChoices = useMemo(
+    () => (scene ? stableShuffle(scene.choices, (c) => `${c.id}|${c.text}`, `${step.id}|${scene.id}|${scene.text}`) : []),
+    [scene, step.id],
+  );
 
   function choose(c: Choice) {
     setSteps((n) => n + 1);
@@ -162,7 +168,7 @@ export function DialogueGame({ step }: { step: StepData }) {
         </div>
 
         <div className="flex flex-col gap-3 w-full max-w-2xl">
-          {scene?.choices.map((c) => (
+          {sceneChoices.map((c) => (
             <button
               key={c.id}
               onClick={() => choose(c)}
