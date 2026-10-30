@@ -44,6 +44,12 @@ export class ModulesController {
     return this.modulesService.findAll();
   }
 
+  @UseGuards(JwtAuthGuard)
+  @Get("documents")
+  findDocuments() {
+    return this.modulesService.findDocuments();
+  }
+
   @Get("slug/:slug")
   findBySlug(@Param("slug") slug: string) {
     return this.modulesService.findBySlug(slug);

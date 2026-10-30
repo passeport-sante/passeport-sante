@@ -143,6 +143,8 @@ model Module {
   id             String   @id @default(cuid())
   title          String
   description    String?
+  // Message affiché à l'enseignant quand il choisit ce module pour une session.
+  teacherNote    String?
   slug           String   @unique
   duration       Int?
   isActive       Boolean  @default(true)

@@ -14,6 +14,8 @@ interface ModuleSnapshot {
   module: {
     title: string;
     description: string | null;
+    // Absent des versions enregistrées avant l'ajout du champ.
+    teacherNote?: string | null;
     duration: number | null;
     mascotte: string | null;
     colorPrimary: string | null;
@@ -81,6 +83,7 @@ export class ModuleVersionsService {
       module: {
         title: module.title,
         description: module.description,
+        teacherNote: module.teacherNote,
         duration: module.duration,
         mascotte: module.mascotte,
         colorPrimary: module.colorPrimary,
@@ -185,6 +188,7 @@ export class ModuleVersionsService {
         data: {
           title: snapshot.module.title,
           description: snapshot.module.description,
+          teacherNote: snapshot.module.teacherNote ?? null,
           duration: snapshot.module.duration,
           mascotte: snapshot.module.mascotte,
           colorPrimary: snapshot.module.colorPrimary,

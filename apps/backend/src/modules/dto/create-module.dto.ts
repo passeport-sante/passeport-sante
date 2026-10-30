@@ -12,6 +12,11 @@ export class CreateModuleDto {
   @IsOptional()
   description?: string;
 
+  @ApiPropertyOptional({ description: "Message affiché à l'enseignant à la création d'une session" })
+  @IsString()
+  @IsOptional()
+  teacherNote?: string | null;
+
   @ApiProperty({ description: "Slug unique (ex: vaccination, bien-manger)" })
   @IsString()
   @IsNotEmpty()

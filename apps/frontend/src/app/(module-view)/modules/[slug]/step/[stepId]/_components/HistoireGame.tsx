@@ -33,6 +33,10 @@ interface StepData {
   };
 }
 
+// Remettre des vignettes dans l'ordre n'est pas toujours facile : au bout de ce
+// nombre d'échecs, on montre le bon ordre plutôt que de bloquer l'élève.
+const MAX_ATTEMPTS = 3;
+
 function shuffle<T>(arr: T[]): T[] {
   return [...arr].sort(() => Math.random() - 0.5);
 }
@@ -45,6 +49,8 @@ export function HistoireGame({ step }: { step: StepData }) {
 
   const [currentIndex, setCurrentIndex] = useState(0);
   const [overlay, setOverlay] = useState<{ show: boolean; isCorrect: boolean } | null>(null);
+  const [failures, setFailures] = useState(0);
+  const [revealed, setRevealed] = useState(false);
   const dragIndex = useRef<number | null>(null);
 
   const primaryColor = step.module.colorPrimary ?? "#9333EA";
@@ -55,6 +61,7 @@ export function HistoireGame({ step }: { step: StepData }) {
   const scenes = gameData?.questionData?.items ?? [];
   const correctOrder = gameData?.correctAnswer?.order ?? [];
   const isLastStory = currentIndex === total - 1;
+  const lastAttempt = failures + 1 >= MAX_ATTEMPTS;
 
   const [cards, setCards] = useState<Scene[]>(() => shuffle(scenes));
 
@@ -98,9 +105,21 @@ export function HistoireGame({ step }: { step: StepData }) {
   function handleOverlayClose() {
     const isCorrect = overlay?.isCorrect ?? false;
     setOverlay(null);
-    if (!isCorrect) {
+    if (isCorrect) {
+      continueStory();
+    } else if (lastAttempt) {
+      setCards(correctOrder.flatMap((id) => scenes.filter((s) => s.id === id)));
+      setRevealed(true);
+    } else {
+      setFailures((n) => n + 1);
       setCards(shuffle(scenes));
-    } else if (!isLastStory) {
+    }
+  }
+
+  function continueStory() {
+    setFailures(0);
+    setRevealed(false);
+    if (!isLastStory) {
       const nextScenes = allGameData[currentIndex + 1]?.questionData?.items ?? [];
       setCards(shuffle(nextScenes));
       setCurrentIndex((i) => i + 1);
@@ -162,20 +181,24 @@ export function HistoireGame({ step }: { step: StepData }) {
           </p>
         )}
 
-        <p className="text-white/50 text-xs font-semibold">
-          Glisse les vignettes pour reconstituer l'histoire
-        </p>
+        {revealed ? (
+          <p className="text-white text-base font-black text-center">Voici le bon ordre</p>
+        ) : (
+          <p className="text-white/50 text-xs font-semibold">
+            Glisse les vignettes pour reconstituer l'histoire
+          </p>
+        )}
 
         {/* Vignettes — en ligne (chronologie) dès qu'il y a la place, empilées sinon */}
         <div className="flex flex-col md:flex-row md:flex-wrap items-stretch justify-center gap-3 w-full max-w-5xl">
           {cards.map((card, index) => (
             <div
               key={card.id}
-              draggable
+              draggable={!revealed}
               onDragStart={() => onDragStart(index)}
               onDragOver={(e) => onDragOver(e, index)}
               onDragEnd={onDragEnd}
-              className="flex md:flex-col items-center md:items-stretch gap-3 md:gap-0 rounded-2xl overflow-hidden cursor-grab active:cursor-grabbing select-none transition-all md:w-[200px]"
+              className={`flex md:flex-col items-center md:items-stretch gap-3 md:gap-0 rounded-2xl overflow-hidden select-none transition-all md:w-[200px] ${revealed ? "" : "cursor-grab active:cursor-grabbing"}`}
               style={{ background: "rgba(255,255,255,0.92)", boxShadow: "0 4px 16px rgba(0,0,0,0.12)" }}
             >
               {/* Image */}
@@ -196,7 +219,7 @@ export function HistoireGame({ step }: { step: StepData }) {
 
               {/* Texte */}
               <div className="flex items-center gap-2 flex-1 px-3 py-3">
-                <GripVertical size={18} className="text-gray-300 shrink-0" />
+                {!revealed && <GripVertical size={18} className="text-gray-300 shrink-0" />}
                 <p className="text-gray-800 font-medium text-sm leading-relaxed">{card.text}</p>
               </div>
             </div>
@@ -204,7 +227,7 @@ export function HistoireGame({ step }: { step: StepData }) {
         </div>
 
         <button
-          onClick={handleSubmit}
+          onClick={revealed ? continueStory : handleSubmit}
           className="mt-2 px-10 py-3.5 rounded-2xl text-white font-black text-base hover:opacity-90 transition-opacity"
           style={{
             background: "rgba(255,255,255,0.2)",
@@ -212,7 +235,7 @@ export function HistoireGame({ step }: { step: StepData }) {
             border: "2px solid rgba(255,255,255,0.5)",
           }}
         >
-          Valider mon histoire
+          {revealed ? (isLastStory ? "Continuer →" : "Histoire suivante →") : "Valider mon histoire"}
         </button>
       </main>
 
@@ -222,12 +245,18 @@ export function HistoireGame({ step }: { step: StepData }) {
         explanation={
           overlay?.isCorrect
             ? "Tu as reconstitué l'histoire dans le bon ordre. Bravo !"
-            : "L'histoire n'est pas encore dans le bon ordre. Observe bien les images et réessaie !"
+            : lastAttempt
+              ? "Ce n'était pas facile ! On te montre le bon ordre pour que tu puisses continuer."
+              : "L'histoire n'est pas encore dans le bon ordre. Observe bien les images et réessaie !"
         }
         mascotte={step.module.mascotte}
         primaryColor={primaryColor}
         onClose={handleOverlayClose}
-        closeLabel={overlay?.isCorrect ? (isLastStory ? "Continuer →" : "Histoire suivante →") : "Réessayer"}
+        closeLabel={
+          overlay?.isCorrect
+            ? isLastStory ? "Continuer →" : "Histoire suivante →"
+            : lastAttempt ? "Voir le bon ordre" : "Réessayer"
+        }
       />
     </div>
   );

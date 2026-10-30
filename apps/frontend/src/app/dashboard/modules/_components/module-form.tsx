@@ -20,6 +20,7 @@ import {
 export type ModuleFormValues = {
   title: string;
   description: string;
+  teacherNote: string;
   slug: string;
   duration: number | "";
   categoryId: string;
@@ -36,6 +37,7 @@ const INPUT_CLASS =
 const DEFAULTS: ModuleFormValues = {
   title: "",
   description: "",
+  teacherNote: "",
   slug: "",
   duration: 20,
   categoryId: "",
@@ -70,6 +72,7 @@ export function ModuleForm({
       ? {
           title: initial.title,
           description: initial.description ?? "",
+        teacherNote: initial.teacherNote ?? "",
           slug: initial.slug,
           duration: initial.duration ?? "",
           categoryId: initial.categoryId ?? "",
@@ -131,6 +134,7 @@ export function ModuleForm({
       const payload = {
         title: values.title.trim(),
         description: values.description.trim() || undefined,
+        teacherNote: values.teacherNote.trim() || null,
         slug: values.slug.trim(),
         duration: values.duration === "" ? undefined : Number(values.duration),
         categoryId: values.categoryId || undefined,
@@ -206,6 +210,16 @@ export function ModuleForm({
               onChange={(e) => update("description", e.target.value)}
               placeholder="Comment ça marche ? Pour qui ? Quand ?"
               rows={3}
+              className={INPUT_CLASS}
+            />
+          </Field>
+
+          <Field label="Message à l'enseignant" hint="Affiché à l'enseignant quand il choisit ce module pour une session">
+            <textarea
+              value={values.teacherNote}
+              onChange={(e) => update("teacherNote", e.target.value)}
+              placeholder="Ex : module à animer avec un enseignant, pas en autonomie."
+              rows={2}
               className={INPUT_CLASS}
             />
           </Field>

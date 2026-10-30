@@ -23,11 +23,27 @@ function slugify(input: string): string {
     .slice(0, 64);
 }
 
+// Documents (image, vidéo) portés par une sous-étape de contenu.
+function documentsOfStep(stepId: string, content: Prisma.JsonValue) {
+  if (!content || typeof content !== 'object' || Array.isArray(content)) return [];
+  const { title, imageUrl, videoUrl } = content;
+  const titre = typeof title === 'string' ? title : '';
+  const documents: { id: string; type: 'image' | 'video'; title: string; url: string }[] = [];
+  if (typeof imageUrl === 'string' && imageUrl) {
+    documents.push({ id: `${stepId}-image`, type: 'image', title: titre, url: imageUrl });
+  }
+  if (typeof videoUrl === 'string' && videoUrl) {
+    documents.push({ id: `${stepId}-video`, type: 'video', title: titre, url: videoUrl });
+  }
+  return documents;
+}
+
 // Champs publics d'un module renvoyés au frontend
 const MODULE_PUBLIC_FIELDS = {
   id: true,
   title: true,
   description: true,
+  teacherNote: true,
   slug: true,
   duration: true,
   mascotte: true,
@@ -92,6 +108,33 @@ export class ModulesService {
     });
   }
 
+  // Bibliothèque du dashboard : les affiches et vidéos des modules actifs, tirées
+  // des sous-étapes de contenu. Les jeux sont exclus, leurs données contiennent
+  // les réponses.
+  async findDocuments() {
+    const modules = await this.prisma.module.findMany({
+      where: { isActive: true },
+      orderBy: { title: 'asc' },
+      select: {
+        id: true,
+        title: true,
+        slug: true,
+        colorPrimary: true,
+        category: { select: { name: true } },
+        steps: {
+          where: { kind: 'CONTENT' },
+          orderBy: { order: 'asc' },
+          select: { id: true, content: true },
+        },
+      },
+    });
+
+    return modules.map(({ steps, ...module }) => ({
+      ...module,
+      documents: steps.flatMap(({ id, content }) => documentsOfStep(id, content)),
+    }));
+  }
+
   findOne(id: string) {
     return this.prisma.module.findUnique({
       where: { id },
@@ -133,6 +176,7 @@ export class ModulesService {
       data: {
         title: `${source.title} (copie)`,
         description: source.description,
+        teacherNote: source.teacherNote,
         slug,
         duration: source.duration,
         isActive: false,
@@ -225,6 +269,7 @@ export class ModulesService {
       data: {
         title: dto.title.trim(),
         description: dto.description,
+        teacherNote: dto.teacherNote,
         slug,
         duration: dto.duration,
         isActive: dto.isActive ?? false,

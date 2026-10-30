@@ -23,11 +23,13 @@ const NAV_TRAINER: NavItem[] = [
   { href: "/dashboard", label: "Vue Générale", exact: true },
   { href: "/dashboard/sessions/terminated", label: "Sessions Terminées", exact: false },
   { href: "/dashboard/stats", label: "Statistiques école", exact: false },
+  { href: "/dashboard/documents", label: "Documents", exact: false },
 ];
 
 const NAV_ADMIN: NavItem[] = [
   { href: "/dashboard", label: "Sessions", exact: false, group: SESSION_GROUP },
   { href: "/dashboard/modules", label: "Modules", exact: false, adminOnly: true },
+  { href: "/dashboard/documents", label: "Documents", exact: false },
   { href: "/dashboard/comptes", label: "Comptes", exact: false, adminOnly: true },
 ];
 
@@ -35,6 +37,7 @@ const NAV_ADMIN: NavItem[] = [
 const NAV_COLLABORATEUR: NavItem[] = [
   { href: "/dashboard", label: "Sessions", exact: false, group: SESSION_GROUP },
   { href: "/dashboard/modules", label: "Modules", exact: false },
+  { href: "/dashboard/documents", label: "Documents", exact: false },
 ];
 
 type UserProfile = {

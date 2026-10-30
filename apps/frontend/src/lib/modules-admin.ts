@@ -7,6 +7,7 @@ export type AdminModule = {
   id: string;
   title: string;
   description: string | null;
+  teacherNote: string | null;
   slug: string;
   duration: number | null;
   mascotte: string | null;
@@ -49,6 +50,7 @@ export type AdminCategory = CategoryLite & {
 export type CreateModulePayload = {
   title: string;
   description?: string;
+  teacherNote?: string | null;
   slug: string;
   duration?: number;
   mascotte?: string;
@@ -75,6 +77,7 @@ export async function fetchAdminModules(): Promise<AdminModule[]> {
     id: m.id ?? "",
     title: m.title ?? "Sans titre",
     description: m.description ?? null,
+    teacherNote: m.teacherNote ?? null,
     slug: m.slug ?? "",
     duration: m.duration ?? null,
     mascotte: m.mascotte ?? null,

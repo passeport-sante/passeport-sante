@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
-import { ArrowLeft, Loader2, Stethoscope, BookOpen, Check } from "lucide-react";
+import { AlertTriangle, ArrowLeft, Loader2, Stethoscope, BookOpen, Check } from "lucide-react";
 import { CLASS_LEVELS } from "@/lib/dashboard";
 import type { ClassLevel } from "@/lib/dashboard";
 
@@ -15,6 +15,7 @@ type Module = {
   id: string;
   title: string;
   description: string | null;
+  teacherNote: string | null;
   colorPrimary: string | null;
   duration: number | null;
 };
@@ -88,6 +89,8 @@ export default function NewSessionPage() {
       setLoading(false);
     }
   }
+
+  const selectedModule = modules.find((m) => m.id === selectedModuleId);
 
   const canSubmit =
     className.trim().length > 0 &&
@@ -216,6 +219,13 @@ export default function NewSessionPage() {
                     )}
                   </button>
                 ))}
+              </div>
+            )}
+
+            {selectedModule?.teacherNote && (
+              <div className="flex items-start gap-2.5 p-4 rounded-xl bg-amber-50 border border-amber-200">
+                <AlertTriangle size={16} className="text-amber-600 shrink-0 mt-0.5" />
+                <p className="text-sm text-amber-900 leading-snug whitespace-pre-line">{selectedModule.teacherNote}</p>
               </div>
             )}
           </div>

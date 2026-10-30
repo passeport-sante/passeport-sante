@@ -46,6 +46,11 @@ export class ImportStepDto {
 }
 
 export class ImportModuleDto {
+  @ApiPropertyOptional()
+  @IsString()
+  @IsOptional()
+  teacherNote?: string;
+
   @ApiProperty()
   @IsString()
   @IsNotEmpty()
