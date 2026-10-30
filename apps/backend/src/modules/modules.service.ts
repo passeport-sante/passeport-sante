@@ -108,12 +108,11 @@ export class ModulesService {
     });
   }
 
-  // Bibliothèque du dashboard : les affiches et vidéos des modules actifs, tirées
-  // des sous-étapes de contenu. Les jeux sont exclus, leurs données contiennent
-  // les réponses.
+  // Bibliothèque du dashboard : les affiches et vidéos de tous les modules, même
+  // non publiés (réservée aux comptes connectés), tirées des sous-étapes de
+  // contenu. Les jeux sont exclus, leurs données contiennent les réponses.
   async findDocuments() {
     const modules = await this.prisma.module.findMany({
-      where: { isActive: true },
       orderBy: { title: 'asc' },
       select: {
         id: true,
