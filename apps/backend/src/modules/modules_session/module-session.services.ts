@@ -5,6 +5,7 @@ import { AuthUser } from "../../auth/decorators/current-user.decorator";
 import { CreateModuleSessionDto } from "./dto/create-module.dto";
 import { UpdateModuleSessionDto } from "./dto/update-module.dto";
 import { schoolYearOf } from "../../common/school-year";
+import { resolveSessionOrganization } from "../../common/session-organization";
 
 @Injectable()
 export class ModuleSessionService {
@@ -19,9 +20,13 @@ export class ModuleSessionService {
     return user.role === "ADMIN" ? {} : { organizationId: user.organizationId };
   }
 
-  // organizationId/createdByUserId proviennent du token de l'utilisateur authentifié,
-  // jamais du body envoyé par le client (sinon une session pourrait être rattachée à un autre établissement).
-  create(dto: CreateModuleSessionDto, organizationId: string, createdByUserId: string) {
+  // createdByUserId provient toujours du token. organizationId aussi pour un TRAINER
+  // (le body est ignoré : il ne peut pas rattacher une session à un autre établissement).
+  // Un ADMIN n'appartient à aucun établissement scolaire : il doit choisir celui de la
+  // session, sinon elle serait rattachée à sa propre organisation et perdue pour l'établissement.
+  async create(dto: CreateModuleSessionDto, user: AuthUser) {
+    const organizationId = await resolveSessionOrganization(this.prisma, dto.organizationId, user);
+    const createdByUserId = user.userId;
     const accessCode = this.generateCode();
     const baseUrl = this.config.get<string>("FRONTEND_URL") ?? "http://localhost:3000";
     const accessUrl = `${baseUrl}/session/${accessCode}`;

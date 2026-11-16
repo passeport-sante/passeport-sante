@@ -24,7 +24,7 @@ export class ModuleSessionController {
   @UseGuards(JwtAuthGuard)
   @Post()
   create(@Body() dto: CreateModuleSessionDto, @CurrentUser() user: AuthUser) {
-    return this.moduleSessionService.create(dto, user.organizationId, user.userId);
+    return this.moduleSessionService.create(dto, user);
   }
 
   @UseGuards(JwtAuthGuard)

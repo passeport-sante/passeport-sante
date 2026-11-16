@@ -3,9 +3,10 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
-import { AlertTriangle, ArrowLeft, Loader2, Stethoscope, BookOpen, Check } from "lucide-react";
+import { AlertTriangle, ArrowLeft, Loader2, Stethoscope, BookOpen, Check, School } from "lucide-react";
 import { CLASS_LEVELS } from "@/lib/dashboard";
 import type { ClassLevel } from "@/lib/dashboard";
+import { fetchOrganizations, type Organization } from "@/lib/admin-users";
 
 const API = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:5000";
 
@@ -20,7 +21,7 @@ type Module = {
   duration: number | null;
 };
 
-function decodeJwt(token: string): { sub: string } {
+function decodeJwt(token: string): { sub: string; role?: string } {
   return JSON.parse(atob(token.split(".")[1]!));
 }
 
@@ -35,6 +36,26 @@ export default function NewSessionPage() {
   const [loading, setLoading] = useState(false);
   const [loadingModules, setLoadingModules] = useState(false);
   const [error, setError] = useState("");
+  // Un admin n'appartient à aucun établissement scolaire : il doit choisir celui de la
+  // session, sinon elle serait rattachée à son organisation et perdue pour l'établissement.
+  const [isAdmin, setIsAdmin] = useState(false);
+  const [organizations, setOrganizations] = useState<Organization[]>([]);
+  const [organizationId, setOrganizationId] = useState("");
+
+  useEffect(() => {
+    const token = localStorage.getItem("access_token") ?? "";
+    let role: string | undefined;
+    try {
+      role = decodeJwt(token).role;
+    } catch {
+      return;
+    }
+    if (role !== "ADMIN") return;
+    setIsAdmin(true);
+    fetchOrganizations(token)
+      .then((orgs) => setOrganizations([...orgs].sort((a, b) => a.name.localeCompare(b.name, "fr"))))
+      .catch(() => setError("Impossible de charger les établissements"));
+  }, []);
 
   useEffect(() => {
     if (type !== "module") return;
@@ -50,6 +71,7 @@ export default function NewSessionPage() {
     e.preventDefault();
     if (!className.trim() || !type || !level) return;
     if (type === "module" && !selectedModuleId) return;
+    if (isAdmin && !organizationId) return;
 
     setLoading(true);
     setError("");
@@ -69,10 +91,11 @@ export default function NewSessionPage() {
           ? `${API}/api/diagnostic/session`
           : `${API}/api/module-sessions`;
 
+      const sessionOrganizationId = isAdmin ? organizationId : user.organizationId;
       const body =
         type === "diagnostic"
-          ? { className: className.trim(), level, createdByUserId: userId, organizationId: user.organizationId }
-          : { className: className.trim(), level, moduleId: selectedModuleId, createdByUserId: userId, organizationId: user.organizationId };
+          ? { className: className.trim(), level, createdByUserId: userId, organizationId: sessionOrganizationId }
+          : { className: className.trim(), level, moduleId: selectedModuleId, createdByUserId: userId, organizationId: sessionOrganizationId };
 
       const res = await fetch(endpoint, {
         method: "POST",
@@ -96,7 +119,8 @@ export default function NewSessionPage() {
     className.trim().length > 0 &&
     level !== null &&
     type !== null &&
-    (type === "diagnostic" || selectedModuleId !== null);
+    (type === "diagnostic" || selectedModuleId !== null) &&
+    (!isAdmin || organizationId !== "");
 
   return (
     <div className="p-4 sm:p-8 max-w-2xl">
@@ -115,6 +139,35 @@ export default function NewSessionPage() {
       </div>
 
       <form onSubmit={handleSubmit} className="space-y-6">
+
+        {/* Admin uniquement — Établissement de la session (obligatoire) */}
+        {isAdmin && (
+          <div className="bg-white rounded-xl border border-gray-200 p-6 space-y-3">
+            <label htmlFor="session-organization" className="flex items-center gap-2 text-sm font-bold text-[#1A1A1A]">
+              <School size={16} className="text-[#1B6B8A]" />
+              Établissement
+            </label>
+            <p className="text-xs text-gray-400">
+              La session et ses résultats seront rattachés à cet établissement.
+            </p>
+            <select
+              id="session-organization"
+              value={organizationId}
+              onChange={(e) => setOrganizationId(e.target.value)}
+              required
+              className="w-full px-4 py-3 rounded-xl border border-gray-200 bg-gray-50 text-sm focus:outline-none focus:ring-2 focus:ring-[#2A8970] focus:border-transparent transition"
+            >
+              <option value="" disabled>
+                Choisir un établissement…
+              </option>
+              {organizations.map((o) => (
+                <option key={o.id} value={o.id}>
+                  {o.city ? `${o.name} — ${o.city}` : o.name}
+                </option>
+              ))}
+            </select>
+          </div>
+        )}
 
         {/* Étape 1 — Type de session */}
         <div className="bg-white rounded-xl border border-gray-200 p-6 space-y-4">
