@@ -11,6 +11,8 @@ import {
   closeModuleSession,
   deleteModuleSession,
   fetchDiagnosticQuestionCount,
+  renameSession,
+  renameModuleSession,
 } from "@/lib/dashboard";
 import type { ModuleSessionSummary, SessionSummary } from "@/lib/dashboard";
 import { SessionCard } from "./_components/session-card";
@@ -49,6 +51,17 @@ export default function DashboardPage() {
     setModuleSessions((prev) =>
       prev.map((s) => (s.id === id ? { ...s, isActive: false } : s)),
     );
+  }
+
+  async function handleRename(id: string, type: "diagnostic" | "module", className: string) {
+    const token = localStorage.getItem("access_token") ?? "";
+    if (type === "diagnostic") {
+      await renameSession(id, className, token);
+      setDiagSessions((prev) => prev.map((s) => (s.id === id ? { ...s, className } : s)));
+    } else {
+      await renameModuleSession(id, className, token);
+      setModuleSessions((prev) => prev.map((s) => (s.id === id ? { ...s, className } : s)));
+    }
   }
 
   async function handleDelete(id: string, type: "diagnostic" | "module") {
@@ -165,7 +178,12 @@ export default function DashboardPage() {
                 </span>
               )}
             </h2>
-            <SessionsTable sessions={diagTerminated} moduleSessions={moduleTerminated} onDelete={handleDelete} />
+            <SessionsTable
+              sessions={diagTerminated}
+              moduleSessions={moduleTerminated}
+              onDelete={handleDelete}
+              onRename={handleRename}
+            />
           </section>
         </>
       )}

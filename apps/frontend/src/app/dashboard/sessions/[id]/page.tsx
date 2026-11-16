@@ -9,8 +9,10 @@ import {
   fetchDiagnosticQuestionCount,
   computeQuestionStats,
   computeAvgScore,
+  renameSession,
 } from "@/lib/dashboard";
 import type { SessionDetail } from "@/lib/dashboard";
+import { SessionName } from "../../_components/session-name";
 import { ScoreCard } from "./_components/score-card";
 import { QuestionResultCard } from "./_components/question-result-card";
 import { StudentsPanel } from "./_components/students-panel";
@@ -72,7 +74,13 @@ export default function SessionDetailPage() {
         </Link>
         <div className="flex-1">
           <h1 className="text-2xl font-black text-[#1A1A1A]">
-            {session.className}
+            <SessionName
+              name={session.className}
+              onRename={async (className) => {
+                await renameSession(session.id, className, localStorage.getItem("access_token") ?? "");
+                setSession((s) => (s ? { ...s, className } : s));
+              }}
+            />
             <span className="ml-2 text-base font-semibold text-gray-400">{session.schoolYear}</span>
           </h1>
           <div className="flex items-center gap-4 mt-1 text-sm text-gray-400">

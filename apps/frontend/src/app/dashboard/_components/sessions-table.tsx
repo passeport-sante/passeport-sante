@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useState } from "react";
 import { ExternalLink, Trash2 } from "lucide-react";
 import type { SessionSummary, ModuleSessionSummary } from "@/lib/dashboard";
+import { SessionName } from "./session-name";
 
 type DeleteType = "diagnostic" | "module";
 
@@ -12,9 +13,11 @@ interface Props {
   moduleSessions?: ModuleSessionSummary[];
   // Si fourni, affiche un bouton de suppression définitive par ligne.
   onDelete?: (id: string, type: DeleteType) => Promise<void>;
+  // Si fourni, affiche une icône crayon à côté du nom pour renommer la session.
+  onRename?: (id: string, type: DeleteType, className: string) => Promise<void>;
 }
 
-export function SessionsTable({ sessions, moduleSessions = [], onDelete }: Props) {
+export function SessionsTable({ sessions, moduleSessions = [], onDelete, onRename }: Props) {
   const totalCount = sessions.length + moduleSessions.length;
   const [confirm, setConfirm] = useState<{ id: string; type: DeleteType; label: string } | null>(null);
   const [deleting, setDeleting] = useState(false);
@@ -53,7 +56,15 @@ export function SessionsTable({ sessions, moduleSessions = [], onDelete }: Props
           {sessions.map((s) => (
             <tr key={s.id} className="border-b border-gray-50 hover:bg-gray-50 transition-colors last:border-b-0">
               <td className="px-6 py-4">
-                <p className="font-semibold text-[#1A1A1A]">{s.className}</p>
+                {onRename ? (
+                  <SessionName
+                    name={s.className}
+                    onRename={(name) => onRename(s.id, "diagnostic", name)}
+                    className="font-semibold text-[#1A1A1A]"
+                  />
+                ) : (
+                  <p className="font-semibold text-[#1A1A1A]">{s.className}</p>
+                )}
                 <p className="text-xs font-medium mt-0.5 text-gray-400">{s.schoolYear}</p>
               </td>
               <td className="px-6 py-4">
@@ -95,7 +106,15 @@ export function SessionsTable({ sessions, moduleSessions = [], onDelete }: Props
             return (
               <tr key={s.id} className="border-b border-gray-50 hover:bg-gray-50 transition-colors last:border-b-0">
                 <td className="px-6 py-4">
-                  <p className="font-semibold text-[#1A1A1A]">{s.className}</p>
+                  {onRename ? (
+                    <SessionName
+                      name={s.className}
+                      onRename={(name) => onRename(s.id, "module", name)}
+                      className="font-semibold text-[#1A1A1A]"
+                    />
+                  ) : (
+                    <p className="font-semibold text-[#1A1A1A]">{s.className}</p>
+                  )}
                   {s.module ? (
                     <p className="text-xs font-medium mt-0.5" style={{ color }}>
                       {s.module.title} <span className="text-gray-400">· {s.schoolYear}</span>
