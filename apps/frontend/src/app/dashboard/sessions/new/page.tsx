@@ -3,10 +3,11 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
-import { AlertTriangle, ArrowLeft, Loader2, Stethoscope, BookOpen, Check, School } from "lucide-react";
+import { AlertTriangle, ArrowLeft, Loader2, Stethoscope, BookOpen, Check, School, Pencil, Wand2 } from "lucide-react";
 import { CLASS_LEVELS } from "@/lib/dashboard";
 import type { ClassLevel } from "@/lib/dashboard";
 import { fetchOrganizations, type Organization } from "@/lib/admin-users";
+import { buildClassName } from "@/lib/class-name";
 
 const API = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:5000";
 
@@ -29,7 +30,11 @@ export default function NewSessionPage() {
   const router = useRouter();
 
   const [type, setType] = useState<SessionType>(null);
+  // Lettre ou numéro de la classe ("A", "302") : le nom est construit avec le niveau.
   const [className, setClassName] = useState("");
+  // Nom libre, pour les établissements qui ont leur propre façon de nommer.
+  const [useCustomName, setUseCustomName] = useState(false);
+  const [customName, setCustomName] = useState("");
   const [level, setLevel] = useState<ClassLevel | null>(null);
   const [modules, setModules] = useState<Module[]>([]);
   const [selectedModuleId, setSelectedModuleId] = useState<string | null>(null);
@@ -67,9 +72,13 @@ export default function NewSessionPage() {
       .finally(() => setLoadingModules(false));
   }, [type]);
 
+  const levelDigit = CLASS_LEVELS.find((l) => l.value === level)?.label[0] ?? "";
+  const built = levelDigit ? buildClassName(levelDigit, className) : { name: "", levelMismatch: null };
+  const finalName = useCustomName ? customName.trim() : built.name;
+
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
-    if (!className.trim() || !type || !level) return;
+    if (!finalName || !type || !level) return;
     if (type === "module" && !selectedModuleId) return;
     if (isAdmin && !organizationId) return;
 
@@ -94,8 +103,8 @@ export default function NewSessionPage() {
       const sessionOrganizationId = isAdmin ? organizationId : user.organizationId;
       const body =
         type === "diagnostic"
-          ? { className: className.trim(), level, createdByUserId: userId, organizationId: sessionOrganizationId }
-          : { className: className.trim(), level, moduleId: selectedModuleId, createdByUserId: userId, organizationId: sessionOrganizationId };
+          ? { className: finalName, level, createdByUserId: userId, organizationId: sessionOrganizationId }
+          : { className: finalName, level, moduleId: selectedModuleId, createdByUserId: userId, organizationId: sessionOrganizationId };
 
       const res = await fetch(endpoint, {
         method: "POST",
@@ -116,7 +125,7 @@ export default function NewSessionPage() {
   const selectedModule = modules.find((m) => m.id === selectedModuleId);
 
   const canSubmit =
-    className.trim().length > 0 &&
+    finalName.length > 0 &&
     level !== null &&
     type !== null &&
     (type === "diagnostic" || selectedModuleId !== null) &&
@@ -313,15 +322,62 @@ export default function NewSessionPage() {
                 ))}
               </div>
             </div>
-            <p className="text-xs font-semibold text-gray-500 pt-1">Nom de la classe</p>
-            <input
-              type="text"
-              value={className}
-              onChange={(e) => setClassName(e.target.value)}
-              placeholder="Ex : 6e B, 4e A..."
-              className="w-full px-4 py-3 rounded-xl border border-gray-200 bg-gray-50 text-sm focus:outline-none focus:ring-2 focus:ring-[#2A8970] focus:border-transparent transition"
-              required
-            />
+            {useCustomName ? (
+              <>
+                <label htmlFor="session-custom-name" className="block text-xs font-semibold text-gray-500 pt-1">
+                  Nom personnalisé
+                </label>
+                <input
+                  id="session-custom-name"
+                  type="text"
+                  value={customName}
+                  onChange={(e) => setCustomName(e.target.value)}
+                  placeholder="Ex : Atelier santé 3e"
+                  maxLength={60}
+                  className="w-full px-4 py-3 rounded-xl border border-gray-200 bg-gray-50 text-sm focus:outline-none focus:ring-2 focus:ring-[#2A8970] focus:border-transparent transition"
+                  required
+                />
+              </>
+            ) : (
+              <>
+                <label htmlFor="session-division" className="block text-xs font-semibold text-gray-500 pt-1">
+                  Lettre ou numéro de la classe
+                </label>
+                <input
+                  id="session-division"
+                  type="text"
+                  value={className}
+                  onChange={(e) => setClassName(e.target.value)}
+                  placeholder="Ex : A, B, 302…"
+                  maxLength={20}
+                  className="w-full sm:w-56 px-4 py-3 rounded-xl border border-gray-200 bg-gray-50 text-sm focus:outline-none focus:ring-2 focus:ring-[#2A8970] focus:border-transparent transition"
+                  required
+                />
+              </>
+            )}
+
+            <div className="flex items-baseline gap-2.5 flex-wrap px-4 py-3 rounded-xl bg-gray-50">
+              <span className="text-xs font-semibold text-gray-500">Nom de la session</span>
+              <span className={`text-lg font-black ${finalName ? "text-[#1A1A1A]" : "text-gray-300"}`}>
+                {finalName || (!useCustomName && !level ? "Choisissez le niveau" : "—")}
+              </span>
+            </div>
+
+            {!useCustomName && built.levelMismatch && (
+              <p className="flex items-start gap-1.5 text-xs text-amber-700">
+                <AlertTriangle size={14} className="shrink-0 mt-px" />
+                Ce nom correspond à une {built.levelMismatch}e : vérifiez le niveau choisi.
+              </p>
+            )}
+
+            <button
+              type="button"
+              onClick={() => setUseCustomName((v) => !v)}
+              className="inline-flex items-center gap-1.5 text-xs font-semibold text-[#1B6B8A] hover:text-[#2A8970] transition-colors"
+            >
+              {useCustomName ? <Wand2 size={13} /> : <Pencil size={13} />}
+              {useCustomName ? "Revenir au nom automatique" : "Personnaliser le nom"}
+            </button>
           </div>
         )}
 

@@ -6,6 +6,7 @@ import { CreateModuleSessionDto } from "./dto/create-module.dto";
 import { UpdateModuleSessionDto } from "./dto/update-module.dto";
 import { schoolYearOf } from "../../common/school-year";
 import { resolveSessionOrganization } from "../../common/session-organization";
+import { normalizeClassName } from "../../common/class-name";
 
 @Injectable()
 export class ModuleSessionService {
@@ -32,7 +33,15 @@ export class ModuleSessionService {
     const accessUrl = `${baseUrl}/session/${accessCode}`;
 
     return this.prisma.moduleSession.create({
-      data: { ...dto, organizationId, createdByUserId, accessCode, accessUrl, schoolYear: schoolYearOf() },
+      data: {
+        ...dto,
+        className: normalizeClassName(dto.className, dto.level),
+        organizationId,
+        createdByUserId,
+        accessCode,
+        accessUrl,
+        schoolYear: schoolYearOf(),
+      },
     });
   }
 
