@@ -5,6 +5,8 @@ import { AuthUser } from "../../auth/decorators/current-user.decorator";
 import { CreateDiagnosticSessionDto } from "./dto/create-diagnostic.dto";
 import { UpdateDiagnosticSessionDto } from "./dto/update-diagnostic.dto";
 import { schoolYearOf } from "../../common/school-year";
+import { resolveSessionOrganization } from "../../common/session-organization";
+import { normalizeClassName } from "../../common/class-name";
 
 @Injectable()
 export class DiagnosticSessionService {
@@ -19,15 +21,24 @@ export class DiagnosticSessionService {
     return user.role === "ADMIN" ? {} : { organizationId: user.organizationId };
   }
 
-  // organizationId/createdByUserId proviennent du token de l'utilisateur authentifié,
-  // jamais du body envoyé par le client (sinon une session pourrait être rattachée à un autre établissement).
-  async create(dto: CreateDiagnosticSessionDto, organizationId: string, createdByUserId: string) {
+  // Établissement de la session : voir ModuleSessionService.create.
+  async create(dto: CreateDiagnosticSessionDto, user: AuthUser) {
+    const organizationId = await resolveSessionOrganization(this.prisma, dto.organizationId, user);
+    const createdByUserId = user.userId;
     const accessCode = this.generateCode();
     const baseUrl = this.config.get<string>('FRONTEND_URL') ?? 'http://localhost:3000';
     const accessUrl = `${baseUrl}/diagnostic/${accessCode}`;
 
     return this.prisma.diagnosticSession.create({
-      data: { ...dto, organizationId, createdByUserId, accessCode, accessUrl, schoolYear: schoolYearOf() },
+      data: {
+        ...dto,
+        className: normalizeClassName(dto.className, dto.level),
+        organizationId,
+        createdByUserId,
+        accessCode,
+        accessUrl,
+        schoolYear: schoolYearOf(),
+      },
     });
   }
 

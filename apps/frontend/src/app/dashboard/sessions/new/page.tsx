@@ -3,9 +3,11 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
-import { AlertTriangle, ArrowLeft, Loader2, Stethoscope, BookOpen, Check } from "lucide-react";
+import { AlertTriangle, ArrowLeft, Loader2, Stethoscope, BookOpen, Check, School, Pencil, Wand2 } from "lucide-react";
 import { CLASS_LEVELS } from "@/lib/dashboard";
 import type { ClassLevel } from "@/lib/dashboard";
+import { fetchOrganizations, type Organization } from "@/lib/admin-users";
+import { buildClassName } from "@/lib/class-name";
 
 const API = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:5000";
 
@@ -20,7 +22,7 @@ type Module = {
   duration: number | null;
 };
 
-function decodeJwt(token: string): { sub: string } {
+function decodeJwt(token: string): { sub: string; role?: string } {
   return JSON.parse(atob(token.split(".")[1]!));
 }
 
@@ -28,13 +30,37 @@ export default function NewSessionPage() {
   const router = useRouter();
 
   const [type, setType] = useState<SessionType>(null);
+  // Lettre ou numéro de la classe ("A", "302") : le nom est construit avec le niveau.
   const [className, setClassName] = useState("");
+  // Nom libre, pour les établissements qui ont leur propre façon de nommer.
+  const [useCustomName, setUseCustomName] = useState(false);
+  const [customName, setCustomName] = useState("");
   const [level, setLevel] = useState<ClassLevel | null>(null);
   const [modules, setModules] = useState<Module[]>([]);
   const [selectedModuleId, setSelectedModuleId] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const [loadingModules, setLoadingModules] = useState(false);
   const [error, setError] = useState("");
+  // Un admin n'appartient à aucun établissement scolaire : il doit choisir celui de la
+  // session, sinon elle serait rattachée à son organisation et perdue pour l'établissement.
+  const [isAdmin, setIsAdmin] = useState(false);
+  const [organizations, setOrganizations] = useState<Organization[]>([]);
+  const [organizationId, setOrganizationId] = useState("");
+
+  useEffect(() => {
+    const token = localStorage.getItem("access_token") ?? "";
+    let role: string | undefined;
+    try {
+      role = decodeJwt(token).role;
+    } catch {
+      return;
+    }
+    if (role !== "ADMIN") return;
+    setIsAdmin(true);
+    fetchOrganizations(token)
+      .then((orgs) => setOrganizations([...orgs].sort((a, b) => a.name.localeCompare(b.name, "fr"))))
+      .catch(() => setError("Impossible de charger les établissements"));
+  }, []);
 
   useEffect(() => {
     if (type !== "module") return;
@@ -46,10 +72,15 @@ export default function NewSessionPage() {
       .finally(() => setLoadingModules(false));
   }, [type]);
 
+  const levelDigit = CLASS_LEVELS.find((l) => l.value === level)?.label[0] ?? "";
+  const built = levelDigit ? buildClassName(levelDigit, className) : { name: "", levelMismatch: null };
+  const finalName = useCustomName ? customName.trim() : built.name;
+
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
-    if (!className.trim() || !type || !level) return;
+    if (!finalName || !type || !level) return;
     if (type === "module" && !selectedModuleId) return;
+    if (isAdmin && !organizationId) return;
 
     setLoading(true);
     setError("");
@@ -69,10 +100,11 @@ export default function NewSessionPage() {
           ? `${API}/api/diagnostic/session`
           : `${API}/api/module-sessions`;
 
+      const sessionOrganizationId = isAdmin ? organizationId : user.organizationId;
       const body =
         type === "diagnostic"
-          ? { className: className.trim(), level, createdByUserId: userId, organizationId: user.organizationId }
-          : { className: className.trim(), level, moduleId: selectedModuleId, createdByUserId: userId, organizationId: user.organizationId };
+          ? { className: finalName, level, createdByUserId: userId, organizationId: sessionOrganizationId }
+          : { className: finalName, level, moduleId: selectedModuleId, createdByUserId: userId, organizationId: sessionOrganizationId };
 
       const res = await fetch(endpoint, {
         method: "POST",
@@ -93,10 +125,11 @@ export default function NewSessionPage() {
   const selectedModule = modules.find((m) => m.id === selectedModuleId);
 
   const canSubmit =
-    className.trim().length > 0 &&
+    finalName.length > 0 &&
     level !== null &&
     type !== null &&
-    (type === "diagnostic" || selectedModuleId !== null);
+    (type === "diagnostic" || selectedModuleId !== null) &&
+    (!isAdmin || organizationId !== "");
 
   return (
     <div className="p-4 sm:p-8 max-w-2xl">
@@ -115,6 +148,35 @@ export default function NewSessionPage() {
       </div>
 
       <form onSubmit={handleSubmit} className="space-y-6">
+
+        {/* Admin uniquement — Établissement de la session (obligatoire) */}
+        {isAdmin && (
+          <div className="bg-white rounded-xl border border-gray-200 p-6 space-y-3">
+            <label htmlFor="session-organization" className="flex items-center gap-2 text-sm font-bold text-[#1A1A1A]">
+              <School size={16} className="text-[#1B6B8A]" />
+              Établissement
+            </label>
+            <p className="text-xs text-gray-400">
+              La session et ses résultats seront rattachés à cet établissement.
+            </p>
+            <select
+              id="session-organization"
+              value={organizationId}
+              onChange={(e) => setOrganizationId(e.target.value)}
+              required
+              className="w-full px-4 py-3 rounded-xl border border-gray-200 bg-gray-50 text-sm focus:outline-none focus:ring-2 focus:ring-[#2A8970] focus:border-transparent transition"
+            >
+              <option value="" disabled>
+                Choisir un établissement…
+              </option>
+              {organizations.map((o) => (
+                <option key={o.id} value={o.id}>
+                  {o.city ? `${o.name} — ${o.city}` : o.name}
+                </option>
+              ))}
+            </select>
+          </div>
+        )}
 
         {/* Étape 1 — Type de session */}
         <div className="bg-white rounded-xl border border-gray-200 p-6 space-y-4">
@@ -260,15 +322,62 @@ export default function NewSessionPage() {
                 ))}
               </div>
             </div>
-            <p className="text-xs font-semibold text-gray-500 pt-1">Nom de la classe</p>
-            <input
-              type="text"
-              value={className}
-              onChange={(e) => setClassName(e.target.value)}
-              placeholder="Ex : 6e B, 4e A..."
-              className="w-full px-4 py-3 rounded-xl border border-gray-200 bg-gray-50 text-sm focus:outline-none focus:ring-2 focus:ring-[#2A8970] focus:border-transparent transition"
-              required
-            />
+            {useCustomName ? (
+              <>
+                <label htmlFor="session-custom-name" className="block text-xs font-semibold text-gray-500 pt-1">
+                  Nom personnalisé
+                </label>
+                <input
+                  id="session-custom-name"
+                  type="text"
+                  value={customName}
+                  onChange={(e) => setCustomName(e.target.value)}
+                  placeholder="Ex : Atelier santé 3e"
+                  maxLength={60}
+                  className="w-full px-4 py-3 rounded-xl border border-gray-200 bg-gray-50 text-sm focus:outline-none focus:ring-2 focus:ring-[#2A8970] focus:border-transparent transition"
+                  required
+                />
+              </>
+            ) : (
+              <>
+                <label htmlFor="session-division" className="block text-xs font-semibold text-gray-500 pt-1">
+                  Lettre ou numéro de la classe
+                </label>
+                <input
+                  id="session-division"
+                  type="text"
+                  value={className}
+                  onChange={(e) => setClassName(e.target.value)}
+                  placeholder="Ex : A, B, 302…"
+                  maxLength={20}
+                  className="w-full sm:w-56 px-4 py-3 rounded-xl border border-gray-200 bg-gray-50 text-sm focus:outline-none focus:ring-2 focus:ring-[#2A8970] focus:border-transparent transition"
+                  required
+                />
+              </>
+            )}
+
+            <div className="flex items-baseline gap-2.5 flex-wrap px-4 py-3 rounded-xl bg-gray-50">
+              <span className="text-xs font-semibold text-gray-500">Nom de la session</span>
+              <span className={`text-lg font-black ${finalName ? "text-[#1A1A1A]" : "text-gray-300"}`}>
+                {finalName || (!useCustomName && !level ? "Choisissez le niveau" : "—")}
+              </span>
+            </div>
+
+            {!useCustomName && built.levelMismatch && (
+              <p className="flex items-start gap-1.5 text-xs text-amber-700">
+                <AlertTriangle size={14} className="shrink-0 mt-px" />
+                Ce nom correspond à une {built.levelMismatch}e : vérifiez le niveau choisi.
+              </p>
+            )}
+
+            <button
+              type="button"
+              onClick={() => setUseCustomName((v) => !v)}
+              className="inline-flex items-center gap-1.5 text-xs font-semibold text-[#1B6B8A] hover:text-[#2A8970] transition-colors"
+            >
+              {useCustomName ? <Wand2 size={13} /> : <Pencil size={13} />}
+              {useCustomName ? "Revenir au nom automatique" : "Personnaliser le nom"}
+            </button>
           </div>
         )}
 

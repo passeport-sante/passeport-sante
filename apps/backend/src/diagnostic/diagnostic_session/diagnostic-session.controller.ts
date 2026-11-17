@@ -27,7 +27,7 @@ export class DiagnosticSessionController {
   @UseGuards(JwtAuthGuard)
   @Post()
   create(@Body() dto: CreateDiagnosticSessionDto, @CurrentUser() user: AuthUser) {
-    return this.diagnosticSessionService.create(dto, user.organizationId, user.userId);
+    return this.diagnosticSessionService.create(dto, user);
   }
 
   @UseGuards(JwtAuthGuard)
