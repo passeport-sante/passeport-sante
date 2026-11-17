@@ -188,6 +188,16 @@ export async function closeSession(id: string, token: string): Promise<void> {
   });
 }
 
+// Renommage possible même pour une session clôturée.
+export async function renameSession(id: string, className: string, token: string): Promise<void> {
+  const res = await fetch(`${API}/api/diagnostic/session/${id}`, {
+    method: "PATCH",
+    headers: authHeaders(token),
+    body: JSON.stringify({ className }),
+  });
+  if (!res.ok) throw new Error("Impossible de renommer la session");
+}
+
 export async function deleteSession(id: string, token: string): Promise<void> {
   const res = await fetch(`${API}/api/diagnostic/session/${id}`, {
     method: "DELETE",
@@ -386,6 +396,16 @@ export async function closeModuleSession(id: string, token: string): Promise<voi
     headers: authHeaders(token),
     body: JSON.stringify({ isActive: false }),
   });
+}
+
+// Renommage possible même pour une session clôturée.
+export async function renameModuleSession(id: string, className: string, token: string): Promise<void> {
+  const res = await fetch(`${API}/api/module-sessions/${id}`, {
+    method: "PATCH",
+    headers: authHeaders(token),
+    body: JSON.stringify({ className }),
+  });
+  if (!res.ok) throw new Error("Impossible de renommer la session");
 }
 
 export async function deleteModuleSession(id: string, token: string): Promise<void> {

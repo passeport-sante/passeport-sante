@@ -8,8 +8,10 @@ import {
   fetchModuleSessionDetail,
   computeModuleStepStats,
   closeModuleSession,
+  renameModuleSession,
 } from "@/lib/dashboard";
 import type { ModuleSessionDetail, StepStats } from "@/lib/dashboard";
+import { SessionName } from "../../_components/session-name";
 import { ScoreCard } from "../../sessions/[id]/_components/score-card";
 import { PDFDownloadLink } from "@react-pdf/renderer";
 import { ModuleSessionPdfDocument } from "./_components/ModuleSessionPdfDocument";
@@ -80,7 +82,13 @@ export default function ModuleSessionDetailPage() {
         </Link>
         <div className="flex-1">
           <h1 className="text-2xl font-black text-[#1A1A1A]">
-            {session.className}
+            <SessionName
+              name={session.className}
+              onRename={async (className) => {
+                await renameModuleSession(session.id, className, localStorage.getItem("access_token") ?? "");
+                setSession((s) => (s ? { ...s, className } : s));
+              }}
+            />
             <span className="ml-2 text-base font-semibold text-gray-400">{session.schoolYear}</span>
           </h1>
           <div className="flex items-center gap-4 mt-1 text-sm text-gray-400 flex-wrap">
