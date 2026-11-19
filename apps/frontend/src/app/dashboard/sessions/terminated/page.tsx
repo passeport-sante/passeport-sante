@@ -1,7 +1,14 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { fetchSessions, fetchModuleSessions, deleteSession, deleteModuleSession } from "@/lib/dashboard";
+import {
+  fetchSessions,
+  fetchModuleSessions,
+  deleteSession,
+  deleteModuleSession,
+  renameSession,
+  renameModuleSession,
+} from "@/lib/dashboard";
 import type { SessionSummary, ModuleSessionSummary } from "@/lib/dashboard";
 import { SessionsTable } from "../../_components/sessions-table";
 
@@ -22,6 +29,17 @@ export default function TerminatedSessionsPage() {
       })
       .finally(() => setLoading(false));
   }, []);
+
+  async function handleRename(id: string, type: "diagnostic" | "module", className: string) {
+    const token = localStorage.getItem("access_token") ?? "";
+    if (type === "diagnostic") {
+      await renameSession(id, className, token);
+      setTerminated((prev) => prev.map((s) => (s.id === id ? { ...s, className } : s)));
+    } else {
+      await renameModuleSession(id, className, token);
+      setTerminatedModules((prev) => prev.map((s) => (s.id === id ? { ...s, className } : s)));
+    }
+  }
 
   async function handleDelete(id: string, type: "diagnostic" | "module") {
     const token = localStorage.getItem("access_token") ?? "";
@@ -46,7 +64,12 @@ export default function TerminatedSessionsPage() {
           <div className="w-8 h-8 border-4 border-[#2A8970] border-t-transparent rounded-full animate-spin" />
         </div>
       ) : (
-        <SessionsTable sessions={terminated} moduleSessions={terminatedModules} onDelete={handleDelete} />
+        <SessionsTable
+          sessions={terminated}
+          moduleSessions={terminatedModules}
+          onDelete={handleDelete}
+          onRename={handleRename}
+        />
       )}
     </div>
   );
