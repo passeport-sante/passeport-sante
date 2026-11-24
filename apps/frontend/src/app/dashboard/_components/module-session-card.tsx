@@ -2,15 +2,17 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { Users, Copy, Check, BookOpen, Link2, ExternalLink } from "lucide-react";
+import { Users, Copy, Check, BookOpen, Link2, ExternalLink, School } from "lucide-react";
 import type { ModuleSessionSummary } from "@/lib/dashboard";
 
 interface Props {
   session: ModuleSessionSummary;
   onClose: (id: string) => void;
+  // Admin : afficher l'établissement de la session.
+  showOrganization?: boolean;
 }
 
-export function ModuleSessionCard({ session, onClose }: Props) {
+export function ModuleSessionCard({ session, onClose, showOrganization = false }: Props) {
   const [copiedCode, setCopiedCode] = useState(false);
   const [copiedUrl, setCopiedUrl] = useState(false);
 
@@ -52,6 +54,15 @@ export function ModuleSessionCard({ session, onClose }: Props) {
           Active
         </span>
       </div>
+
+      {/* Admin : établissement propriétaire de la session */}
+      {showOrganization && session.organization && (
+        <p className="-mt-2 flex items-center gap-1.5 text-xs text-gray-500 truncate">
+          <School size={13} className="shrink-0 text-gray-400" />
+          <span className="font-semibold text-gray-600 truncate">{session.organization.name}</span>
+          {session.organization.city && <span className="text-gray-400 shrink-0">· {session.organization.city}</span>}
+        </p>
+      )}
 
       {/* Code */}
       <div className="flex items-center gap-2 bg-gray-50 rounded-xl px-4 py-2.5">

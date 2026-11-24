@@ -68,6 +68,8 @@ export class DiagnosticSessionService {
       include: {
         ...this.counts,
         createdByUser: { select: { id: true, name: true } },
+        // Affiché aux comptes qui voient plusieurs établissements (admin).
+        organization: { select: { id: true, name: true, city: true } },
       },
       orderBy: { createdAt: 'desc' },
     });

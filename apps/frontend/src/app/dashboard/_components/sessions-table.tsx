@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { useState } from "react";
 import { ExternalLink, Trash2 } from "lucide-react";
-import type { SessionSummary, ModuleSessionSummary } from "@/lib/dashboard";
+import type { SessionSummary, ModuleSessionSummary, SessionOrganization } from "@/lib/dashboard";
 import { SessionName } from "./session-name";
 
 type DeleteType = "diagnostic" | "module";
@@ -15,9 +15,26 @@ interface Props {
   onDelete?: (id: string, type: DeleteType) => Promise<void>;
   // Si fourni, affiche une icône crayon à côté du nom pour renommer la session.
   onRename?: (id: string, type: DeleteType, className: string) => Promise<void>;
+  // Admin : colonne « Établissement » (le même nom de classe existe dans plusieurs collèges).
+  showOrganization?: boolean;
 }
 
-export function SessionsTable({ sessions, moduleSessions = [], onDelete, onRename }: Props) {
+function OrganizationCell({ org }: { org?: SessionOrganization | null }) {
+  return (
+    <td className="px-6 py-4">
+      {org ? (
+        <>
+          <p className="font-medium text-[#1A1A1A]">{org.name}</p>
+          {org.city && <p className="text-xs mt-0.5 text-gray-400">{org.city}</p>}
+        </>
+      ) : (
+        <span className="text-gray-300">—</span>
+      )}
+    </td>
+  );
+}
+
+export function SessionsTable({ sessions, moduleSessions = [], onDelete, onRename, showOrganization = false }: Props) {
   const totalCount = sessions.length + moduleSessions.length;
   const [confirm, setConfirm] = useState<{ id: string; type: DeleteType; label: string } | null>(null);
   const [deleting, setDeleting] = useState(false);
@@ -41,10 +58,13 @@ export function SessionsTable({ sessions, moduleSessions = [], onDelete, onRenam
 
   return (
     <div className="rounded-xl border border-gray-200 bg-white overflow-x-auto">
-      <table className="w-full min-w-[640px] text-sm">
+      <table className={`w-full text-sm ${showOrganization ? "min-w-[820px]" : "min-w-[640px]"}`}>
         <thead>
           <tr className="border-b border-gray-100 text-left">
             <th className="px-6 py-4 font-semibold text-gray-400 text-xs uppercase tracking-wider">Classe</th>
+            {showOrganization && (
+              <th className="px-6 py-4 font-semibold text-gray-400 text-xs uppercase tracking-wider">Établissement</th>
+            )}
             <th className="px-6 py-4 font-semibold text-gray-400 text-xs uppercase tracking-wider">Type</th>
             <th className="px-6 py-4 font-semibold text-gray-400 text-xs uppercase tracking-wider">Code</th>
             <th className="px-6 py-4 font-semibold text-gray-400 text-xs uppercase tracking-wider">Date</th>
@@ -67,6 +87,7 @@ export function SessionsTable({ sessions, moduleSessions = [], onDelete, onRenam
                 )}
                 <p className="text-xs font-medium mt-0.5 text-gray-400">{s.schoolYear}</p>
               </td>
+              {showOrganization && <OrganizationCell org={s.organization} />}
               <td className="px-6 py-4">
                 <span className="px-2 py-0.5 bg-[#EBF4F8] text-[#1B6B8A] text-xs font-semibold rounded-full">
                   Diagnostic
@@ -123,6 +144,7 @@ export function SessionsTable({ sessions, moduleSessions = [], onDelete, onRenam
                     <p className="text-xs font-medium mt-0.5 text-gray-400 italic">Module supprimé</p>
                   )}
                 </td>
+                {showOrganization && <OrganizationCell org={s.organization} />}
                 <td className="px-6 py-4">
                   <span className="px-2 py-0.5 text-xs font-semibold rounded-full" style={{ background: `${color}18`, color }}>
                     Module

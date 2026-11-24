@@ -8,12 +8,16 @@ import {
   deleteModuleSession,
   renameSession,
   renameModuleSession,
+  canSeeAllOrganizations,
 } from "@/lib/dashboard";
 import type { SessionSummary, ModuleSessionSummary } from "@/lib/dashboard";
 import { SessionsTable } from "../../_components/sessions-table";
 
 export default function TerminatedSessionsPage() {
   const [terminated, setTerminated] = useState<SessionSummary[]>([]);
+  // Admin : afficher l'établissement de chaque session.
+  const [showOrganization, setShowOrganization] = useState(false);
+  useEffect(() => setShowOrganization(canSeeAllOrganizations()), []);
   const [terminatedModules, setTerminatedModules] = useState<ModuleSessionSummary[]>([]);
   const [loading, setLoading] = useState(true);
 
@@ -69,6 +73,7 @@ export default function TerminatedSessionsPage() {
           moduleSessions={terminatedModules}
           onDelete={handleDelete}
           onRename={handleRename}
+          showOrganization={showOrganization}
         />
       )}
     </div>

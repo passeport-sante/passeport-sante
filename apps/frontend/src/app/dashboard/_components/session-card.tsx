@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { Users, Copy, Check, ExternalLink } from "lucide-react";
+import { Users, Copy, Check, ExternalLink, School } from "lucide-react";
 import { useState } from "react";
 import type { SessionSummary } from "@/lib/dashboard";
 import { TOTAL_DIAGNOSTIC_QUESTIONS } from "@/lib/dashboard";
@@ -10,9 +10,11 @@ interface Props {
   session: SessionSummary;
   onClose: (id: string) => void;
   totalQuestions?: number;
+  // Admin : afficher l'établissement de la session.
+  showOrganization?: boolean;
 }
 
-export function SessionCard({ session, onClose, totalQuestions }: Props) {
+export function SessionCard({ session, onClose, totalQuestions, showOrganization = false }: Props) {
   const [copied, setCopied] = useState(false);
 
   const students = session._count.guestStudents;
@@ -47,6 +49,15 @@ export function SessionCard({ session, onClose, totalQuestions }: Props) {
           Active
         </span>
       </div>
+
+      {/* Admin : établissement propriétaire de la session */}
+      {showOrganization && session.organization && (
+        <p className="-mt-2 flex items-center gap-1.5 text-xs text-gray-500 truncate">
+          <School size={13} className="shrink-0 text-gray-400" />
+          <span className="font-semibold text-gray-600 truncate">{session.organization.name}</span>
+          {session.organization.city && <span className="text-gray-400 shrink-0">· {session.organization.city}</span>}
+        </p>
+      )}
 
       {/* Code */}
       <div className="flex items-center gap-2 bg-gray-50 rounded-xl px-4 py-2.5">

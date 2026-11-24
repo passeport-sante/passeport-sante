@@ -9,7 +9,8 @@ export type StatsFilters = {
   level?: ClassLevel | "NONE";
   className?: string;
   department?: string;
-  organizationId?: string;
+  // Un ou plusieurs établissements (compte rendu commun à plusieurs collèges).
+  organizationIds?: string[];
 };
 
 export type StatsOrganization = {
@@ -88,7 +89,13 @@ export type StatsResult = {
 
 export async function fetchStats(filters: StatsFilters, token: string): Promise<StatsResult> {
   const params = new URLSearchParams();
-  for (const [key, value] of Object.entries(filters)) if (value) params.set(key, value);
+  for (const [key, value] of Object.entries(filters)) {
+    if (Array.isArray(value)) {
+      if (value.length) params.set(key, value.join(","));
+    } else if (value) {
+      params.set(key, value);
+    }
+  }
   const res = await fetch(`${API}/api/stats?${params}`, {
     headers: { Authorization: `Bearer ${token}` },
   });

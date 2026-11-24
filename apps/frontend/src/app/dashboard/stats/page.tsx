@@ -1,8 +1,8 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { PDFDownloadLink } from "@react-pdf/renderer";
-import { FileDown, Users, Layers, FileText, Target, CheckCircle2 } from "lucide-react";
+import { FileDown, Users, Layers, FileText, Target, CheckCircle2, ChevronDown } from "lucide-react";
 import { CLASS_LEVELS, slicesFromCounts } from "@/lib/dashboard";
 import type { ClassLevel, QuestionStats } from "@/lib/dashboard";
 import { fetchStats, departmentLabel } from "@/lib/stats";
@@ -52,8 +52,9 @@ export default function StatsPage() {
   function update(patch: StatsFilters) {
     setFilters((f) => {
       const next = { ...f, ...patch };
-      if ("department" in patch) next.organizationId = undefined;
-      if ("department" in patch || "organizationId" in patch || "schoolYear" in patch || "level" in patch) {
+      if ("department" in patch) next.organizationIds = undefined;
+      if (next.organizationIds && next.organizationIds.length === 0) next.organizationIds = undefined;
+      if ("department" in patch || "organizationIds" in patch || "schoolYear" in patch || "level" in patch) {
         next.className = undefined;
       }
       return next;
@@ -82,8 +83,8 @@ export default function StatsPage() {
     if (!stats) return "";
     const parts: string[] = [];
     if (filters.department) parts.push(`Département ${departmentLabel(filters.department)}`);
-    const org = stats.filters.organizations.find((o) => o.id === filters.organizationId);
-    if (org) parts.push(org.name);
+    const orgs = stats.filters.organizations.filter((o) => filters.organizationIds?.includes(o.id));
+    if (orgs.length) parts.push(orgs.map((o) => o.name).join(" + "));
     else if (stats.scope === "organization" && stats.filters.organizations[0]) parts.push(stats.filters.organizations[0].name);
     if (filters.className) parts.push(`Classe ${filters.className}`);
     if (filters.level) {
@@ -94,7 +95,7 @@ export default function StatsPage() {
       );
     }
     parts.push(filters.schoolYear ? `Année ${filters.schoolYear}` : "Toutes les années");
-    if (stats.scope === "global" && !filters.department && !filters.organizationId) parts.unshift("Tous les établissements");
+    if (stats.scope === "global" && !filters.department && !filters.organizationIds?.length) parts.unshift("Tous les établissements");
     return parts.join(" · ");
   }, [stats, filters]);
 
@@ -111,7 +112,7 @@ export default function StatsPage() {
   }
 
   const { diagnostic: d, modules: m } = stats;
-  const hasFilters = Object.values(filters).some(Boolean);
+  const hasFilters = Object.values(filters).some((v) => (Array.isArray(v) ? v.length > 0 : Boolean(v)));
   const fileSlug = filtersLabel.toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g, "").replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "");
 
   return (
@@ -152,12 +153,11 @@ export default function StatsPage() {
                 <option key={dep} value={dep}>{departmentLabel(dep)}</option>
               ))}
             </FilterSelect>
-            <FilterSelect label="Établissement" value={filters.organizationId ?? ""} onChange={(v) => update({ organizationId: v || undefined })}>
-              <option value="">Tous les établissements</option>
-              {orgOptions.map((o) => (
-                <option key={o.id} value={o.id}>{o.name}{o.city ? ` (${o.city})` : ""}</option>
-              ))}
-            </FilterSelect>
+            <OrganizationMultiSelect
+              options={orgOptions}
+              selected={filters.organizationIds ?? []}
+              onChange={(ids) => update({ organizationIds: ids.length ? ids : undefined })}
+            />
           </>
         )}
         <FilterSelect label="Année scolaire" value={filters.schoolYear ?? ""} onChange={(v) => update({ schoolYear: v || undefined })}>
@@ -382,6 +382,88 @@ function MiniStat({
       </div>
       <p className="text-3xl font-black" style={{ color }}>{value}</p>
       {sub && <p className="text-xs text-gray-400 mt-0.5">{sub}</p>}
+    </div>
+  );
+}
+
+// Choix d'un ou plusieurs établissements (cases à cocher dans une liste déroulante).
+function OrganizationMultiSelect({
+  options,
+  selected,
+  onChange,
+}: {
+  options: { id: string; name: string; city: string | null }[];
+  selected: string[];
+  onChange: (ids: string[]) => void;
+}) {
+  const [open, setOpen] = useState(false);
+  const ref = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (!open) return;
+    const close = (e: MouseEvent) => {
+      if (ref.current && !ref.current.contains(e.target as Node)) setOpen(false);
+    };
+    document.addEventListener("mousedown", close);
+    return () => document.removeEventListener("mousedown", close);
+  }, [open]);
+
+  const chosen = options.filter((o) => selected.includes(o.id));
+  const label =
+    chosen.length === 0 ? "Tous les établissements" : chosen.length === 1 ? chosen[0]!.name : `${chosen.length} établissements`;
+
+  function toggle(id: string) {
+    onChange(selected.includes(id) ? selected.filter((x) => x !== id) : [...selected, id]);
+  }
+
+  return (
+    <div ref={ref} className="relative flex flex-col gap-1 min-w-[200px]">
+      <span className="text-xs font-semibold text-gray-400 uppercase tracking-wider">Établissements</span>
+      <button
+        type="button"
+        onClick={() => setOpen((v) => !v)}
+        aria-expanded={open}
+        aria-haspopup="listbox"
+        className="flex items-center justify-between gap-2 px-3 py-2 rounded-xl border border-gray-200 bg-white text-sm font-semibold text-gray-700 text-left focus:outline-none focus:ring-2 focus:ring-[#2A8970]"
+      >
+        <span className="truncate max-w-[220px]">{label}</span>
+        <ChevronDown size={15} className={`shrink-0 text-gray-400 transition-transform ${open ? "rotate-180" : ""}`} />
+      </button>
+      {open && (
+        <div
+          role="listbox"
+          aria-multiselectable="true"
+          className="absolute top-full left-0 z-30 mt-1 w-[300px] max-h-72 overflow-y-auto rounded-xl border border-gray-200 bg-white shadow-lg p-1.5"
+        >
+          {options.length === 0 ? (
+            <p className="px-3 py-2 text-sm text-gray-400">Aucun établissement</p>
+          ) : (
+            options.map((o) => (
+              <label key={o.id} className="flex items-start gap-2.5 px-2.5 py-2 rounded-lg hover:bg-gray-50 cursor-pointer">
+                <input
+                  type="checkbox"
+                  checked={selected.includes(o.id)}
+                  onChange={() => toggle(o.id)}
+                  className="mt-0.5 accent-[#2A8970]"
+                />
+                <span className="text-sm text-gray-700 leading-tight">
+                  {o.name}
+                  {o.city && <span className="block text-xs text-gray-400">{o.city}</span>}
+                </span>
+              </label>
+            ))
+          )}
+          {selected.length > 0 && (
+            <button
+              type="button"
+              onClick={() => onChange([])}
+              className="w-full mt-1 px-2.5 py-2 text-left text-xs font-semibold text-[#1B6B8A] hover:bg-gray-50 rounded-lg"
+            >
+              Tout désélectionner
+            </button>
+          )}
+        </div>
+      )}
     </div>
   );
 }

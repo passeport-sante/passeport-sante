@@ -31,6 +31,19 @@ export type ClassLevel = (typeof CLASS_LEVELS)[number]["value"];
 
 export type SessionUser = { id: string; name: string; email?: string };
 
+// Établissement propriétaire d'une session (affiché aux comptes qui voient plusieurs établissements).
+export type SessionOrganization = { id: string; name: string; city: string | null };
+
+// Seul l'admin voit les sessions de tous les établissements (cf. scope() côté serveur).
+export function canSeeAllOrganizations(): boolean {
+  try {
+    const token = localStorage.getItem("access_token") ?? "";
+    return JSON.parse(atob(token.split(".")[1]!)).role === "ADMIN";
+  } catch {
+    return false;
+  }
+}
+
 export type SessionSummary = {
   id: string;
   className: string;
@@ -45,6 +58,7 @@ export type SessionSummary = {
   // Les élèves exclus ne sont comptés nulle part.
   _count: { guestStudents: number; diagnosticResponses: number };
   completedCount: number;
+  organization?: SessionOrganization | null;
 };
 
 export type DiagnosticStudent = {
@@ -93,6 +107,7 @@ export type ModuleSessionSummary = {
   createdAt: string;
   module: { id: string; title: string; colorPrimary: string | null } | null;
   _count: { guestStudents: number };
+  organization?: SessionOrganization | null;
 };
 
 type StepResponseEntry = { stepId: string; isCorrect: boolean | null };

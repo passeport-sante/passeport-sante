@@ -50,16 +50,22 @@ export class StatsService {
   async getStats(user: AuthUser, q: StatsQueryDto) {
     const global = this.isGlobal(user);
 
+    // Un ou plusieurs établissements choisis (organizationId reste accepté seul).
+    const orgIds = [
+      ...new Set([q.organizationId, ...(q.organizationIds ?? "").split(",")].map((id) => id?.trim()).filter((id): id is string => !!id)),
+    ];
+
     const orgWhere: Prisma.OrganizationWhereInput = global
       ? {
           ...(q.department ? { department: q.department } : {}),
-          ...(q.organizationId ? { id: q.organizationId } : {}),
+          ...(orgIds.length ? { id: { in: orgIds } } : {}),
         }
       : { id: user.organizationId };
 
     // Sans établissement précis, un nom de classe ("6e B") n'a pas de sens :
     // il existe dans tous les collèges. Le filtre classe est alors ignoré.
-    const singleOrg = !global || !!q.organizationId;
+    // Avec plusieurs établissements, le tableau compare les établissements.
+    const singleOrg = !global || orgIds.length === 1;
     const className = singleOrg ? q.className : undefined;
 
     const sessionWhere = {

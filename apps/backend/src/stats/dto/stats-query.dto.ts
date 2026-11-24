@@ -31,4 +31,10 @@ export class StatsQueryDto {
   @IsOptional()
   @IsString()
   organizationId?: string;
+
+  // Plusieurs établissements à la fois (compte rendu commun), identifiants séparés par des virgules.
+  @ApiPropertyOptional({ example: "idA,idB" })
+  @IsOptional()
+  @IsString()
+  organizationIds?: string;
 }

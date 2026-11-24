@@ -51,6 +51,8 @@ export class ModuleSessionService {
       include: {
         _count: { select: { guestStudents: true } },
         module: { select: { id: true, title: true, colorPrimary: true } },
+        // Affiché aux comptes qui voient plusieurs établissements (admin).
+        organization: { select: { id: true, name: true, city: true } },
       },
       orderBy: { createdAt: "desc" },
     });

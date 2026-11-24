@@ -13,6 +13,7 @@ import {
   fetchDiagnosticQuestionCount,
   renameSession,
   renameModuleSession,
+  canSeeAllOrganizations,
 } from "@/lib/dashboard";
 import type { ModuleSessionSummary, SessionSummary } from "@/lib/dashboard";
 import { SessionCard } from "./_components/session-card";
@@ -22,6 +23,9 @@ import { StatsRow } from "./_components/stats-row";
 
 export default function DashboardPage() {
   const [diagSessions, setDiagSessions] = useState<SessionSummary[]>([]);
+  // Admin : afficher l'établissement de chaque session.
+  const [showOrganization, setShowOrganization] = useState(false);
+  useEffect(() => setShowOrganization(canSeeAllOrganizations()), []);
   const [moduleSessions, setModuleSessions] = useState<ModuleSessionSummary[]>([]);
   const [questionCount, setQuestionCount] = useState<number | undefined>(undefined);
   const [loading, setLoading] = useState(true);
@@ -131,7 +135,7 @@ export default function DashboardPage() {
             ) : (
               <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
                 {diagActive.map((s) => (
-                  <SessionCard key={s.id} session={s} onClose={handleClose} totalQuestions={questionCount} />
+                  <SessionCard key={s.id} session={s} onClose={handleClose} totalQuestions={questionCount} showOrganization={showOrganization} />
                 ))}
               </div>
             )}
@@ -162,7 +166,7 @@ export default function DashboardPage() {
             ) : (
               <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
                 {moduleActive.map((s) => (
-                  <ModuleSessionCard key={s.id} session={s} onClose={handleCloseModule} />
+                  <ModuleSessionCard key={s.id} session={s} onClose={handleCloseModule} showOrganization={showOrganization} />
                 ))}
               </div>
             )}
@@ -183,6 +187,7 @@ export default function DashboardPage() {
               moduleSessions={moduleTerminated}
               onDelete={handleDelete}
               onRename={handleRename}
+              showOrganization={showOrganization}
             />
           </section>
         </>
